@@ -4,7 +4,7 @@
 
 현재 저장소에는 게임 코드와 패키지 설정이 없으며, 기획 문서 기반을 구축하는 단계다. 아래 순서는 문서 승인과 핵심 창작 결정 이후 실행한다.
 
-조사와 첫 대본 초안은 [RESEARCH_AND_DESIGN_NOTES.md](RESEARCH_AND_DESIGN_NOTES.md)와 [SCRIPT_BIBLE.md](SCRIPT_BIBLE.md)에 기록한다. 이 단계의 콘텐츠는 모두 Proposal이다.
+조사와 첫 대본 초안은 [RESEARCH_AND_DESIGN_NOTES.md](RESEARCH_AND_DESIGN_NOTES.md), [UNDERFAIL_STORY_SUPPLEMENT_RESEARCH.md](UNDERFAIL_STORY_SUPPLEMENT_RESEARCH.md), [SCRIPT_BIBLE.md](SCRIPT_BIBLE.md)에 기록한다. 이 단계의 콘텐츠는 모두 Proposal이다.
 
 ## 단계
 

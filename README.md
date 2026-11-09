@@ -13,9 +13,11 @@
 - 루트 설계: [docs/ROUTE_DESIGN.md](docs/ROUTE_DESIGN.md)
 - 전투 설계: [docs/BATTLE_DESIGN.md](docs/BATTLE_DESIGN.md)
 - 조사 및 설계 노트: [docs/RESEARCH_AND_DESIGN_NOTES.md](docs/RESEARCH_AND_DESIGN_NOTES.md)
+- 스토리 보충 조사 및 설계 기준선: [docs/UNDERFAIL_STORY_SUPPLEMENT_RESEARCH.md](docs/UNDERFAIL_STORY_SUPPLEMENT_RESEARCH.md)
 - 대본 제작 바이블: [docs/SCRIPT_BIBLE.md](docs/SCRIPT_BIBLE.md)
 - 구현 순서: [docs/IMPLEMENTATION_ROADMAP.md](docs/IMPLEMENTATION_ROADMAP.md)
 - 스토리 결정표: [STORY_DECISIONS.md](STORY_DECISIONS.md)
+- 창작 결정 워크북: [CREATIVE_DECISION_WORKBOOK.md](CREATIVE_DECISION_WORKBOOK.md)
 
 ## 정사 관리
 
