@@ -185,7 +185,7 @@ export class BullyBattleScene extends Phaser.Scene {
     }).setDepth(30);
   }
 
-  private menuObjects: Phaser.GameObjects.Text[] = [];
+  private menuObjects: Phaser.GameObjects.GameObject[] = [];
 
   private clearMenu(): void {
     for (const o of this.menuObjects) o.destroy();
@@ -279,7 +279,6 @@ export class BullyBattleScene extends Phaser.Scene {
     this.spawnTime = 0;
     this.patternIndex = 0;
 
-    this.hint?.destroy();
     this.hint = this.add.text(480, 434, "방향키 / WASD로 이동해 빛무늬를 피하자", {
       fontFamily: "monospace",
       fontSize: "11px",
