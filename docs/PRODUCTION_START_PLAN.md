@@ -62,6 +62,13 @@
 
 구체적 완료 조건과 범위 밖 항목은 `docs/MILESTONE_1_VERTICAL_SLICE.md`에 정리되어 있다.
 
+## 4. 통합 자율 제작 프롬프트
+
+ChatGPT가 저장소를 직접 조사하고 기획·설계·구현·검토·개선까지 수행할 때는 다음 문서를 기준으로 한다.
+
+- `docs/CHATGPT_AUTONOMOUS_PRODUCTION_MASTER_PROMPT.md` — ChatGPT용 통합 자율 제작 지침. 저장소 접근, 정사 보호, 조사, 구현, 검증, 작업 지속성 및 최종 보고 규칙을 정의한다.
+- 이 문서는 창작 워크북이나 Milestone 명세를 대체하지 않는다. 실행 범위와 현재 완료 기준은 각 Milestone 문서를 따른다.
+
 ## 4. 다음 단계에 사용할 Copilot 컨텍스트
 
 첫 구현 요청에는 다음 다섯 파일을 사용한다.
