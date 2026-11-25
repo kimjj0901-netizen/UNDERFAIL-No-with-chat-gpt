@@ -1,3 +1,5 @@
+> **2026-11-26 execution update:** The opening is now being rebuilt around the preserved story index rather than the former shortcut prototype. Implemented on this branch: name entry → chronological prologue montage → flower field → Bully tutorial encounter → abstract dodge/tutorial → Domitoriell rescue → Welfare Room entry. Browser play remains **NOT RUN** in the current tool environment; production build is also **NOT RUN** here because the execution environment cannot reach GitHub/npm. Do not treat this update as a completed visual QA pass.
+>
 > **주의 — 이전 구현 명세:** 이 문서는 첫 번째 프로토타입을 만들기 위해 작성된 범위 문서다. 2026-11-26 사용자 검토에서 스토리 순서, 오프닝, 맵·캐릭터·UI 디자인의 미숙함과 Undertale 기능 비교 부족이 지적되었다. 따라서 이 문서의 단순화된 시작 흐름을 새 정사나 최종 스토리 순서로 사용하지 않는다. 재설계 시에는 docs/story/UNDERFAIL_START_TO_CHAMBER_BATTLE_DIALOGUE_INDEX_v5.md와 docs/CHATGPT_STORY_DRIVEN_PRODUCTION_MASTER_PROMPT.md가 우선한다.
 
 # Milestone 1 — 교육복지실 Vertical Slice
