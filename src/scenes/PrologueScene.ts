@@ -33,6 +33,7 @@ const BEATS: Beat[] = [
 export class PrologueScene extends Phaser.Scene {
   private beatIndex = 0;
   private advanceKey?: Phaser.Input.Keyboard.Key;
+  private spaceKey?: Phaser.Input.Keyboard.Key;
   private layer?: Phaser.GameObjects.Graphics;
   private titleText?: Phaser.GameObjects.Text;
   private bodyText?: Phaser.GameObjects.Text;
@@ -45,7 +46,7 @@ export class PrologueScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setBackgroundColor("#080d10");
     this.advanceKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
-    this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.spaceKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.input.on("pointerdown", this.advance, this);
 
     this.renderBeat();
@@ -55,7 +56,8 @@ export class PrologueScene extends Phaser.Scene {
   }
 
   update(): void {
-    if (this.advanceKey && Phaser.Input.Keyboard.JustDown(this.advanceKey)) this.advance();
+    if ((this.advanceKey && Phaser.Input.Keyboard.JustDown(this.advanceKey)) ||
+        (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey))) this.advance();
   }
 
   private advance(): void {
