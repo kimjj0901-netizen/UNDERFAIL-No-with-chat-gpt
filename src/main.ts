@@ -3,6 +3,8 @@ import { BootScene } from "./scenes/BootScene";
 import { TitleScene } from "./scenes/TitleScene";
 import { NameEntryScene } from "./scenes/NameEntryScene";
 import { PrologueScene } from "./scenes/PrologueScene";
+import { FlowerFieldScene } from "./scenes/FlowerFieldScene";
+import { BullyBattleScene } from "./scenes/BullyBattleScene";
 import { RoomScene } from "./scenes/RoomScene";
 import { BattleScene } from "./scenes/BattleScene";
 import { PrototypeEndScene } from "./scenes/PrototypeEndScene";
@@ -20,6 +22,8 @@ const config: Phaser.Types.Core.GameConfig = {
     TitleScene,
     NameEntryScene,
     PrologueScene,
+    FlowerFieldScene,
+    BullyBattleScene,
     RoomScene,
     BattleScene,
     PrototypeEndScene,
