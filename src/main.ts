@@ -6,6 +6,7 @@ import { PrologueScene } from "./scenes/PrologueScene";
 import { FlowerFieldScene } from "./scenes/FlowerFieldScene";
 import { BullyBattleScene } from "./scenes/BullyBattleScene";
 import { RoomScene } from "./scenes/RoomScene";
+import { SecondRankEncounterScene } from "./scenes/SecondRankEncounterScene";
 import { BattleScene } from "./scenes/BattleScene";
 import { PrototypeEndScene } from "./scenes/PrototypeEndScene";
 import "./style.css";
@@ -25,6 +26,7 @@ const config: Phaser.Types.Core.GameConfig = {
     FlowerFieldScene,
     BullyBattleScene,
     RoomScene,
+    SecondRankEncounterScene,
     BattleScene,
     PrototypeEndScene,
   ],

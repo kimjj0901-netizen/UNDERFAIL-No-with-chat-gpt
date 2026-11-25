@@ -29,7 +29,8 @@ export class RoomScene extends Phaser.Scene {
   private nearest?: Target;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private puzzleStep = 0;
-  private proggithubDone = false;
+  private secondRankSprite?: Phaser.GameObjects.Image;
+  private puzzleLights: Phaser.GameObjects.Arc[] = [];
 
   constructor() {
     super("RoomScene");
@@ -38,10 +39,13 @@ export class RoomScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setBackgroundColor("#101716");
     this.drawRoom();
+    const session = GameSession.get();
     this.targets = [
       { id: "domitoriell", label: "도미토리엘 선생님", x: 480, y: 164, radius: 76 },
       { id: "proggithub", label: "프로깃허브", x: 728, y: 270, radius: 78 },
-      { id: "second", label: "전교 2등", x: 205, y: 246, radius: 76 },
+      ...(session.proggithubTutorialDone && !session.secondRankFled
+        ? [{ id: "second", label: "전교 2등", x: 205, y: 246, radius: 76 }]
+        : []),
       { id: "puzzle", label: "첫 퍼즐", x: 485, y: 286, radius: 82 },
       { id: "shelf", label: "학생들의 책장", x: 128, y: 392, radius: 66 },
       { id: "door", label: "교육복지실 안쪽 문", x: 480, y: 88, radius: 72 },
@@ -76,12 +80,14 @@ export class RoomScene extends Phaser.Scene {
       padding: { x: 10, y: 6 },
     }).setOrigin(0.5).setDepth(40);
 
-    if (GameSession.get().bullyRescued) {
+    if (session.bullyRescued) {
       this.openDialogue("도미토리엘", [
         "여기가 교육복지반이란다.",
         "조금 전 일은 잊고 숨을 고르렴. 여기서는 네가 직접 살펴보고 결정해도 괜찮아.",
       ]);
-      GameSession.get().bullyRescued = false;
+      session.bullyRescued = false;
+    } else if (GameSession.consumeDomitoriellFollowUp()) {
+      this.openDialogue("도미토리엘", [...WELFARE_EVENTS.secondRankEncounter.domitoriellAfter]);
     }
   }
 
@@ -153,17 +159,23 @@ export class RoomScene extends Phaser.Scene {
       repeat: -1,
       ease: "Sine.InOut",
     });
-    const secondRank = this.add.image(205, 251, "character-second-rank")
-      .setDisplaySize(58, 82)
-      .setDepth(14);
-    this.tweens.add({
-      targets: secondRank,
-      y: 249,
-      duration: 2350,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.InOut",
-    });
+    if (!GameSession.get().secondRankFled) {
+      this.secondRankSprite = this.add.image(205, 251, "character-second-rank")
+        .setDisplaySize(58, 82)
+        .setAlpha(GameSession.get().proggithubTutorialDone ? 1 : 0)
+        .setDepth(14);
+      this.tweens.add({
+        targets: this.secondRankSprite,
+        y: 249,
+        duration: 2350,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.InOut",
+      });
+    }
+    this.puzzleLights = [447, 485, 523].map((x) =>
+      this.add.circle(x, 279, 4, 0x64766a, 0.9).setDepth(12),
+    );
 
     this.add.text(480, 24, "교육복지반", {
       fontFamily: "'Noto Serif KR', serif",
@@ -241,7 +253,7 @@ export class RoomScene extends Phaser.Scene {
         this.proggithubEncounter();
         break;
       case "second":
-        this.secondRankInteraction();
+        this.scene.start("SecondRankEncounterScene");
         break;
       case "shelf":
         this.openDialogue("학생들의 책장", [
@@ -272,14 +284,13 @@ export class RoomScene extends Phaser.Scene {
   }
 
   private proggithubEncounter(): void {
-    if (this.proggithubDone) {
+    if (GameSession.get().proggithubTutorialDone) {
       this.openDialogue("프로깃허브", [
         "이미 기본 메뉴는 배웠다.",
         "이번에는 네가 원하는 방식으로 상황을 해결해 보렴.",
       ]);
       return;
     }
-    this.proggithubDone = true;
     this.openDialogue("프로깃허브", WELFARE_EVENTS.proggithub.tutorial, [
       "말을 건다",
       "상태를 살핀다",
@@ -287,13 +298,17 @@ export class RoomScene extends Phaser.Scene {
     ]);
   }
 
-  private secondRankInteraction(): void {
-    this.openDialogue("전교 2등", [
-      "책을 꼭 끌어안은 학생이 잠깐 당신을 바라본다.",
-      "당신이 무슨 말을 하기도 전에 책장을 넘기며 뒤로 물러난다.",
-      "조금 뒤, 그는 공부하러 가겠다는 듯 조용히 사라진다.",
-    ]);
-    WELFARE_EVENTS.secondRankSeen();
+  private revealSecondRank(): void {
+    if (GameSession.get().secondRankFled) return;
+    this.targets.push({ id: "second", label: "전교 2등", x: 205, y: 246, radius: 76 });
+    if (!this.secondRankSprite) return;
+    this.tweens.add({
+      targets: this.secondRankSprite,
+      alpha: 1,
+      y: 251,
+      duration: 850,
+      ease: "Sine.Out",
+    });
   }
 
   private openDialogue(speaker: string, lines: readonly string[], choices?: readonly string[]): void {
@@ -338,6 +353,8 @@ export class RoomScene extends Phaser.Scene {
               ]);
             }
           } else if (speaker === "프로깃허브") {
+            GameSession.markProggithubTutorialDone();
+            this.revealSecondRank();
             if (selected === 0) {
               this.openDialogue("프로깃허브", [
                 "말을 건다는 것은 상대의 말을 들어 보겠다는 뜻이기도 하다.",
@@ -371,6 +388,14 @@ export class RoomScene extends Phaser.Scene {
     const expected = WELFARE_EVENTS.firstPuzzle.sequence[this.puzzleStep];
     if (index === expected) {
       this.puzzleStep += 1;
+      this.puzzleLights[index]?.setFillStyle(0xd8c595, 1);
+      this.tweens.add({
+        targets: this.puzzleLights[index],
+        scale: 1.8,
+        duration: 250,
+        yoyo: true,
+        ease: "Sine.Out",
+      });
       this.clearDialogue();
       if (this.puzzleStep >= WELFARE_EVENTS.firstPuzzle.sequence.length) {
         this.openDialogue("첫 퍼즐", ["딸깍.", "세 표식이 순서대로 빛나며 길이 열렸다."]);

@@ -13,6 +13,9 @@ export interface GameSessionState {
   openingPrologueViewed: boolean;
   bullyEncountered: boolean;
   openingRescued: boolean;
+  proggithubTutorialDone: boolean;
+  secondRankFled: boolean;
+  domitoriellFollowUpPending: boolean;
 }
 
 const initialState = (): GameSessionState => ({
@@ -30,6 +33,9 @@ const initialState = (): GameSessionState => ({
   openingPrologueViewed: false,
   bullyEncountered: false,
   openingRescued: false,
+  proggithubTutorialDone: false,
+  secondRankFled: false,
+  domitoriellFollowUpPending: false,
 });
 
 let state = initialState();
@@ -83,5 +89,20 @@ export const GameSession = {
   completeOpeningRescue(): void {
     state.bullyRescued = true;
     state.openingRescued = true;
+  },
+
+  markProggithubTutorialDone(): void {
+    state.proggithubTutorialDone = true;
+  },
+
+  markSecondRankFled(): void {
+    state.secondRankFled = true;
+    state.domitoriellFollowUpPending = true;
+  },
+
+  consumeDomitoriellFollowUp(): boolean {
+    if (!state.domitoriellFollowUpPending) return false;
+    state.domitoriellFollowUpPending = false;
+    return true;
   },
 };
