@@ -2,9 +2,9 @@
 
 ## 상태
 
-**완료 / 사용자 환경에서 빌드 및 개발 서버 실행 확인**
+**완료 — 사용자 환경에서 빌드와 개발 서버 실행 확인**
 
-2026-11-25 기준 `main`에 Phaser 4.2.1 + TypeScript + Vite 기반의 최소 실행 구조를 생성했다.
+2026-11-25 기준 Phaser 4.2.1 + TypeScript + Vite 기반의 최소 프로젝트가 만들어졌고, 사용자가 자신의 런타임에서 실행을 확인했다.
 
 ## 채택 스택
 
@@ -14,16 +14,22 @@
 - Framework: Phaser 단독
 - UI 프레임워크: 없음
 
-Phaser 버전은 게임 핵심 의존성에서 정확히 `4.2.1`로 고정한다.
+Phaser 버전은 `package.json`에서 정확히 `4.2.1`로 고정한다.
 
 ## 생성된 구조
 
-```
+```text
 .
 ├── CREATIVE_DECISION_WORKBOOK.md
+├── .github/
+│   └── copilot-instructions.md
 ├── docs/
+│   ├── CANON_BASELINE.md
+│   ├── IMPLEMENTATION_ROADMAP.md
 │   ├── MILESTONE_0_PROJECT_SETUP.md
-│   └── PRODUCTION_START_PLAN.md
+│   ├── MILESTONE_1_VERTICAL_SLICE.md
+│   ├── PRODUCTION_START_PLAN.md
+│   └── TECH_ARCHITECTURE.md
 ├── src/
 │   ├── main.ts
 │   ├── style.css
@@ -41,11 +47,11 @@ Phaser 버전은 게임 핵심 의존성에서 정확히 `4.2.1`로 고정한다
 
 ## 현재 게임 진입점
 
-`src/main.ts`에서 Phaser Game 인스턴스를 생성한다.
+- `src/main.ts`에서 Phaser Game 인스턴스를 생성한다.
+- `src/scenes/BootScene.ts`가 초기 Scene이다.
+- 현재 Scene은 프로젝트 부팅을 확인하기 위한 임시 화면만 표시한다.
 
-현재 Scene은 `BootScene` 하나이며, 실제 게임 콘텐츠를 구현하기 위한 임시 부트 화면만 표시한다.
-
-## 완료 기준
+## 완료 확인
 
 - [x] Phaser 4.2.1 의존성 선언
 - [x] TypeScript 설정
@@ -54,17 +60,26 @@ Phaser 버전은 게임 핵심 의존성에서 정확히 `4.2.1`로 고정한다
 - [x] Phaser Game 생성 코드 작성
 - [x] 첫 Scene 생성
 - [x] 전역 스타일 연결
-- [x] 의존성 설치 상태에서 프로젝트 명령 실행 가능 확인
-- [x] `npm run build` 성공 확인 (사용자가 제공한 터미널 결과)
-- [x] 개발 서버 실행 확인 (사용자 보고)
-- [x] 기본 호스트 바인딩 문제 우회: `--host 127.0.0.1` 사용
+- [x] 프로젝트 의존성이 설치된 환경에서 명령 실행 가능 확인
+- [x] `npm run build` 성공
+- [x] 개발 서버 실행 성공
 
-마지막 세 항목은 GitHub 파일 조작만으로는 실제 Codespace 런타임에서 검증할 수 없으므로, Codespace에서 실행하여 확인해야 한다.
+## 사용자 실행 결과
+
+사용자가 전달한 빌드 로그 기준:
+
+- TypeScript 빌드: 통과
+- Vite 프로덕션 빌드: 통과
+- Vite 출력 파일 생성: 성공
+- JavaScript 번들: 약 1,388.55 kB, gzip 약 370.46 kB
+- 500 kB 초과 청크 경고: 표시되었으나 빌드 실패가 아닌 비차단 경고
+
+초기 `--host 0.0.0.0` 실행에서는 포트 충돌과 네트워크 인터페이스 조회 오류가 발생했다. 이후 로컬 루프백 주소와 별도 포트로 바꾸는 방법을 안내했고, 사용자가 개발 서버 실행에 성공했다고 확인했다.
+
+## 번들 경고 처리
+
+현재 청크 크기 경고는 오류가 아니다. 지금은 게임 기능 구현을 우선하고, Vertical Slice 이후 필요성을 확인해 동적 import 또는 manualChunks 등 코드 분할을 검토한다. 경고만 없애기 위해 불필요한 프레임워크나 복잡한 구조를 추가하지 않는다.
 
 ## 다음 단계
 
-Milestone 1은 실제 게임의 첫 Vertical Slice를 만든다.
-
-목표는 **제목/이름 입력 → 도입부 → 교육복지반 → 첫 탐색 → 첫 상호작용 → 첫 전투 진입 → ACT 기반 평화적 해결 → 다음 공간 전환**까지를 하나의 플레이 가능한 흐름으로 연결하는 것이다.
-
-이 단계에서 그래픽 에셋을 대량 제작하지 않는다. 먼저 게임 루프와 데이터 구조를 검증한다.
+Milestone 1은 `docs/MILESTONE_1_VERTICAL_SLICE.md`를 기준으로 교육복지실 Vertical Slice를 구현한다.
