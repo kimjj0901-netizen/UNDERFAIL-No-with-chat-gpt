@@ -5,6 +5,8 @@ export class FlowerFieldScene extends Phaser.Scene {
   private prompt?: Phaser.GameObjects.Text;
   private bully?: Phaser.GameObjects.Container;
   private enter?: Phaser.Input.Keyboard.Key;
+  private eKey?: Phaser.Input.Keyboard.Key;
+  private spaceKey?: Phaser.Input.Keyboard.Key;
   private opened = false;
 
   constructor() {
@@ -31,8 +33,8 @@ export class FlowerFieldScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     this.enter = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
-    this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-    this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.eKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    this.spaceKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     this.tweens.add({
       targets: this.bully,
@@ -46,7 +48,10 @@ export class FlowerFieldScene extends Phaser.Scene {
 
   update(): void {
     if (!this.enter || this.opened) return;
-    if (Phaser.Input.Keyboard.JustDown(this.enter) || Phaser.Input.Keyboard.JustDown(this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.E) ?? this.enter)) {
+    const pressed = Phaser.Input.Keyboard.JustDown(this.enter) ||
+      (this.eKey ? Phaser.Input.Keyboard.JustDown(this.eKey) : false) ||
+      (this.spaceKey ? Phaser.Input.Keyboard.JustDown(this.spaceKey) : false);
+    if (pressed) {
       this.opened = true;
       this.startEncounter();
     }
