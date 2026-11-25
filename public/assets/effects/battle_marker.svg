@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<defs>
+ <linearGradient id="stone" x2="1" y2="1"><stop stop-color="#f1dfb2"/><stop offset=".52" stop-color="#b9a074"/><stop offset="1" stop-color="#627c77"/></linearGradient>
+ <radialGradient id="core"><stop stop-color="#fff5d6"/><stop offset="1" stop-color="#a5b5a0"/></radialGradient>
+</defs>
+<path d="M32 3L40 20L59 24L43 35L46 55L32 44L18 55L21 35L5 24L24 20Z" fill="url(#stone)" stroke="#263e42" stroke-width="3" stroke-linejoin="round"/>
+<path d="M32 13L36 27L50 30L38 38L40 49L32 42L24 49L26 38L14 30L28 27Z" fill="#344f50" stroke="#e6d6ae" stroke-width="1.5"/>
+<circle cx="32" cy="32" r="7" fill="url(#core)" stroke="#354d4d" stroke-width="2"/>
+<path d="M32 26V38M26 32H38" stroke="#4b6260" stroke-width="2"/>
+</svg>

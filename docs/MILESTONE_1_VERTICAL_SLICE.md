@@ -1,8 +1,14 @@
+> **2026-11-26 rebuild update:** story flow follows name entry → past school montage → closure document/photo/stamp → present placement notice and school rumor → flower field → abstract Bully tutorial → Domitoriell rescue → Welfare Class first room. Original SVG assets, character sprites, initial idle animations, rescue arc, synthesized low-volume Web Audio cues, and classroom collision/interaction layers are being integrated. The previous HEAD e4fcca7 Actions failure was a TS1005 quote syntax error in the Bully rescue text; corrected code is pending CI. Browser play remains NOT RUN and visual review REVIEW NEEDED.
+>
+> **Canon conflict held:** story index wording says 202X년 풍화양상 중학교 while workbook/canon wording says 풍화양상 고등학교; both remain visible as [미정/보류]. Do not silently normalize.
+>
+> **Original art status:** SVGs are first-pass independent assets authored for this project, not approved final character sheets. They still require real browser-size review and additional turn/side/back/expressive animation states.
+>
 > **2026-11-26 execution update:** The opening is now being rebuilt around the preserved story index rather than the former shortcut prototype. Implemented on this branch: name entry → chronological prologue montage → flower field → Bully tutorial encounter → abstract dodge/tutorial → Domitoriell rescue → Welfare Room entry. Browser play remains **NOT RUN** in the current tool environment; production build is also **NOT RUN** here because the execution environment cannot reach GitHub/npm. Do not treat this update as a completed visual QA pass.
 >
 > **주의 — 이전 구현 명세:** 이 문서는 첫 번째 프로토타입을 만들기 위해 작성된 범위 문서다. 2026-11-26 사용자 검토에서 스토리 순서, 오프닝, 맵·캐릭터·UI 디자인의 미숙함과 Undertale 기능 비교 부족이 지적되었다. 따라서 이 문서의 단순화된 시작 흐름을 새 정사나 최종 스토리 순서로 사용하지 않는다. 재설계 시에는 docs/story/UNDERFAIL_START_TO_CHAMBER_BATTLE_DIALOGUE_INDEX_v5.md와 docs/CHATGPT_STORY_DRIVEN_PRODUCTION_MASTER_PROMPT.md가 우선한다.
 
-# Milestone 1 — 교육복지실 Vertical Slice
+# Milestone 1 — 오프닝 및 교육복지반 Vertical Slice
 
 > 상태: 초기 구현 반영 — 빌드 통과, 브라우저 검증 대기
 >
@@ -24,8 +30,11 @@
 Boot
   → Title
   → Name Entry
-  → Prologue
-  → Education Welfare Room
+  → Prologue Montage
+  → Flower Field
+  → Bully Tutorial / Abstract Dodge
+  → Domitoriell Rescue
+  → Education Welfare Class
   → Inspect / Talk
   → Domitoriell Encounter
   → ACT-based Peaceful Resolution
@@ -193,3 +202,13 @@ HP 0 이후 세계관에서 어떤 일이 벌어지는지는 보류한다. 프�
 | 브라우저 전체 플레이 | NOT RUN — 실제 브라우저 플레이 확인은 아직 안 됨 |
 
 위 두 실행 테스트를 통과하기 전에는 Milestone 1을 완료 처리하지 않는다.
+
+
+## 9. 2026-11-26 시각 구현 메모
+
+- 타이틀·과거 학교·폐교 문서·현재 학교·꽃밭 장면을 독립 SVG 배경으로 사용한다.
+- 플레이어·불리·도미토리엘·프로깃허브·전교 2등을 별도 SVG 스프라이트로 사용한다.
+- 교육복지반 첫 방은 교실 배경과 NPC/오브젝트 스프라이트, 충돌영역을 분리한다.
+- 캐릭터 유휴 애니메이션과 꽃잎 문양 회전은 첫 패스 제안 구현이다. 감정별 프레임 시트와 방향별 이동 프레임은 실제 검토 후 추가해야 한다.
+- 스토리 색인 0~1.7의 원문은 보존 대상이다. 현재 코드가 이 구간을 전부 구현했다고 주장하지 않는다.
+- 실제 화면 크기에서 한국어 폰트와 sprite readability를 검토하지 못했으므로 REVIEW NEEDED다.

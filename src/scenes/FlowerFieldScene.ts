@@ -1,9 +1,11 @@
 import Phaser from "phaser";
+import { Atmosphere } from "../audio/Atmosphere";
 import { GameSession } from "../state/GameSession";
 
 export class FlowerFieldScene extends Phaser.Scene {
   private prompt?: Phaser.GameObjects.Text;
-  private bully?: Phaser.GameObjects.Container;
+  private bully?: Phaser.GameObjects.Image;
+  private player?: Phaser.GameObjects.Image;
   private enter?: Phaser.Input.Keyboard.Key;
   private eKey?: Phaser.Input.Keyboard.Key;
   private spaceKey?: Phaser.Input.Keyboard.Key;
@@ -14,23 +16,65 @@ export class FlowerFieldScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.cameras.main.setBackgroundColor("#121a18");
-    this.drawField();
-    this.bully = this.drawBully();
+    Atmosphere.setMood("uneasy");
+    Atmosphere.cue("warning");
+    GameSession.markBullyEncountered();
 
-    this.add.text(52, 38, "이름을 정한 뒤의 어느 순간", {
-      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
-      fontSize: "13px",
-      color: "#9da99c",
+    this.add.image(480, 270, "opening-flower-field").setDisplaySize(960, 540);
+    this.add.rectangle(480, 270, 960, 540, 0x091621, 0.12);
+
+    this.player = this.add.image(302, 397, "character-player")
+      .setDisplaySize(66, 99)
+      .setAngle(70)
+      .setDepth(12);
+    this.tweens.add({
+      targets: this.player,
+      angle: 0,
+      y: 382,
+      duration: 1200,
+      ease: "Sine.Out",
     });
 
-    this.prompt = this.add.text(480, 486, "ENTER / E  —  앞의 사람에게 다가가기", {
+    this.bully = this.add.image(1004, 355, "character-bully")
+      .setDisplaySize(105, 140)
+      .setDepth(13);
+    this.tweens.add({
+      targets: this.bully,
+      x: 712,
+      duration: 1000,
+      delay: 550,
+      ease: "Cubic.Out",
+    });
+
+    this.add.text(52, 38, "낯선 꽃밭", {
+      fontFamily: "'Noto Serif KR', serif",
+      fontSize: "18px",
+      color: "#e3d4b5",
+    }).setDepth(20);
+
+    this.add.text(480, 108, "꽃잎 사이에서 정신을 차렸다.", {
+      fontFamily: "'Noto Sans KR', sans-serif",
+      fontSize: "23px",
+      color: "#ece4d1",
+      stroke: "#12222a",
+      strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(20);
+
+    this.add.text(712, 250, "불리", {
+      fontFamily: "'Noto Sans KR', sans-serif",
+      fontSize: "13px",
+      color: "#f0dfc7",
+      backgroundColor: "#1c2d33",
+      padding: { x: 7, y: 4 },
+    }).setOrigin(0.5).setDepth(20);
+
+    this.prompt = this.add.text(480, 492, "ENTER / E  —  앞의 사람에게 다가가기", {
       fontFamily: "monospace",
       fontSize: "12px",
-      color: "#e2cb8e",
-      backgroundColor: "#0b1112",
+      color: "#e4d19e",
+      backgroundColor: "#0b171d",
       padding: { x: 12, y: 8 },
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(25);
 
     this.enter = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     this.eKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.E);
@@ -38,96 +82,40 @@ export class FlowerFieldScene extends Phaser.Scene {
 
     this.tweens.add({
       targets: this.bully,
-      y: "-=4",
-      duration: 950,
+      y: "-=3",
+      duration: 1100,
       yoyo: true,
       repeat: -1,
-      ease: "Sine.easeInOut",
+      ease: "Sine.InOut",
+    });
+
+    this.input.on("pointerdown", this.startEncounter, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.input.off("pointerdown", this.startEncounter, this);
     });
   }
 
   update(): void {
-    if (!this.enter || this.opened) return;
-    const pressed = Phaser.Input.Keyboard.JustDown(this.enter) ||
+    if (this.opened) return;
+    const pressed = (this.enter ? Phaser.Input.Keyboard.JustDown(this.enter) : false) ||
       (this.eKey ? Phaser.Input.Keyboard.JustDown(this.eKey) : false) ||
       (this.spaceKey ? Phaser.Input.Keyboard.JustDown(this.spaceKey) : false);
-    if (pressed) {
-      this.opened = true;
-      this.startEncounter();
-    }
+    if (pressed) this.startEncounter();
   }
 
   private startEncounter(): void {
+    if (this.opened) return;
+    this.opened = true;
     this.prompt?.setText("불리가 다가온다...");
-    this.time.delayedCall(500, () => {
-      this.scene.start("BullyBattleScene");
+    Atmosphere.cue("warning");
+    this.tweens.add({
+      targets: this.bully,
+      scaleX: 1.06,
+      scaleY: 1.06,
+      duration: 220,
+      yoyo: true,
+      repeat: 1,
     });
-  }
-
-  private drawField(): void {
-    const g = this.add.graphics();
-    g.fillGradientStyle(0x223633, 0x17201e, 0x31433a, 0x19211f, 1);
-    g.fillRect(0, 0, 960, 540);
-
-    g.fillStyle(0x24392f, 1).fillEllipse(480, 355, 820, 250);
-    g.fillStyle(0x18261f, 0.7).fillEllipse(480, 410, 920, 230);
-
-    for (let i = 0; i < 84; i += 1) {
-      const x = 40 + ((i * 83) % 880);
-      const y = 95 + ((i * 47) % 330);
-      const r = 2 + (i % 3);
-      g.lineStyle(1, i % 2 ? 0xa7a06d : 0xc8a1a1, 0.65);
-      g.lineBetween(x, y + 4, x, y + 13);
-      g.fillStyle(i % 3 === 0 ? 0xd0a2a6 : 0xd0c98c, 0.8).fillCircle(x, y, r);
-      g.fillStyle(0x53674f, 0.55).fillCircle(x - 3, y + 5, 2);
-      g.fillStyle(0x53674f, 0.55).fillCircle(x + 3, y + 6, 2);
-    }
-
-    g.fillStyle(0x0d1415, 0.6).fillRect(0, 0, 960, 70);
-    g.fillStyle(0xd5c99f, 0.25).fillEllipse(770, 112, 88, 88);
-    g.fillStyle(0xd5c99f, 0.08).fillEllipse(770, 112, 138, 138);
-
-    this.add.text(480, 86, "꽃이 너무 조용하다.", {
-      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
-      fontSize: "24px",
-      color: "#e7dfc5",
-    }).setOrigin(0.5);
-
-    this.add.text(480, 120, "아무도 없는 것처럼 보였지만, 누군가 기다리고 있었다.", {
-      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
-      fontSize: "14px",
-      color: "#9eaaa0",
-    }).setOrigin(0.5);
-  }
-
-  private drawBully(): Phaser.GameObjects.Container {
-    const c = this.add.container(480, 284);
-    const shadow = this.add.ellipse(0, 65, 92, 20, 0x0a1110, 0.45);
-    const body = this.add.graphics();
-    body.fillStyle(0x4a3d46, 1).fillRoundedRect(-34, -6, 68, 92, 24);
-    body.fillStyle(0xb0a0a1, 1).fillCircle(0, -35, 38);
-    body.fillStyle(0x29242a, 1).fillEllipse(0, -55, 72, 32);
-    body.fillStyle(0x15191a, 1).fillCircle(-12, -36, 4);
-    body.fillStyle(0x15191a, 1).fillCircle(12, -36, 4);
-    body.lineStyle(3, 0x6b4850, 0.8).lineBetween(-12, -17, 12, -17);
-    body.fillStyle(0x29252a, 1).fillRect(-45, 18, 18, 50);
-    body.fillStyle(0x29252a, 1).fillRect(27, 18, 18, 50);
-
-    const aura = this.add.graphics();
-    aura.lineStyle(2, 0x9a5d69, 0.25).strokeCircle(0, -5, 66);
-    aura.lineStyle(1, 0xe2b5a1, 0.18).strokeCircle(0, -5, 80);
-
-    c.add([aura, shadow, body]);
-    c.setDepth(10);
-
-    this.add.text(480, 202, "불리", {
-      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
-      fontSize: "16px",
-      color: "#f0dfc7",
-      backgroundColor: "#1b2222",
-      padding: { x: 7, y: 4 },
-    }).setOrigin(0.5).setDepth(11);
-
-    return c;
+    this.time.delayedCall(520, () => this.scene.start("BullyBattleScene"));
   }
 }

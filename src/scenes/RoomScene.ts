@@ -12,16 +12,16 @@ type Target = {
 
 type Dialogue = {
   speaker: string;
-  lines: string[];
+  lines: readonly string[];
   page: number;
-  choices?: string[];
+  choices?: readonly string[];
   choiceIndex: number;
 };
 
 export class RoomScene extends Phaser.Scene {
   private x = 480;
   private y = 420;
-  private player!: Phaser.GameObjects.Graphics;
+  private player!: Phaser.GameObjects.Image;
   private prompt!: Phaser.GameObjects.Text;
   private dialogue?: Dialogue;
   private dialogueObjects: Phaser.GameObjects.GameObject[] = [];
@@ -39,14 +39,15 @@ export class RoomScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor("#101716");
     this.drawRoom();
     this.targets = [
-      { id: "proggithub", label: "프로깃허브", x: 728, y: 270, radius: 76 },
-      { id: "second", label: "전교 2등", x: 205, y: 246, radius: 70 },
+      { id: "domitoriell", label: "도미토리엘 선생님", x: 480, y: 164, radius: 76 },
+      { id: "proggithub", label: "프로깃허브", x: 728, y: 270, radius: 78 },
+      { id: "second", label: "전교 2등", x: 205, y: 246, radius: 76 },
       { id: "puzzle", label: "첫 퍼즐", x: 485, y: 286, radius: 82 },
-      { id: "shelf", label: "학생들의 책장", x: 128, y: 392, radius: 62 },
+      { id: "shelf", label: "학생들의 책장", x: 128, y: 392, radius: 66 },
       { id: "door", label: "교육복지실 안쪽 문", x: 480, y: 88, radius: 72 },
     ];
 
-    this.player = this.add.graphics().setDepth(20);
+    this.player = this.add.image(this.x, this.y, "character-player").setDisplaySize(43, 65).setDepth(20);
     this.drawPlayer();
     this.drawHud();
 
@@ -100,8 +101,12 @@ export class RoomScene extends Phaser.Scene {
 
     if (dx || dy) {
       const length = Math.hypot(dx, dy) || 1;
-      this.x = Phaser.Math.Clamp(this.x + dx / length * speed, 82, 878);
-      this.y = Phaser.Math.Clamp(this.y + dy / length * speed, 116, 456);
+      const moveX = dx / length * speed;
+      const moveY = dy / length * speed;
+      const nextX = Phaser.Math.Clamp(this.x + moveX, 82, 878);
+      if (!this.collides(nextX, this.y)) this.x = nextX;
+      const nextY = Phaser.Math.Clamp(this.y + moveY, 116, 456);
+      if (!this.collides(this.x, nextY)) this.y = nextY;
       this.drawPlayer();
     }
 
@@ -114,85 +119,87 @@ export class RoomScene extends Phaser.Scene {
   }
 
   private drawRoom(): void {
-    const g = this.add.graphics();
-    g.fillStyle(0x111918, 1).fillRect(0, 0, 960, 540);
-    g.fillStyle(0x263733, 1).fillRect(48, 44, 864, 448);
-    g.fillStyle(0x53645a, 1).fillRect(74, 72, 812, 396);
+    this.add.image(480, 270, "welfare-classroom")
+      .setDisplaySize(960, 540)
+      .setDepth(0);
 
-    for (let y = 82; y < 465; y += 34) {
-      g.lineStyle(1, 0xb8c1a9, 0.08).lineBetween(76, y, 884, y);
-    }
-    for (let x = 84; x < 884; x += 42) {
-      g.lineStyle(1, 0xb8c1a9, 0.05).lineBetween(x, 74, x, 468);
-    }
+    const teacher = this.add.image(480, 164, "character-domitoriell")
+      .setDisplaySize(70, 96)
+      .setDepth(14);
+    this.tweens.add({
+      targets: teacher,
+      y: 161,
+      duration: 2100,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.InOut",
+    });
+    this.add.text(480, 104, "도미토리엘", {
+      fontFamily: "'Noto Sans KR', sans-serif",
+      fontSize: "12px",
+      color: "#f0dfbd",
+      backgroundColor: "#294644",
+      padding: { x: 6, y: 3 },
+    }).setOrigin(0.5).setDepth(15);
 
-    // Warm central rug, intentionally irregular rather than a generic rectangle.
-    g.fillStyle(0x384842, 1).fillEllipse(480, 330, 470, 190);
-    g.lineStyle(2, 0xd2bd88, 0.35).strokeEllipse(480, 330, 450, 170);
-    g.lineStyle(1, 0xd2bd88, 0.18).strokeEllipse(480, 330, 380, 125);
-
-    // Books / student traces.
-    for (let i = 0; i < 11; i += 1) {
-      const x = 94 + i * 9;
-      const h = 18 + (i % 4) * 5;
-      g.fillStyle(i % 2 ? 0x8a735d : 0x6d7f71, 0.9).fillRect(x, 400 - h, 7, h);
-    }
-    g.fillStyle(0x172222, 0.8).fillRect(88, 408, 116, 10);
-    g.fillStyle(0xcbbd95, 0.5).fillRect(103, 413, 68, 2);
-
-    // Puzzle station.
-    g.fillStyle(0x3b4c47, 1).fillRoundedRect(414, 236, 142, 86, 12);
-    g.lineStyle(2, 0xd5c28e, 0.55).strokeRoundedRect(414, 236, 142, 86, 12);
-    for (let i = 0; i < 3; i += 1) {
-      g.fillStyle([0x8a6e62, 0x6d8a7b, 0xb5a26f][i], 1).fillCircle(447 + i * 38, 279, 13);
-    }
-    g.fillStyle(0xded2b2, 0.35).fillRect(439, 302, 91, 3);
-
-    // Proggithub: a friendly terminal-like teaching creature, not a copied character.
-    g.fillStyle(0x1b2728, 1).fillRoundedRect(686, 222, 84, 90, 18);
-    g.lineStyle(2, 0x8fb0a0, 0.6).strokeRoundedRect(686, 222, 84, 90, 18);
-    g.fillStyle(0x9ec0ad, 0.85).fillCircle(712, 254, 6);
-    g.fillStyle(0x9ec0ad, 0.85).fillCircle(744, 254, 6);
-    g.lineStyle(2, 0x9ec0ad, 0.7).lineBetween(710, 278, 748, 278);
-    g.fillStyle(0x263a35, 1).fillRoundedRect(702, 290, 52, 10, 5);
-
-    // Second-rank student.
-    g.fillStyle(0x2a3940, 1).fillRoundedRect(166, 218, 78, 92, 24);
-    g.fillStyle(0xd5c29f, 1).fillCircle(205, 198, 29);
-    g.fillStyle(0x303b40, 1).fillEllipse(205, 182, 56, 24);
-    g.fillStyle(0x20272a, 1).fillCircle(195, 199, 3);
-    g.fillStyle(0x20272a, 1).fillCircle(215, 199, 3);
-    g.fillStyle(0xd9d0bd, 1).fillRect(155, 266, 100, 45);
-    g.fillStyle(0x6d7d77, 0.45).fillRect(165, 274, 80, 3);
-    g.fillStyle(0x6d7d77, 0.45).fillRect(165, 285, 60, 3);
-
-    // Exit / inner door.
-    g.fillStyle(0x17201f, 1).fillRoundedRect(420, 60, 120, 50, 10);
-    g.lineStyle(2, 0xd0bd89, 0.6).strokeRoundedRect(420, 60, 120, 50, 10);
-    g.fillStyle(0xbba77b, 0.55).fillCircle(522, 85, 4);
+    const proggithub = this.add.image(728, 264, "character-proggithub")
+      .setDisplaySize(62, 78)
+      .setDepth(14);
+    this.tweens.add({
+      targets: proggithub,
+      y: 260,
+      duration: 1600,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.InOut",
+    });
+    const secondRank = this.add.image(205, 251, "character-second-rank")
+      .setDisplaySize(58, 82)
+      .setDepth(14);
+    this.tweens.add({
+      targets: secondRank,
+      y: 249,
+      duration: 2350,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.InOut",
+    });
 
     this.add.text(480, 24, "교육복지반", {
-      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
+      fontFamily: "'Noto Serif KR', serif",
       fontSize: "20px",
-      color: "#efe6cf",
-    }).setOrigin(0.5);
+      color: "#efe5cb",
+      stroke: "#213a39",
+      strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(18);
 
-    this.add.text(480, 128, "안전한 길을 배우는 곳. 하지만 안전과 선택은 같은 말이 아닐지도 모른다.", {
-      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
+    this.add.text(480, 130, "안전한 길을 배우는 곳. 하지만 안전과 선택은 같은 말이 아닐지도 모른다.", {
+      fontFamily: "'Noto Sans KR', sans-serif",
       fontSize: "12px",
-      color: "#b9c3b6",
-    }).setOrigin(0.5);
+      color: "#d1d1b7",
+      stroke: "#203a39",
+      strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(18);
+  }
+
+  private collides(x: number, y: number): boolean {
+    const obstacles = [
+      { left: 414, top: 236, right: 556, bottom: 322 },
+      { left: 686, top: 222, right: 770, bottom: 312 },
+      { left: 166, top: 218, right: 244, bottom: 310 },
+      { left: 88, top: 370, right: 204, bottom: 418 },
+      { left: 447, top: 125, right: 513, bottom: 203 },
+    ];
+    const radius = 12;
+    return obstacles.some((obstacle) => {
+      const closestX = Phaser.Math.Clamp(x, obstacle.left, obstacle.right);
+      const closestY = Phaser.Math.Clamp(y, obstacle.top, obstacle.bottom);
+      return Math.hypot(x - closestX, y - closestY) < radius;
+    });
   }
 
   private drawPlayer(): void {
-    const g = this.player;
-    g.clear();
-    g.fillStyle(0x0c1213, 0.45).fillEllipse(this.x, this.y + 18, 34, 12);
-    g.fillStyle(0x4a6570, 1).fillRoundedRect(this.x - 14, this.y - 1, 28, 36, 7);
-    g.fillStyle(0xd7c4a2, 1).fillCircle(this.x, this.y - 12, 12);
-    g.fillStyle(0x303a3e, 1).fillEllipse(this.x, this.y - 22, 25, 8);
-    g.fillStyle(0x1d2729, 1).fillCircle(this.x - 4, this.y - 12, 1.4);
-    g.fillStyle(0x1d2729, 1).fillCircle(this.x + 4, this.y - 12, 1.4);
+    this.player.setPosition(this.x, this.y);
   }
 
   private drawHud(): void {
@@ -228,6 +235,12 @@ export class RoomScene extends Phaser.Scene {
     if (!target) return;
 
     switch (target.id) {
+      case "domitoriell":
+        this.openDialogue("도미토리엘", [
+          "괜찮니? 조금 전에는 정말 놀랐겠구나.",
+          "천천히 둘러보렴. 여기 있는 것들은 네가 직접 살펴보고 결정해도 괜찮단다.",
+        ], ["첫 퍼즐을 알려 주세요.", "불리에 대해 물어본다.", "혼자 둘러볼게요."]);
+        break;
       case "puzzle":
         this.runPuzzle();
         break;
@@ -290,7 +303,7 @@ export class RoomScene extends Phaser.Scene {
     WELFARE_EVENTS.secondRankSeen();
   }
 
-  private openDialogue(speaker: string, lines: string[], choices?: string[]): void {
+  private openDialogue(speaker: string, lines: readonly string[], choices?: readonly string[]): void {
     this.clearDialogue();
     this.dialogue = { speaker, lines, page: 0, choices, choiceIndex: 0 };
     this.renderDialogue();
@@ -308,15 +321,46 @@ export class RoomScene extends Phaser.Scene {
         d.choiceIndex = (d.choiceIndex + 1) % d.choices.length;
         this.renderDialogue();
       } else if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
-        if (d.speaker === "첫 퍼즐") {
-          this.resolvePuzzleChoice(d.choiceIndex);
+        const selected = d.choiceIndex;
+        const speaker = d.speaker;
+        if (speaker === "첫 퍼즐") {
+          this.resolvePuzzleChoice(selected);
         } else {
           this.clearDialogue();
-          if (d.speaker === "프로깃허브" && d.choiceIndex === 2) {
-            this.openDialogue("프로깃허브", [
-              "자비를 선택하려는 태도를 확인했다.",
-              "하지만 전투 메뉴 자체를 익히는 것이 먼저다. 이제 다음 조우에서는 직접 판단해 보렴.",
-            ]);
+          if (speaker === "도미토리엘") {
+            if (selected === 0) {
+              this.openDialogue("도미토리엘", [
+                "물론이지. 세 표식의 빛이 남기는 순서를 잘 살펴보렴.",
+                "서두르지 않아도 돼. 틀리면 다시 시도할 수 있단다.",
+              ]);
+            } else if (selected === 1) {
+              this.openDialogue("도미토리엘", [
+                "그 아이는 낯선 사람과 눈을 마주치는 걸 어려워한단다.",
+                "조금 시간이 지나면 네게도 말을 걸어 줄지 모르지.",
+              ]);
+            } else {
+              this.openDialogue("도미토리엘", [
+                "그래. 네가 직접 보고 판단하는 것도 좋은 방법이란다.",
+                "나는 여기 있을 테니 도움이 필요하면 불러 주렴.",
+              ]);
+            }
+          } else if (speaker === "프로깃허브") {
+            if (selected === 0) {
+              this.openDialogue("프로깃허브", [
+                "말을 건다는 것은 상대의 말을 들어 보겠다는 뜻이기도 하다.",
+                "상대가 어떤 표정을 짓는지도 살펴보렴.",
+              ]);
+            } else if (selected === 1) {
+              this.openDialogue("프로깃허브", [
+                "행동을 고르기 전에 상대의 상태를 관찰할 수 있다.",
+                "같은 행동도 상황에 따라 다른 결과를 낳을 수 있다.",
+              ]);
+            } else {
+              this.openDialogue("프로깃허브", [
+                "자비를 선택하려는 태도를 확인했다.",
+                "하지만 전투 메뉴 자체를 익히는 것이 먼저다. 이제 다음 조우에서는 직접 판단해 보렴.",
+              ]);
+            }
           }
         }
       }

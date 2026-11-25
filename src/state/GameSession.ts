@@ -10,6 +10,9 @@ export interface GameSessionState {
   determinationCount: number;
   bullyRescued: boolean;
   bullyHits: number;
+  openingPrologueViewed: boolean;
+  bullyEncountered: boolean;
+  openingRescued: boolean;
 }
 
 const initialState = (): GameSessionState => ({
@@ -24,6 +27,9 @@ const initialState = (): GameSessionState => ({
   determinationCount: 0,
   bullyRescued: false,
   bullyHits: 0,
+  openingPrologueViewed: false,
+  bullyEncountered: false,
+  openingRescued: false,
 });
 
 let state = initialState();
@@ -64,5 +70,18 @@ export const GameSession = {
 
   resolveDomitoriellPeacefully(): void {
     state.domitoriellPeaceResolved = true;
+  },
+
+  markPrologueViewed(): void {
+    state.openingPrologueViewed = true;
+  },
+
+  markBullyEncountered(): void {
+    state.bullyEncountered = true;
+  },
+
+  completeOpeningRescue(): void {
+    state.bullyRescued = true;
+    state.openingRescued = true;
   },
 };

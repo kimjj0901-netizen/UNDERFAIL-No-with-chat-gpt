@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+<defs>
+ <linearGradient id="desk" x2="0" y2="1"><stop stop-color="#29383a"/><stop offset="1" stop-color="#111d23"/></linearGradient>
+ <linearGradient id="paper" x2=".9" y2="1"><stop stop-color="#eee0bd"/><stop offset="1" stop-color="#bca987"/></linearGradient>
+ <linearGradient id="sleeve" x2="1" y2="1"><stop stop-color="#203a43"/><stop offset="1" stop-color="#0d1b24"/></linearGradient>
+ <filter id="shadow"><feGaussianBlur stdDeviation="10"/></filter>
+ <pattern id="fiber" width="18" height="14" patternUnits="userSpaceOnUse"><path d="M2 4l8-1M12 11l4-1" stroke="#7e715b" opacity=".16"/><circle cx="14" cy="3" r=".7" fill="#6e604d" opacity=".2"/></pattern>
+</defs>
+<rect width="960" height="540" fill="url(#desk)"/>
+<path d="M40 60Q300 0 520 62T940 46V500H40Z" fill="#17292f" opacity=".8"/>
+<rect x="110" y="58" width="740" height="430" rx="3" fill="#000" opacity=".4" filter="url(#shadow)"/>
+<g transform="rotate(-2 480 270)">
+ <rect x="126" y="48" width="708" height="440" rx="3" fill="url(#paper)" stroke="#f5e8ca" stroke-width="5"/>
+ <rect x="145" y="68" width="670" height="399" fill="none" stroke="#85785f" stroke-width="1.5" opacity=".7"/>
+ <rect x="126" y="48" width="708" height="440" fill="url(#fiber)"/>
+ <text x="480" y="112" text-anchor="middle" font-family="serif" font-size="29" letter-spacing="3" fill="#303b39">폐교 확인서</text>
+ <path d="M226 130H734" stroke="#8c7c60" stroke-width="2"/>
+ <text x="228" y="165" font-family="sans-serif" font-size="18" fill="#3c403b">성적 부진으로 인한 폐교 확인서</text>
+ <text x="228" y="194" font-family="sans-serif" font-size="12" fill="#70664f">합주곡 혼합고등학교 · 확인 절차</text>
+ <rect x="226" y="218" width="292" height="154" fill="#d6c7a7" stroke="#756b56" stroke-width="3"/>
+ <rect x="234" y="226" width="276" height="138" fill="#8a8c7a"/>
+ <path d="M236 312Q294 276 354 299T508 292V362H236Z" fill="#465b57"/>
+ <path d="M266 306V266L286 248H455L477 266V306Z" fill="#45534c"/>
+ <path d="M253 265L370 225L487 265Z" fill="#6c6554"/>
+ <g fill="#e3d4b2"><rect x="286" y="270" width="22" height="25"/><rect x="326" y="270" width="22" height="25"/><rect x="409" y="270" width="22" height="25"/></g>
+ <g fill="#29383a"><circle cx="291" cy="333" r="13"/><circle cx="335" cy="330" r="12"/><circle cx="378" cy="334" r="13"/><circle cx="423" cy="330" r="12"/><circle cx="468" cy="335" r="12"/></g>
+ <path d="M279 347L267 365M304 347L312 365M324 345L314 364M347 344L355 365M367 347L361 365M391 347L400 365M412 345L406 364M436 345L444 364M457 347L451 365M479 347L489 365" stroke="#e0d0ad" stroke-width="5"/>
+ <g fill="#41443d" font-family="sans-serif" font-size="13"><text x="548" y="242">확인 항목</text><text x="548" y="271">□ 학교 운영 종료</text><text x="548" y="298">□ 학생 기록 이관</text><text x="548" y="325">□ 교직원 서류 확인</text></g>
+ <path d="M225 400H735M225 420H735" stroke="#92846b" opacity=".5"/>
+ <text x="228" y="449" font-family="serif" font-size="13" fill="#5b574a">확인일: ________</text>
+ <g transform="translate(680 378) rotate(-11)">
+  <circle r="49" fill="none" stroke="#9d3f3d" stroke-width="5" opacity=".8"/>
+  <circle r="39" fill="none" stroke="#9d3f3d" stroke-width="2" opacity=".8"/>
+  <text text-anchor="middle" y="8" font-family="serif" font-size="23" fill="#9d3f3d" opacity=".9">확 인</text>
+  <path d="M-33 -28L31 29M-26 34L35 -29" stroke="#9d3f3d" stroke-width="2" opacity=".45"/>
+ </g>
+</g>
+<!-- only a hand, cuff and seal are visible; the face remains outside the frame -->
+<path d="M960 0H725Q692 28 688 72L706 121Q735 153 777 169L870 196Q915 190 960 162Z" fill="url(#sleeve)" stroke="#425b5e" stroke-width="4"/>
+<path d="M742 112Q765 93 798 103L859 136Q877 151 859 171Q844 189 821 174L757 148Q729 138 742 112Z" fill="#c9b392" stroke="#675b4d" stroke-width="4"/>
+<path d="M762 122L826 151M778 108L842 137" stroke="#e7d6b7" stroke-width="5" opacity=".45"/>
+<path d="M711 80L730 103L720 132" fill="none" stroke="#b39a6b" stroke-width="7"/>
+<path d="M735 67L753 55L771 71L753 88Z" fill="#bca775" stroke="#e5d0a0" stroke-width="2"/>
+<path d="M748 68L753 62L759 69L753 77Z" fill="#31464a"/>
+<path d="M825 202Q840 219 832 242" stroke="#a8c0c4" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+<path d="M833 238Q849 257 840 270Q830 277 827 260Q825 249 833 238Z" fill="#d9e4df" opacity=".85"/>
+<rect width="960" height="540" fill="#0b1720" opacity=".13"/>
+</svg>

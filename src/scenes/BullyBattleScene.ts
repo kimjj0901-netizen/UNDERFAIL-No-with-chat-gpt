@@ -1,10 +1,11 @@
 import Phaser from "phaser";
+import { Atmosphere } from "../audio/Atmosphere";
 import { GameSession } from "../state/GameSession";
 
-type Mode = "intro" | "menu" | "dodge" | "rescue";
+type Mode = "intro" | "menu" | "response" | "dodge" | "rescue";
 
 type Glyph = {
-  object: Phaser.GameObjects.Arc;
+  object: Phaser.GameObjects.Image;
   vx: number;
   vy: number;
 };
@@ -13,7 +14,7 @@ export class BullyBattleScene extends Phaser.Scene {
   private mode: Mode = "intro";
   private menuIndex = 0;
   private glyphs: Glyph[] = [];
-  private player?: Phaser.GameObjects.Text;
+  private player?: Phaser.GameObjects.Image;
   private enemy?: Phaser.GameObjects.Container;
   private panel?: Phaser.GameObjects.Rectangle;
   private message?: Phaser.GameObjects.Text;
@@ -22,8 +23,9 @@ export class BullyBattleScene extends Phaser.Scene {
   private dodgeTime = 0;
   private spawnTime = 0;
   private patternIndex = 0;
+  // [제안/PROTOTYPE] This encounter-only count is not a route-wide canon rule.
   private actCount = 0;
-  private rescued = false;
+  private lastHitAt = -1000;
 
   constructor() {
     super("BullyBattleScene");
@@ -32,6 +34,7 @@ export class BullyBattleScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setBackgroundColor("#090e11");
     this.keys = this.makeKeys();
+    this.lastHitAt = -1000;
     this.drawArena();
     this.showIntro();
   }
@@ -39,6 +42,10 @@ export class BullyBattleScene extends Phaser.Scene {
   update(_time: number, delta: number): void {
     if (this.mode === "dodge") this.updateDodge(delta);
     if (this.mode === "menu") this.updateMenu();
+    if (this.mode === "response" &&
+        (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space))) {
+      this.beginDodge();
+    }
   }
 
   private makeKeys(): Record<string, Phaser.Input.Keyboard.Key> {
@@ -60,9 +67,11 @@ export class BullyBattleScene extends Phaser.Scene {
   }
 
   private drawArena(): void {
+    this.add.image(480, 270, "opening-flower-field")
+      .setDisplaySize(960, 540)
+      .setAlpha(0.72);
+    this.add.rectangle(480, 270, 960, 540, 0x07121b, 0.48);
     const g = this.add.graphics();
-    g.fillGradientStyle(0x111a1d, 0x111a1d, 0x241c23, 0x15191b, 1);
-    g.fillRect(0, 0, 960, 540);
 
     for (let i = 0; i < 22; i += 1) {
       const x = 35 + i * 43;
@@ -75,33 +84,32 @@ export class BullyBattleScene extends Phaser.Scene {
     g.lineStyle(1, 0x56645f, 0.8).strokeRect(58, 80, 844, 366);
 
     this.enemy = this.drawEnemy();
-    this.add.text(84, 92, "BULLY / 첫 번째 조우", {
-      fontFamily: "monospace",
-      fontSize: "11px",
-      color: "#a5b0a6",
-    });
+    this.add.text(84, 92, "첫 번째 조우   /   꽃밭", {
+      fontFamily: "'Noto Sans KR', sans-serif",
+      fontSize: "12px",
+      color: "#d8c9a7",
+      backgroundColor: "#17272a",
+      padding: { x: 9, y: 5 },
+    }).setDepth(10);
   }
 
   private drawEnemy(): Phaser.GameObjects.Container {
     const c = this.add.container(480, 188);
-    const g = this.add.graphics();
-    g.fillStyle(0x4b3b43, 1).fillRoundedRect(-52, -4, 104, 86, 28);
-    g.fillStyle(0xb4a3a4, 1).fillCircle(0, -47, 45);
-    g.fillStyle(0x2b242b, 1).fillEllipse(0, -66, 84, 30);
-    g.fillStyle(0x171b1c, 1).fillCircle(-14, -46, 5);
-    g.fillStyle(0x171b1c, 1).fillCircle(14, -46, 5);
-    g.lineStyle(3, 0x6d4850, 0.9).lineBetween(-15, -26, 15, -26);
-
-    const seal = this.add.graphics();
-    seal.lineStyle(2, 0xb77a87, 0.45).strokeCircle(0, 16, 72);
-    seal.lineStyle(1, 0xe5c798, 0.2).strokeCircle(0, 16, 90);
-    c.add([seal, g]);
+    const aura = this.add.graphics();
+    aura.lineStyle(2, 0xc58d8d, 0.3).strokeCircle(0, 8, 82);
+    aura.lineStyle(1, 0xe5d1a9, 0.23).strokeCircle(0, 8, 98);
+    const portrait = this.add.image(0, 0, "character-bully").setDisplaySize(94, 126);
+    c.add([aura, portrait]);
     return c;
   }
 
   private showIntro(): void {
     this.mode = "intro";
-    this.message = this.add.text(84, 332,
+    Atmosphere.setMood("uneasy");
+    const panel = this.add.rectangle(480, 383, 864, 148, 0x0c1820, 0.94)
+      .setStrokeStyle(2, 0xb6a47d, 0.92)
+      .setDepth(25);
+    this.message = this.add.text(82, 334,
       "불리는 친근한 척 손을 내민다.\n" +
       "그 손끝에서 이상한 상징들이 번뜩인다.\n" +
       "좋은 것이라고 말하지만, 당신은 본능적으로 거리를 둔다.",
@@ -111,15 +119,17 @@ export class BullyBattleScene extends Phaser.Scene {
         color: "#efe5cf",
         lineSpacing: 10,
       },
-    );
-    this.hint = this.add.text(84, 430, "ENTER  —  전투 규칙을 확인한다", {
+    ).setDepth(26);
+    this.hint = this.add.text(878, 438, "ENTER  —  계속", {
       fontFamily: "monospace",
       fontSize: "12px",
       color: "#d2be88",
-    });
+    }).setOrigin(1, 0.5).setDepth(26);
+    this.uiObjects.push(panel);
 
     this.input.keyboard?.once("keydown-ENTER", () => this.openMenu());
     this.input.keyboard?.once("keydown-SPACE", () => this.openMenu());
+    this.input.once("pointerdown", () => this.openMenu());
   }
 
   private openMenu(): void {
@@ -130,28 +140,49 @@ export class BullyBattleScene extends Phaser.Scene {
   }
 
   private renderMenu(): void {
+    this.message?.destroy();
+    this.message = undefined;
     this.clearMenu();
+    const menuPanel = this.add.rectangle(480, 414, 874, 158, 0x0b171e, 0.96)
+      .setStrokeStyle(2, 0xb6a47d, 0.94)
+      .setDepth(28);
     const options = ["FIGHT", "ACT", "ITEM", "MERCY"];
+    const descriptions = ["밀어내기", "상황 살피기", "소지품", "물러나기"];
     options.forEach((label, index) => {
+      const x = 150 + index * 220;
       const selected = index === this.menuIndex;
-      const t = this.add.text(120 + index * 220, 474, (selected ? "▶ " : "  ") + label, {
+      const card = this.add.rectangle(x, 460, 186, 58,
+        selected ? 0x3c5148 : 0x17262b, selected ? 0.98 : 0.88)
+        .setStrokeStyle(selected ? 2 : 1, selected ? 0xe1c68d : 0x64746a, selected ? 1 : 0.75)
+        .setDepth(29)
+        .setInteractive({ useHandCursor: true });
+      const title = this.add.text(x, 449, label, {
         fontFamily: "Georgia, serif",
-        fontSize: "22px",
-        color: selected ? "#f2d58f" : "#bfc7bf",
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-      t.on("pointerdown", () => {
+        fontSize: "17px",
+        fontStyle: "bold",
+        color: selected ? "#f4e5bf" : "#c5c7ba",
+        letterSpacing: 1,
+      }).setOrigin(0.5).setDepth(30);
+      const subtitle = this.add.text(x, 472, descriptions[index] ?? "", {
+        fontFamily: "'Noto Sans KR', sans-serif",
+        fontSize: "10px",
+        color: selected ? "#e0d2b4" : "#96a398",
+      }).setOrigin(0.5).setDepth(30);
+      card.on("pointerdown", () => {
         this.menuIndex = index;
         this.confirmMenu();
       });
-      this.menuObjects.push(t);
+      this.menuObjects.push(card, title, subtitle);
     });
+    this.menuObjects.push(menuPanel);
 
     this.message = this.add.text(84, 330, this.getMenuDescription(), {
       fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
       fontSize: "16px",
-      color: "#d9d5c4",
+      color: "#e7dfcc",
       wordWrap: { width: 790 },
-    });
+      lineSpacing: 7,
+    }).setDepth(30);
   }
 
   private menuObjects: Phaser.GameObjects.Text[] = [];
@@ -187,24 +218,43 @@ export class BullyBattleScene extends Phaser.Scene {
     }
 
     if (this.menuIndex === 3) {
-      this.message?.setText("불리는 웃으며 고개를 젓는다.\n그는 당신이 경계하기를 기다렸던 것 같다.");
-      this.beginDodge();
+      this.showResponse("불리는 웃으며 고개를 젓는다.\n그는 당신이 경계하기를 기다렸던 것 같다.");
       return;
     }
 
     if (this.menuIndex === 0) {
-      this.message?.setText("당신은 한 걸음 물러서지 않는다.\n그러자 불리의 표식이 더 빠르게 번뜩인다.");
-      this.beginDodge();
+      this.showResponse("당신은 한 걸음 물러서지 않는다.\n그러자 불리의 표식이 더 빠르게 번뜩인다.");
       return;
     }
 
     this.actCount += 1;
-    this.message?.setText(
+    this.showResponse(
       this.actCount === 1
         ? "당신은 그가 내미는 것을 받지 않겠다고 분명히 말했다."
         : "당신은 다시 한 번 스스로 선택하겠다고 말했다.\n불리의 표정이 잠깐 굳는다.",
     );
-    this.beginDodge();
+  }
+
+  private showResponse(text: string): void {
+    this.mode = "response";
+    this.clearMenu();
+    this.message?.destroy();
+    this.message = this.add.text(480, 362, text, {
+      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
+      fontSize: "17px",
+      color: "#f1e6d0",
+      backgroundColor: "#0c1820",
+      padding: { x: 22, y: 15 },
+      align: "center",
+      wordWrap: { width: 760 },
+      lineSpacing: 8,
+    }).setOrigin(0.5).setDepth(32);
+    this.hint?.destroy();
+    this.hint = this.add.text(878, 438, "ENTER  —  회피 구간으로", {
+      fontFamily: "monospace",
+      fontSize: "11px",
+      color: "#d7c493",
+    }).setOrigin(1, 0.5).setDepth(32);
   }
 
   private beginDodge(): void {
@@ -212,6 +262,8 @@ export class BullyBattleScene extends Phaser.Scene {
     this.clearMenu();
     this.message?.destroy();
     this.message = undefined;
+    this.hint?.destroy();
+    this.hint = undefined;
 
     const arena = this.add.graphics().setDepth(30);
     arena.fillStyle(0x070b0d, 0.98).fillRect(276, 218, 408, 196);
@@ -219,18 +271,16 @@ export class BullyBattleScene extends Phaser.Scene {
     arena.lineStyle(1, 0x5b6962, 0.8).strokeRect(286, 228, 388, 176);
     this.uiObjects.push(arena);
 
-    this.player = this.add.text(480, 315, "♥", {
-      fontFamily: "serif",
-      fontSize: "25px",
-      color: "#f0d18c",
-    }).setOrigin(0.5).setDepth(35);
+    this.player = this.add.image(480, 315, "battle-marker")
+      .setDisplaySize(24, 24)
+      .setDepth(35);
 
     this.dodgeTime = 0;
     this.spawnTime = 0;
     this.patternIndex = 0;
 
     this.hint?.destroy();
-    this.hint = this.add.text(480, 434, "WASD / 방향키로 회피 · ENTER로 다시 메뉴", {
+    this.hint = this.add.text(480, 434, "방향키 / WASD로 이동해 빛무늬를 피하자", {
       fontFamily: "monospace",
       fontSize: "11px",
       color: "#aab3a8",
@@ -242,6 +292,7 @@ export class BullyBattleScene extends Phaser.Scene {
   private updateDodge(delta: number): void {
     this.dodgeTime += delta;
     this.spawnTime += delta;
+    const frameSeconds = Math.min(delta, 40) / 1000;
 
     let dx = 0;
     let dy = 0;
@@ -253,8 +304,8 @@ export class BullyBattleScene extends Phaser.Scene {
     if (dx || dy) {
       const len = Math.hypot(dx, dy) || 1;
       this.player?.setPosition(
-        Phaser.Math.Clamp((this.player?.x ?? 480) + (dx / len) * 220 * (delta / 1000), 296, 664),
-        Phaser.Math.Clamp((this.player?.y ?? 315) + (dy / len) * 220 * (delta / 1000), 238, 394),
+        Phaser.Math.Clamp((this.player?.x ?? 480) + (dx / len) * 220 * frameSeconds, 296, 664),
+        Phaser.Math.Clamp((this.player?.y ?? 315) + (dy / len) * 220 * frameSeconds, 238, 394),
       );
     }
 
@@ -265,13 +316,21 @@ export class BullyBattleScene extends Phaser.Scene {
 
     const next: Glyph[] = [];
     for (const glyph of this.glyphs) {
-      glyph.object.x += glyph.vx * (delta / 1000);
-      glyph.object.y += glyph.vy * (delta / 1000);
+      glyph.object.x += glyph.vx * frameSeconds;
+      glyph.object.y += glyph.vy * frameSeconds;
+      glyph.object.rotation += (delta / 1000) * (glyph.vx > 0 ? 1.8 : -1.8);
       const px = this.player?.x ?? 480;
       const py = this.player?.y ?? 315;
-      if (Math.hypot(px - glyph.object.x, py - glyph.object.y) < 18) {
+      if (Math.hypot(px - glyph.object.x, py - glyph.object.y) < 20) {
         glyph.object.destroy();
-        GameSession.get().bullyHits += 1;
+        if (this.time.now - this.lastHitAt > 700) {
+          this.lastHitAt = this.time.now;
+          GameSession.get().bullyHits += 1;
+          this.player?.setAlpha(0.42);
+          if (this.player) {
+            this.tweens.add({ targets: this.player, alpha: 1, duration: 360, ease: "Sine.InOut" });
+          }
+        }
       } else if (glyph.object.x > 270 && glyph.object.x < 690 && glyph.object.y > 220 && glyph.object.y < 410) {
         next.push(glyph);
       } else {
@@ -289,8 +348,9 @@ export class BullyBattleScene extends Phaser.Scene {
     const x = side === 0 ? 290 : 670;
     const vx = side === 0 ? 135 : -135;
     const vy = this.patternIndex % 3 === 0 ? 16 : -12;
-    const glyph = this.add.circle(x, y, 9, 0xa85c72, 0.88)
-      .setStrokeStyle(2, 0xe4c38d, 0.5)
+    const glyph = this.add.image(x, y, "promise-petal")
+      .setDisplaySize(20, 20)
+      .setAlpha(0.92)
       .setDepth(34);
     this.glyphs.push({ object: glyph, vx, vy });
     this.patternIndex += 1;
@@ -305,7 +365,6 @@ export class BullyBattleScene extends Phaser.Scene {
     this.mode = "menu";
 
     if (this.actCount >= 2) {
-      this.rescued = true;
       this.showRescue();
       return;
     }
@@ -316,39 +375,59 @@ export class BullyBattleScene extends Phaser.Scene {
   private showRescue(): void {
     this.mode = "rescue";
     this.clearMenu();
+    this.message?.destroy();
+    this.message = undefined;
     this.enemy?.setAlpha(0.35);
 
-    const burst = this.add.graphics().setDepth(40);
-    burst.lineStyle(5, 0xe0d0a2, 0.8);
-    burst.strokeCircle(480, 185, 55);
-    burst.lineStyle(2, 0x8db3a4, 0.8);
-    burst.strokeCircle(480, 185, 90);
+    const arc = this.add.image(480, 236, "rescue-arc")
+      .setDisplaySize(820, 290)
+      .setDepth(39)
+      .setAlpha(0);
+    this.tweens.add({ targets: arc, alpha: 0.95, duration: 650, ease: "Sine.Out" });
+    const teacher = this.add.image(152, 195, "character-domitoriell")
+      .setDisplaySize(96, 132)
+      .setDepth(40)
+      .setAlpha(0);
+    this.tweens.add({ targets: teacher, alpha: 1, x: 190, duration: 720, ease: "Cubic.Out" });
+    this.tweens.add({ targets: this.enemy, x: 760, alpha: 0.24, duration: 720, delay: 180, ease: "Cubic.In" });
+    Atmosphere.setMood("rescue");
+    Atmosphere.cue("barrier");
 
-    this.message = this.add.text(84, 320,
+    this.add.rectangle(480, 407, 874, 174, 0x0b1720, 0.97)
+      .setStrokeStyle(2, 0xbfae86, 0.96)
+      .setDepth(41);
+    this.add.text(76, 345, "도미토리엘", {
+      fontFamily: "'Noto Serif KR', serif",
+      fontSize: "15px",
+      color: "#e9d09a",
+    }).setDepth(42);
+    this.message = this.add.text(76, 378,
       "불리가 다시 손을 뻗는 순간, 다른 힘이 사이를 가른다.\n" +
       "도미토리엘이 나타나 불리의 표식을 밀어내고 당신 앞에 선다.\n\n" +
-      "불리: "...이 정도로까지 할 줄은 몰랐네."\n" +
-      "도미토리엘: "그 아이에게 손대지 마."",
+      "불리: “...이 정도로까지 할 줄은 몰랐네.”\n" +
+      "도미토리엘: “그 아이에게 손대지 마.”",
       {
         fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
-        fontSize: "17px",
+        fontSize: "16px",
         color: "#f1ead7",
-        lineSpacing: 8,
+        lineSpacing: 7,
       },
-    ).setDepth(41);
+    ).setDepth(42);
 
-    this.hint = this.add.text(480, 455, "ENTER  —  교육복지반으로 이동", {
+    this.hint = this.add.text(878, 476, "ENTER  —  교육복지반으로", {
       fontFamily: "monospace",
-      fontSize: "12px",
+      fontSize: "11px",
       color: "#e0cb8f",
-    }).setOrigin(0.5).setDepth(41);
+    }).setOrigin(1, 0.5).setDepth(42);
 
     this.input.keyboard?.once("keydown-ENTER", this.enterWelfare);
     this.input.keyboard?.once("keydown-SPACE", this.enterWelfare);
+    this.input.once("pointerdown", this.enterWelfare);
   }
 
   private enterWelfare = (): void => {
-    GameSession.get().bullyRescued = true;
+    GameSession.completeOpeningRescue();
+    Atmosphere.setMood("warm");
     this.scene.start("RoomScene");
   };
 

@@ -124,3 +124,20 @@ BootScene
 - Scene 전환 중 중복 입력·중복 타이머·중복 이벤트가 생기지 않아야 한다.
 - Scene을 재시작하거나 전환해도 필요한 세션 상태가 유지되어야 한다.
 - 임시 대사·수치·도형은 찾아 바꾸기 쉬워야 한다.
+
+
+## 9. 2026-11-26 Scene 및 자산 로딩 업데이트
+
+현재 구현의 시작 구간 Scene 경계는 다음과 같다.
+
+- BootScene: SVG 및 공유 자산 적재
+- TitleScene
+- NameEntryScene
+- PrologueScene
+- FlowerFieldScene
+- BullyBattleScene
+- RoomScene
+
+논리 해상도 960×540 및 FIT/중앙 정렬은 유지한다. SVG 에셋은 BootScene의 Phaser SVG loader를 통해 공용 텍스처로 읽는다. 오프닝 페이지 메타데이터는 src/data/openingContent.ts로 분리하고, 분위기 오디오 프로토타입은 src/audio/Atmosphere.ts에 둔다. Web Audio는 브라우저 사용자 제스처 이후에만 활성화하며 실제 음악 파일이나 원작 선율을 포함하지 않는다.
+
+캐릭터 방향별 걷기 프레임, 감정별 얼굴 시트, 최종 픽셀 규격 및 배경 레이어 편집 체계는 아직 구현 과제다. STORY_CONTROL_PANEL.md는 현재 브랜치 트리에서 발견하지 못했다. 존재한다고 가정하지 않는다.

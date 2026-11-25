@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { Atmosphere } from "../audio/Atmosphere";
 
 export class TitleScene extends Phaser.Scene {
   constructor() {
@@ -7,74 +8,77 @@ export class TitleScene extends Phaser.Scene {
 
   create(): void {
     const { width, height } = this.scale;
-    this.cameras.main.setBackgroundColor("#10151b");
+    const backdrop = this.add.image(width / 2, height / 2, "title-art").setDisplaySize(width, height);
+    backdrop.setAlpha(0.96);
 
-    const art = this.add.graphics();
-    art.fillStyle(0x18232b, 1).fillRect(0, 0, width, height);
-    art.fillStyle(0x263943, 1).fillRect(0, 0, width, 8);
-    art.lineStyle(1, 0xb6a77a, 0.7).strokeRect(112, 86, 736, 370);
-
-    for (let i = 0; i < 28; i += 1) {
-      const x = 140 + ((i * 137) % 680);
-      const y = 105 + ((i * 71) % 330);
-      this.add.circle(x, y, i % 3 === 0 ? 2 : 1, 0xc2b58b, 0.35);
-    }
-
-    this.add.text(width / 2, 154, "PUNG HWA YANG SANG HIGH SCHOOL", {
+    this.add.rectangle(width / 2, 270, width, height, 0x07131b, 0.15);
+    this.add.text(width / 2, 151, "A STORY ABOUT CHOOSING YOUR OWN WAY", {
       fontFamily: "Georgia, serif",
-      fontSize: "15px",
-      color: "#9bada8",
-      letterSpacing: 3,
+      fontSize: "13px",
+      color: "#d5c7a5",
+      letterSpacing: 4,
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, 238, "UNDERFAIL", {
+    this.add.text(width / 2, 231, "UNDERFAIL", {
       fontFamily: "Georgia, serif",
-      fontSize: "66px",
-      color: "#f1ead7",
+      fontSize: "70px",
+      color: "#f1e5c9",
       fontStyle: "bold",
-      letterSpacing: 7,
-      shadow: { offsetX: 0, offsetY: 4, color: "#000000", blur: 12, fill: true },
+      letterSpacing: 8,
+      shadow: { offsetX: 0, offsetY: 4, color: "#0a1115", blur: 16, fill: true },
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, 292, "언더페일", {
-      fontFamily: "serif",
+    this.add.text(width / 2, 288, "언더페일", {
+      fontFamily: "'Noto Serif KR', serif",
       fontSize: "27px",
-      color: "#d6cba9",
-      letterSpacing: 8,
+      color: "#e0c99a",
+      letterSpacing: 10,
+    }).setOrigin(0.5);
+
+    const rule = this.add.rectangle(width / 2, 347, 265, 1, 0xc5b184, 0.65);
+    const startLabel = this.add.text(width / 2, 390, "새로운 이야기를 시작한다", {
+      fontFamily: "'Noto Sans KR', sans-serif",
+      fontSize: "19px",
+      color: "#f0dfb8",
+      padding: { x: 18, y: 10 },
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    this.tweens.add({
+      targets: [startLabel, rule],
+      alpha: { from: 0.62, to: 1 },
+      duration: 1800,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.InOut",
+    });
+
+    this.add.text(width / 2, 454, "ENTER  ·  SPACE  ·  CLICK", {
+      fontFamily: "monospace",
+      fontSize: "11px",
+      color: "#c1b89f",
+      letterSpacing: 2,
+    }).setOrigin(0.5);
+
+    this.add.text(width / 2, 497, "A PROTOTYPE OF AN ORIGINAL STORY", {
+      fontFamily: "monospace",
+      fontSize: "9px",
+      color: "#a1a999",
+      letterSpacing: 2,
     }).setOrigin(0.5);
 
     let started = false;
     const start = (): void => {
       if (started) return;
       started = true;
-      this.scene.start("NameEntryScene");
+      Atmosphere.unlock();
+      Atmosphere.setMood("memory");
+      Atmosphere.cue("confirm");
+      this.cameras.main.fadeOut(300, 5, 10, 14);
+      this.time.delayedCall(320, () => this.scene.start("NameEntryScene"));
     };
 
-    const startLabel = this.add.text(width / 2, 390, "[ 새 게임 시작 ]", {
-      fontFamily: "monospace",
-      fontSize: "22px",
-      color: "#e3c77f",
-      padding: { x: 12, y: 8 },
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-    this.tweens.add({
-      targets: startLabel,
-      alpha: 0.55,
-      duration: 820,
-      yoyo: true,
-      repeat: -1,
-    });
-    startLabel.on("pointerover", () => startLabel.setColor("#fff2c7"));
-    startLabel.on("pointerout", () => startLabel.setColor("#e3c77f"));
     startLabel.on("pointerdown", start);
-
     this.input.keyboard?.once("keydown-ENTER", start);
     this.input.keyboard?.once("keydown-SPACE", start);
-
-    this.add.text(24, height - 20, "PROTOTYPE BUILD · 임시 그래픽과 문구가 포함되어 있습니다.", {
-      fontFamily: "monospace",
-      fontSize: "10px",
-      color: "#718078",
-    }).setOrigin(0, 0.5);
   }
 }
