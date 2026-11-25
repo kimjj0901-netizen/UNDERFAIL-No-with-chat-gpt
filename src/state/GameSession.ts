@@ -8,6 +8,8 @@ export interface GameSessionState {
   domitoriellIntroduced: boolean;
   domitoriellPeaceResolved: boolean;
   determinationCount: number;
+  bullyRescued: boolean;
+  bullyHits: number;
 }
 
 const initialState = (): GameSessionState => ({
@@ -20,6 +22,8 @@ const initialState = (): GameSessionState => ({
   domitoriellIntroduced: false,
   domitoriellPeaceResolved: false,
   determinationCount: 0,
+  bullyRescued: false,
+  bullyHits: 0,
 });
 
 let state = initialState();
