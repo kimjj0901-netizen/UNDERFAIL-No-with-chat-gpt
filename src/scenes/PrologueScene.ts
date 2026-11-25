@@ -51,7 +51,7 @@ export class PrologueScene extends Phaser.Scene {
       color: "#e3c77f",
     }).setOrigin(1, 0.5);
 
-    const lines = [...PROTOTYPE_DIALOGUE.prologue];
+    const lines: string[] = [...PROTOTYPE_DIALOGUE.prologue];
     lines[0] = name + "은(는) 풍화양상 고등학교의 교문 앞에 서 있다.";
     this.pages = lines;
     this.bodyText.setText(this.pages[0]);
