@@ -173,13 +173,6 @@ export class RoomScene extends Phaser.Scene {
       strokeThickness: 3,
     }).setOrigin(0.5).setDepth(18);
 
-    this.add.text(480, 130, "안전한 길을 배우는 곳. 하지만 안전과 선택은 같은 말이 아닐지도 모른다.", {
-      fontFamily: "'Noto Sans KR', sans-serif",
-      fontSize: "12px",
-      color: "#d1d1b7",
-      stroke: "#203a39",
-      strokeThickness: 2,
-    }).setOrigin(0.5).setDepth(18);
   }
 
   private collides(x: number, y: number): boolean {

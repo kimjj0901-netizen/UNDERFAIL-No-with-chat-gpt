@@ -59,11 +59,11 @@ export class TitleScene extends Phaser.Scene {
       letterSpacing: 2,
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, 497, "A PROTOTYPE OF AN ORIGINAL STORY", {
-      fontFamily: "monospace",
-      fontSize: "9px",
+    this.add.text(width / 2, 497, "모든 길은 선택에서 시작된다", {
+      fontFamily: "'Noto Sans KR', sans-serif",
+      fontSize: "12px",
       color: "#a1a999",
-      letterSpacing: 2,
+      letterSpacing: 1,
     }).setOrigin(0.5);
 
     let started = false;

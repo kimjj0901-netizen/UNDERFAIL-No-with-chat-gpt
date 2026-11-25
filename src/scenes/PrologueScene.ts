@@ -10,7 +10,6 @@ export class PrologueScene extends Phaser.Scene {
   private bodyText!: Phaser.GameObjects.Text;
   private pageText!: Phaser.GameObjects.Text;
   private continuation!: Phaser.GameObjects.Text;
-  private detailTag?: Phaser.GameObjects.Text;
   private advancing = false;
 
   constructor() {
@@ -83,20 +82,7 @@ export class PrologueScene extends Phaser.Scene {
 
     this.kicker.setText(page.kicker);
     this.bodyText.setText(page.body);
-    this.pageText.setText(page.pageLabel + "   " + page.status);
-    this.detailTag?.destroy();
-    this.detailTag = undefined;
-
-    if (this.page === 3) {
-      this.detailTag = this.add.text(712, 299, "고교 배정 통지서", {
-        fontFamily: "'Noto Serif KR', serif",
-        fontSize: "17px",
-        color: "#303a38",
-        backgroundColor: "#e4d6b8",
-        padding: { x: 10, y: 7 },
-      }).setOrigin(0.5).setAngle(-5).setDepth(5);
-    }
-
+    this.pageText.setText(page.pageLabel);
     if (this.page === 2) {
       Atmosphere.cue("paper");
     }
