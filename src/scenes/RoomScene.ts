@@ -338,13 +338,13 @@ export class RoomScene extends Phaser.Scene {
       if (this.puzzleStep >= WELFARE_EVENTS.firstPuzzle.sequence.length) {
         this.openDialogue("첫 퍼즐", ["딸깍.", "세 표식이 순서대로 빛나며 길이 열렸다."]);
       } else {
-        this.openDialogue("첫 퍼즐", ["맞았다.", "다음 표식이 희미하게 빛난다."]);
+        this.openDialogue("첫 퍼즐", ["맞았다.", "다음 표식이 희미하게 빛난다."], ["왼쪽 표식", "가운데 표식", "오른쪽 표식"]);
       }
     } else {
       this.openDialogue("첫 퍼즐", [
         "아무 일도 일어나지 않는다.",
         "도미토리엘이 말한 것처럼, 실패해도 다시 살펴볼 수 있다.",
-      ]);
+      ], ["왼쪽 표식", "가운데 표식", "오른쪽 표식"]);
     }
   }
 
