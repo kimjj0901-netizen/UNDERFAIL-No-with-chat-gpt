@@ -25,7 +25,7 @@ export class BattleScene extends Phaser.Scene {
   private menuTexts: Phaser.GameObjects.Text[] = [];
   private uiObjects: Phaser.GameObjects.GameObject[] = [];
   private bullets: Bullet[] = [];
-  private dodgePlayer!: Phaser.GameObjects.Text;
+  private dodgePlayer?: Phaser.GameObjects.Text;
   private battleInfo!: Phaser.GameObjects.Text;
   private statusText!: Phaser.GameObjects.Text;
   private playerX = 480;
@@ -34,7 +34,6 @@ export class BattleScene extends Phaser.Scene {
   private spawnElapsed = 0;
   private bulletIndex = 0;
   private lastHitAt = 0;
-  private nextTurnLabel?: Phaser.GameObjects.Text;
   private ending = false;
 
   constructor() {
@@ -208,10 +207,8 @@ export class BattleScene extends Phaser.Scene {
     this.mode = "main";
     const session = GameSession.get();
     const options = MAIN_OPTIONS.map((name, index) => {
-      const isSelected = index === this.mainIndex;
       const ready = name === "MERCY" && session.determinationCount >= PROTOTYPE_SETTINGS.mercyActsRequired;
-      const color = name === "MERCY" && !ready ? "#7e8885" : isSelected ? "#f1d38c" : "#c4cbbf";
-      return (isSelected ? "▶ " : "  ") + name + (name === "MERCY" && ready ? "  !" : "");
+      return (index === this.mainIndex ? "▶ " : "  ") + name + (name === "MERCY" && ready ? "  !" : "");
     });
 
     options.forEach((label, index) => {
@@ -230,7 +227,6 @@ export class BattleScene extends Phaser.Scene {
       this.menuTexts.push(text);
     });
 
-    this.addStatusLine();
     this.statusText.setText(
       "HP " + session.hp + "/" + session.maxHp +
       "     진로 선택 의지 " + session.determinationCount + "/" + PROTOTYPE_SETTINGS.mercyActsRequired,
@@ -263,10 +259,6 @@ export class BattleScene extends Phaser.Scene {
       const hasTea = GameSession.get().hasWarmTea;
       this.statusText.setText(hasTea ? "가방에 따뜻한 차가 있다." : "사용할 수 있는 아이템이 없다.");
     }
-  }
-
-  private addStatusLine(): void {
-    // Keep the menu/status line in the dedicated status area.
   }
 
   private clearMenuTexts(): void {
@@ -384,7 +376,7 @@ export class BattleScene extends Phaser.Scene {
       const length = Math.hypot(dx, dy) || 1;
       this.playerX = Phaser.Math.Clamp(this.playerX + (dx / length) * 220 * dt, 298, 662);
       this.playerY = Phaser.Math.Clamp(this.playerY + (dy / length) * 220 * dt, 226, 404);
-      this.dodgePlayer.setPosition(this.playerX, this.playerY);
+      this.dodgePlayer?.setPosition(this.playerX, this.playerY);
     }
 
     if (this.spawnElapsed >= PROTOTYPE_SETTINGS.bulletIntervalMs) {
@@ -460,6 +452,7 @@ export class BattleScene extends Phaser.Scene {
     for (const object of this.uiObjects) object.destroy();
     this.uiObjects = [];
     this.dodgePlayer?.destroy();
+    this.dodgePlayer = undefined;
   }
 }
 

@@ -5,6 +5,7 @@ export class NameEntryScene extends Phaser.Scene {
   private submitted = false;
   private nameInput?: HTMLInputElement;
   private domObject?: Phaser.GameObjects.DOMElement;
+  private errorText?: Phaser.GameObjects.Text;
 
   constructor() {
     super("NameEntryScene");
@@ -49,6 +50,7 @@ export class NameEntryScene extends Phaser.Scene {
 
     submit.on("pointerdown", () => this.submitName());
     input.addEventListener("keydown", this.handleInputKey);
+    input.addEventListener("input", this.handleInputEdit);
 
     this.add.text(480, 424, "ENTER를 누르거나 이름 결정 항목을 선택하세요.", {
       fontFamily: "monospace",
@@ -56,7 +58,7 @@ export class NameEntryScene extends Phaser.Scene {
       color: "#82918d",
     }).setOrigin(0.5);
 
-    this.add.text(480, 460, "", {
+    this.errorText = this.add.text(480, 460, "", {
       fontFamily: "sans-serif",
       fontSize: "15px",
       color: "#e59b85",
@@ -64,11 +66,16 @@ export class NameEntryScene extends Phaser.Scene {
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       input.removeEventListener("keydown", this.handleInputKey);
+      input.removeEventListener("input", this.handleInputEdit);
       this.domObject?.destroy();
       this.nameInput = undefined;
       this.domObject = undefined;
     });
   }
+
+  private handleInputEdit = (): void => {
+    this.errorText?.setText("");
+  };
 
   private handleInputKey = (event: KeyboardEvent): void => {
     if (event.key === "Enter") {
@@ -81,6 +88,7 @@ export class NameEntryScene extends Phaser.Scene {
     if (this.submitted) return;
     const name = this.nameInput?.value.trim() ?? "";
     if (!name) {
+      this.errorText?.setText("이름을 입력해 주세요.");
       this.nameInput?.focus();
       return;
     }

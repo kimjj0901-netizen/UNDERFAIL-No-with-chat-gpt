@@ -405,12 +405,12 @@ export class RoomScene extends Phaser.Scene {
     );
 
     this.dialogueObjects.push(
-      this.add.text(76, 393, dialogue.lines[Math.min(dialogue.page, dialogue.lines.length - 1)] ?? "", {
+      this.add.text(76, dialogue.choices ? 382 : 393, dialogue.lines[Math.min(dialogue.page, dialogue.lines.length - 1)] ?? "", {
         fontFamily: "sans-serif",
-        fontSize: "17px",
+        fontSize: dialogue.choices ? "15px" : "17px",
         color: "#f1ead7",
         wordWrap: { width: 790 },
-        lineSpacing: 7,
+        lineSpacing: 6,
       }).setDepth(41),
     );
 
@@ -429,7 +429,7 @@ export class RoomScene extends Phaser.Scene {
       dialogue.choices.forEach((choice, index) => {
         const selected = index === dialogue.choiceIndex;
         this.dialogueObjects.push(
-          this.add.text(98, 394 + index * 28, (selected ? "▶  " : "    ") + choice, {
+          this.add.text(98, 421 + index * 25, (selected ? "▶  " : "    ") + choice, {
             fontFamily: "sans-serif",
             fontSize: "16px",
             color: selected ? "#f2d58f" : "#bdc7bc",
