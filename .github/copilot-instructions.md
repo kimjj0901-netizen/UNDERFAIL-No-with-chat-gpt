@@ -35,13 +35,19 @@
 - 코드가 실행 가능한지 확인할 수 있는 경우 반드시 테스트한다.
 - 테스트하지 못한 것은 테스트했다고 보고하지 않는다.
 
-## 현재 Milestone 0 목표
+## 현재 Milestone 1 목표
 
-프로젝트가 정상적으로 부팅되고 Phaser Scene 하나가 표시되는 최소 기반을 만든다.
+현재 작업은 `docs/MILESTONE_1_VERTICAL_SLICE.md`에 정의된 교육복지실 Vertical Slice다.
 
-Milestone 0에서 아직 실제 게임 콘텐츠를 구현하지 않는다.
+반드시 다음 문서를 함께 읽는다.
+- `CREATIVE_DECISION_WORKBOOK.md`
+- `docs/CANON_BASELINE.md`
+- `docs/TECH_ARCHITECTURE.md`
+- `docs/MILESTONE_1_VERTICAL_SLICE.md`
 
-## 다음 Milestone의 목표
+기존 Phaser 4.2.1 + TypeScript + Vite 구성을 유지한다. 워크북에 없는 스토리 설정, 사망 규칙, 루트 조건, 엔딩을 임의로 확정하지 않는다. 임시 수치는 `PROTOTYPE ONLY`로 표시한다.
+
+## Milestone 1 범위
 
 첫 Vertical Slice:
 
