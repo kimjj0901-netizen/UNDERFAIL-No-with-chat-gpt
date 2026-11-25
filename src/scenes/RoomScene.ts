@@ -1,99 +1,96 @@
 import Phaser from "phaser";
-import { PROTOTYPE_DIALOGUE, PROTOTYPE_SETTINGS } from "../data/prototypeContent";
 import { GameSession } from "../state/GameSession";
+import { WELFARE_EVENTS } from "../data/storyEvents";
 
-type RoomTarget = {
+type Target = {
   id: string;
   label: string;
   x: number;
   y: number;
   radius: number;
-  kind: "object" | "domitoriell" | "exit";
 };
 
-type DialogueState = {
+type Dialogue = {
   speaker: string;
   lines: string[];
   page: number;
   choices?: string[];
   choiceIndex: number;
-  onChoose?: (index: number) => void;
 };
 
-const ROOM_BOUNDS = { left: 82, right: 878, top: 78, bottom: 458 };
-const OBSTACLES = [
-  { x: 132, y: 142, width: 142, height: 72 },
-  { x: 680, y: 140, width: 158, height: 78 },
-  { x: 118, y: 350, width: 178, height: 70 },
-  { x: 390, y: 266, width: 172, height: 72 },
-];
-
 export class RoomScene extends Phaser.Scene {
-  private playerX = 480;
-  private playerY = 414;
-  private playerGraphic!: Phaser.GameObjects.Graphics;
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
-  private dialogue?: DialogueState;
+  private x = 480;
+  private y = 420;
+  private player!: Phaser.GameObjects.Graphics;
+  private prompt!: Phaser.GameObjects.Text;
+  private dialogue?: Dialogue;
   private dialogueObjects: Phaser.GameObjects.GameObject[] = [];
-  private promptText!: Phaser.GameObjects.Text;
-  private targets: RoomTarget[] = [];
-  private nearestTarget?: RoomTarget;
+  private targets: Target[] = [];
+  private nearest?: Target;
+  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private puzzleStep = 0;
+  private proggithubDone = false;
 
   constructor() {
     super("RoomScene");
   }
 
   create(): void {
-    const session = GameSession.get();
-    this.cameras.main.setBackgroundColor("#172126");
+    this.cameras.main.setBackgroundColor("#101716");
     this.drawRoom();
-    this.createTargets();
+    this.targets = [
+      { id: "proggithub", label: "프로깃허브", x: 728, y: 270, radius: 76 },
+      { id: "second", label: "전교 2등", x: 205, y: 246, radius: 70 },
+      { id: "puzzle", label: "첫 퍼즐", x: 485, y: 286, radius: 82 },
+      { id: "shelf", label: "학생들의 책장", x: 128, y: 392, radius: 62 },
+      { id: "door", label: "교육복지실 안쪽 문", x: 480, y: 88, radius: 72 },
+    ];
 
-    this.playerGraphic = this.add.graphics().setDepth(15);
+    this.player = this.add.graphics().setDepth(20);
     this.drawPlayer();
-    this.drawDomitoriell();
     this.drawHud();
 
-    const keyboard = this.input.keyboard;
-    if (!keyboard) throw new Error("Keyboard input is unavailable in RoomScene.");
-
+    const k = this.input.keyboard;
+    if (!k) throw new Error("Keyboard input unavailable.");
     this.keys = {
-      up: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      interact: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E),
-      enter: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
+      up: k.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
+      down: k.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
+      left: k.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
+      right: k.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
+      w: k.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      a: k.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+      s: k.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+      d: k.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+      e: k.addKey(Phaser.Input.Keyboard.KeyCodes.E),
+      enter: k.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
+      space: k.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
+      esc: k.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
     };
 
-    this.promptText = this.add.text(480, 502, "", {
+    this.prompt = this.add.text(480, 504, "", {
       fontFamily: "monospace",
-      fontSize: "13px",
-      color: "#e3c77f",
-      backgroundColor: "#101619",
+      fontSize: "12px",
+      color: "#e4cf92",
+      backgroundColor: "#0a1011",
       padding: { x: 10, y: 6 },
-    }).setOrigin(0.5).setDepth(30);
+    }).setOrigin(0.5).setDepth(40);
 
-    if (session.domitoriellPeaceResolved) {
-      this.openDialogue("도미토리엘", [...PROTOTYPE_DIALOGUE.domitoriellAfter]);
-    } else if (!session.domitoriellIntroduced) {
-      this.openDialogue("도미토리엘", [...PROTOTYPE_DIALOGUE.roomWelcome]);
-      session.domitoriellIntroduced = true;
+    if (GameSession.get().bullyRescued) {
+      this.openDialogue("도미토리엘", [
+        "여기가 교육복지반이란다.",
+        "조금 전 일은 잊고 숨을 고르렴. 여기서는 네가 직접 살펴보고 결정해도 괜찮아.",
+      ]);
+      GameSession.get().bullyRescued = false;
     }
   }
 
   update(_time: number, delta: number): void {
     if (this.dialogue) {
-      this.handleDialogueInput();
+      this.handleDialogue();
       return;
     }
 
-    const dt = Math.min(delta, 40) / 1000;
+    const speed = 180 * Math.min(delta, 40) / 1000;
     let dx = 0;
     let dy = 0;
     if (this.isDown("left", "a")) dx -= 1;
@@ -101,367 +98,311 @@ export class RoomScene extends Phaser.Scene {
     if (this.isDown("up", "w")) dy -= 1;
     if (this.isDown("down", "s")) dy += 1;
 
-    if (dx !== 0 || dy !== 0) {
+    if (dx || dy) {
       const length = Math.hypot(dx, dy) || 1;
-      dx = (dx / length) * PROTOTYPE_SETTINGS.playerSpeed * dt;
-      dy = (dy / length) * PROTOTYPE_SETTINGS.playerSpeed * dt;
-      this.movePlayer(dx, dy);
+      this.x = Phaser.Math.Clamp(this.x + dx / length * speed, 82, 878);
+      this.y = Phaser.Math.Clamp(this.y + dy / length * speed, 116, 456);
+      this.drawPlayer();
     }
 
-    this.drawPlayer();
-    this.updateNearestTarget();
-
-    if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) {
-      this.interact();
-    }
+    this.updateNearest();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.e)) this.interact();
   }
 
   private isDown(...names: string[]): boolean {
-    return names.some((name) => this.keys[name]?.isDown ?? false);
+    return names.some((name) => this.keys[name].isDown);
   }
 
   private drawRoom(): void {
     const g = this.add.graphics();
-    g.fillStyle(0x202f32).fillRect(0, 0, 960, 540);
-    g.fillStyle(0x344447).fillRect(64, 48, 832, 440);
-    g.fillStyle(0x58655a).fillRect(82, 78, 796, 380);
+    g.fillStyle(0x111918, 1).fillRect(0, 0, 960, 540);
+    g.fillStyle(0x263733, 1).fillRect(48, 44, 864, 448);
+    g.fillStyle(0x53645a, 1).fillRect(74, 72, 812, 396);
 
-    g.lineStyle(1, 0x6d7865, 0.2);
-    for (let x = 94; x < 875; x += 42) g.lineBetween(x, 90, x, 456);
-    for (let y = 102; y < 458; y += 42) g.lineBetween(84, y, 876, y);
-
-    g.fillStyle(0x172326)
-      .fillRect(64, 48, 832, 24)
-      .fillRect(64, 72, 18, 416)
-      .fillRect(878, 72, 18, 416)
-      .fillRect(64, 488, 832, 18);
-    g.fillStyle(0xb6a77a).fillRect(428, 54, 104, 18);
-    g.fillStyle(0x5c4639).fillRect(438, 74, 84, 13);
-    g.lineStyle(2, 0xdbc895).strokeRect(438, 74, 84, 13);
-
-    // Rug and room details.
-    g.fillStyle(0x293b3d).fillRect(320, 350, 320, 94);
-    g.lineStyle(2, 0xb6a77a, 0.85).strokeRect(330, 360, 300, 74);
-    g.lineStyle(1, 0xb6a77a, 0.42).lineBetween(330, 397, 630, 397);
-
-    // Furniture shapes are temporary, replaceable prototype art.
-    this.drawFurniture(g, 132, 142, 142, 72, 0x6e5947, "책장");
-    this.drawFurniture(g, 680, 140, 158, 78, 0x6d5848, "게시판");
-    this.drawFurniture(g, 118, 350, 178, 70, 0x485a58, "낮은 수납장");
-    this.drawFurniture(g, 390, 266, 172, 72, 0x79674e, "테이블");
-
-    g.fillStyle(0x263d34).fillCircle(830, 386, 22);
-    g.fillStyle(0x78906b).fillEllipse(818, 376, 22, 34);
-    g.fillStyle(0x78906b).fillEllipse(840, 372, 24, 36);
-    g.fillStyle(0x6d5642).fillRect(814, 395, 34, 16);
-    g.lineStyle(2, 0xb6a77a, 0.65).strokeRect(710, 252, 132, 70);
-    g.fillStyle(0x283b3a).fillRect(715, 257, 122, 60);
-    g.fillStyle(0xe0d3b3, 0.9).fillRect(728, 267, 96, 3);
-    g.fillStyle(0xe0d3b3, 0.5).fillRect(728, 278, 68, 2);
-    g.fillStyle(0xe0d3b3, 0.5).fillRect(728, 288, 84, 2);
-
-    this.add.text(480, 28, "교육복지실", {
-      fontFamily: "serif",
-      fontSize: "18px",
-      color: "#d8d0b9",
-    }).setOrigin(0.5);
-    this.add.text(480, 92, "출입문", {
-      fontFamily: "sans-serif",
-      fontSize: "11px",
-      color: "#ddc990",
-    }).setOrigin(0.5);
-  }
-
-  private drawFurniture(
-    graphics: Phaser.GameObjects.Graphics,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    color: number,
-    label: string,
-  ): void {
-    graphics.fillStyle(0x172326, 0.45).fillRect(x + 5, y + 7, width, height);
-    graphics.fillStyle(color).fillRect(x, y, width, height);
-    graphics.lineStyle(2, 0x2a2925).strokeRect(x, y, width, height);
-    graphics.lineStyle(1, 0xd8c49a, 0.42).lineBetween(x + 8, y + 9, x + width - 8, y + 9);
-    this.add.text(x + width / 2, y + height / 2, label, {
-      fontFamily: "sans-serif",
-      fontSize: "13px",
-      color: "#e4d8bd",
-    }).setOrigin(0.5);
-  }
-
-  private drawDomitoriell(): void {
-    const g = this.add.graphics().setDepth(12);
-    g.fillStyle(0x182226, 0.45).fillEllipse(510, 231, 58, 15);
-    g.fillStyle(0x8a735b).fillRoundedRect(482, 183, 56, 50, 10);
-    g.fillStyle(0x9c866b).fillEllipse(510, 166, 44, 54);
-    g.fillStyle(0x3a3029).fillEllipse(510, 150, 43, 25);
-    g.fillStyle(0x1c2424).fillCircle(499, 168, 3);
-    g.fillStyle(0x1c2424).fillCircle(521, 168, 3);
-    g.lineStyle(2, 0x3d3027).lineBetween(502, 183, 518, 183);
-    this.add.text(510, 128, "도미토리엘", {
-      fontFamily: "sans-serif",
-      fontSize: "12px",
-      color: "#f0e7d3",
-      backgroundColor: "#263638",
-      padding: { x: 5, y: 3 },
-    }).setOrigin(0.5).setDepth(14);
-  }
-
-  private drawHud(): void {
-    const name = GameSession.get().playerName || "학생";
-    this.add.rectangle(480, 525, 930, 28, 0x11191c, 0.95).setDepth(25);
-    this.add.text(24, 525, name + "  ·  교육복지실", {
-      fontFamily: "monospace",
-      fontSize: "12px",
-      color: "#c9c3ae",
-    }).setOrigin(0, 0.5).setDepth(26);
-    this.add.text(936, 525, "WASD / 방향키 이동   E 조사", {
-      fontFamily: "monospace",
-      fontSize: "12px",
-      color: "#9eac9e",
-    }).setOrigin(1, 0.5).setDepth(26);
-    this.add.text(24, 476, "PROTOTYPE ROOM", {
-      fontFamily: "monospace",
-      fontSize: "9px",
-      color: "#d9c28e",
-    }).setDepth(20);
-  }
-
-  private createTargets(): void {
-    this.targets = [
-      { id: "bookshelf", label: "책장", x: 205, y: 235, radius: 58, kind: "object" },
-      { id: "noticeboard", label: "게시판", x: 775, y: 337, radius: 60, kind: "object" },
-      { id: "thermos", label: "보온병", x: 470, y: 390, radius: 54, kind: "object" },
-      { id: "domitoriell", label: "도미토리엘 선생님", x: 510, y: 202, radius: 76, kind: "domitoriell" },
-      { id: "exit", label: "출입문", x: 480, y: 91, radius: 72, kind: "exit" },
-    ];
-
-    for (const target of this.targets) {
-      this.add.circle(target.x, target.y, 3, 0xe2cb89, 0.9).setDepth(5);
+    for (let y = 82; y < 465; y += 34) {
+      g.lineStyle(1, 0xb8c1a9, 0.08).lineBetween(76, y, 884, y);
     }
+    for (let x = 84; x < 884; x += 42) {
+      g.lineStyle(1, 0xb8c1a9, 0.05).lineBetween(x, 74, x, 468);
+    }
+
+    // Warm central rug, intentionally irregular rather than a generic rectangle.
+    g.fillStyle(0x384842, 1).fillEllipse(480, 330, 470, 190);
+    g.lineStyle(2, 0xd2bd88, 0.35).strokeEllipse(480, 330, 450, 170);
+    g.lineStyle(1, 0xd2bd88, 0.18).strokeEllipse(480, 330, 380, 125);
+
+    // Books / student traces.
+    for (let i = 0; i < 11; i += 1) {
+      const x = 94 + i * 9;
+      const h = 18 + (i % 4) * 5;
+      g.fillStyle(i % 2 ? 0x8a735d : 0x6d7f71, 0.9).fillRect(x, 400 - h, 7, h);
+    }
+    g.fillStyle(0x172222, 0.8).fillRect(88, 408, 116, 10);
+    g.fillStyle(0xcbbd95, 0.5).fillRect(103, 413, 68, 2);
+
+    // Puzzle station.
+    g.fillStyle(0x3b4c47, 1).fillRoundedRect(414, 236, 142, 86, 12);
+    g.lineStyle(2, 0xd5c28e, 0.55).strokeRoundedRect(414, 236, 142, 86, 12);
+    for (let i = 0; i < 3; i += 1) {
+      g.fillStyle([0x8a6e62, 0x6d8a7b, 0xb5a26f][i], 1).fillCircle(447 + i * 38, 279, 13);
+    }
+    g.fillStyle(0xded2b2, 0.35).fillRect(439, 302, 91, 3);
+
+    // Proggithub: a friendly terminal-like teaching creature, not a copied character.
+    g.fillStyle(0x1b2728, 1).fillRoundedRect(686, 222, 84, 90, 18);
+    g.lineStyle(2, 0x8fb0a0, 0.6).strokeRoundedRect(686, 222, 84, 90, 18);
+    g.fillStyle(0x9ec0ad, 0.85).fillCircle(712, 254, 6);
+    g.fillStyle(0x9ec0ad, 0.85).fillCircle(744, 254, 6);
+    g.lineStyle(2, 0x9ec0ad, 0.7).lineBetween(710, 278, 748, 278);
+    g.fillStyle(0x263a35, 1).fillRoundedRect(702, 290, 52, 10, 5);
+
+    // Second-rank student.
+    g.fillStyle(0x2a3940, 1).fillRoundedRect(166, 218, 78, 92, 24);
+    g.fillStyle(0xd5c29f, 1).fillCircle(205, 198, 29);
+    g.fillStyle(0x303b40, 1).fillEllipse(205, 182, 56, 24);
+    g.fillStyle(0x20272a, 1).fillCircle(195, 199, 3);
+    g.fillStyle(0x20272a, 1).fillCircle(215, 199, 3);
+    g.fillStyle(0xd9d0bd, 1).fillRect(155, 266, 100, 45);
+    g.fillStyle(0x6d7d77, 0.45).fillRect(165, 274, 80, 3);
+    g.fillStyle(0x6d7d77, 0.45).fillRect(165, 285, 60, 3);
+
+    // Exit / inner door.
+    g.fillStyle(0x17201f, 1).fillRoundedRect(420, 60, 120, 50, 10);
+    g.lineStyle(2, 0xd0bd89, 0.6).strokeRoundedRect(420, 60, 120, 50, 10);
+    g.fillStyle(0xbba77b, 0.55).fillCircle(522, 85, 4);
+
+    this.add.text(480, 24, "교육복지반", {
+      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
+      fontSize: "20px",
+      color: "#efe6cf",
+    }).setOrigin(0.5);
+
+    this.add.text(480, 128, "안전한 길을 배우는 곳. 하지만 안전과 선택은 같은 말이 아닐지도 모른다.", {
+      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
+      fontSize: "12px",
+      color: "#b9c3b6",
+    }).setOrigin(0.5);
   }
 
   private drawPlayer(): void {
-    const g = this.playerGraphic;
+    const g = this.player;
     g.clear();
-    g.fillStyle(0x101719, 0.35).fillEllipse(this.playerX, this.playerY + 13, 34, 12);
-    g.fillStyle(0x334e58).fillRoundedRect(this.playerX - 12, this.playerY - 2, 24, 29, 5);
-    g.fillStyle(0xd8c5a0).fillCircle(this.playerX, this.playerY - 11, 11);
-    g.fillStyle(0x283035).fillRect(this.playerX - 11, this.playerY - 18, 22, 6);
-    g.fillStyle(0x263239).fillCircle(this.playerX - 4, this.playerY - 11, 1.3);
-    g.fillStyle(0x263239).fillCircle(this.playerX + 4, this.playerY - 11, 1.3);
+    g.fillStyle(0x0c1213, 0.45).fillEllipse(this.x, this.y + 18, 34, 12);
+    g.fillStyle(0x4a6570, 1).fillRoundedRect(this.x - 14, this.y - 1, 28, 36, 7);
+    g.fillStyle(0xd7c4a2, 1).fillCircle(this.x, this.y - 12, 12);
+    g.fillStyle(0x303a3e, 1).fillEllipse(this.x, this.y - 22, 25, 8);
+    g.fillStyle(0x1d2729, 1).fillCircle(this.x - 4, this.y - 12, 1.4);
+    g.fillStyle(0x1d2729, 1).fillCircle(this.x + 4, this.y - 12, 1.4);
   }
 
-  private movePlayer(dx: number, dy: number): void {
-    const nextX = Phaser.Math.Clamp(this.playerX + dx, ROOM_BOUNDS.left, ROOM_BOUNDS.right);
-    if (!this.collides(nextX, this.playerY)) this.playerX = nextX;
-    const nextY = Phaser.Math.Clamp(this.playerY + dy, ROOM_BOUNDS.top, ROOM_BOUNDS.bottom);
-    if (!this.collides(this.playerX, nextY)) this.playerY = nextY;
+  private drawHud(): void {
+    this.add.rectangle(480, 526, 936, 28, 0x0a1011, 0.95).setDepth(30);
+    this.add.text(22, 526, GameSession.get().playerName + "  ·  교육복지반", {
+      fontFamily: "monospace",
+      fontSize: "12px",
+      color: "#c9c2ad",
+    }).setOrigin(0, 0.5).setDepth(31);
+    this.add.text(938, 526, "WASD / 방향키 이동   E 조사", {
+      fontFamily: "monospace",
+      fontSize: "12px",
+      color: "#9aa89e",
+    }).setOrigin(1, 0.5).setDepth(31);
   }
 
-  private collides(x: number, y: number): boolean {
-    const radius = 12;
-    for (const obstacle of OBSTACLES) {
-      const nearestX = Phaser.Math.Clamp(x, obstacle.x, obstacle.x + obstacle.width);
-      const nearestY = Phaser.Math.Clamp(y, obstacle.y, obstacle.y + obstacle.height);
-      if (Math.hypot(x - nearestX, y - nearestY) < radius) return true;
-    }
-
-    if (!GameSession.get().domitoriellPeaceResolved) {
-      const nearestX = Phaser.Math.Clamp(x, 426, 534);
-      const nearestY = Phaser.Math.Clamp(y, 70, 113);
-      if (Math.hypot(x - nearestX, y - nearestY) < radius) return true;
-    }
-    return false;
-  }
-
-  private updateNearestTarget(): void {
-    let nearest: RoomTarget | undefined;
-    let nearestDistance = Number.POSITIVE_INFINITY;
-
+  private updateNearest(): void {
+    let nearest: Target | undefined;
+    let distance = Infinity;
     for (const target of this.targets) {
-      if (target.kind === "exit" && !GameSession.get().domitoriellPeaceResolved) continue;
-      const distance = Math.hypot(this.playerX - target.x, this.playerY - target.y);
-      if (distance <= target.radius && distance < nearestDistance) {
+      const d = Math.hypot(this.x - target.x, this.y - target.y);
+      if (d <= target.radius && d < distance) {
         nearest = target;
-        nearestDistance = distance;
+        distance = d;
       }
     }
-
-    this.nearestTarget = nearest;
-    this.promptText.setText(nearest ? "E  " + nearest.label + " 조사하기" : "");
+    this.nearest = nearest;
+    this.prompt.setText(nearest ? "E  " + nearest.label + "  조사하기" : "");
   }
 
   private interact(): void {
-    const target = this.nearestTarget;
+    const target = this.nearest;
     if (!target) return;
 
-    if (target.kind === "exit") {
-      this.scene.start("PrototypeEndScene");
-      return;
-    }
-
-    if (target.kind === "domitoriell") {
-      const session = GameSession.get();
-      if (session.domitoriellPeaceResolved) {
-        this.openDialogue("도미토리엘", [...PROTOTYPE_DIALOGUE.domitoriellAfter]);
-        return;
-      }
-
-      this.openDialogue(
-        "도미토리엘",
-        [...PROTOTYPE_DIALOGUE.domitoriellFirst],
-        [
-          "선생님께 하고 싶은 말을 한다.",
-          "조금 더 둘러본다.",
-        ],
-        (index) => {
-          if (index === 0) {
-            this.scene.start("BattleScene");
-          } else {
-            this.openDialogue("도미토리엘", ["그래. 천천히 둘러보렴. 모르는 게 있으면 언제든 물어보렴."]);
-          }
-        },
-      );
-      return;
-    }
-
-    GameSession.inspect(target.id);
-    if (target.id === "bookshelf") {
-      this.openDialogue("책장", [...PROTOTYPE_DIALOGUE.bookshelf]);
-    } else if (target.id === "noticeboard") {
-      this.openDialogue("게시판", [...PROTOTYPE_DIALOGUE.noticeboard]);
-    } else if (target.id === "thermos") {
-      const acquired = GameSession.acquireWarmTea();
-      this.openDialogue(
-        "보온병",
-        acquired ? [...PROTOTYPE_DIALOGUE.thermosFirst] : [...PROTOTYPE_DIALOGUE.thermosAgain],
-      );
+    switch (target.id) {
+      case "puzzle":
+        this.runPuzzle();
+        break;
+      case "proggithub":
+        this.proggithubEncounter();
+        break;
+      case "second":
+        this.secondRankInteraction();
+        break;
+      case "shelf":
+        this.openDialogue("학생들의 책장", [
+          "교과서 사이에 그림, 운동 기록, 낡은 악보가 섞여 있다.",
+          "누군가의 미래를 한 줄의 성적표로만 정리할 수는 없었던 것 같다.",
+        ]);
+        break;
+      case "door":
+        this.openDialogue("출구", [
+          "아직은 안쪽으로 더 이어지는 길이 있다.",
+          "도미토리엘 선생님이 말한 '안전한 길'은 이 문 너머일지도 모른다.",
+        ]);
+        break;
     }
   }
 
-  private openDialogue(
-    speaker: string,
-    lines: string[],
-    choices?: string[],
-    onChoose?: (index: number) => void,
-  ): void {
-    this.closeDialogue();
-    this.dialogue = { speaker, lines, page: 0, choices, choiceIndex: 0, onChoose };
+  private runPuzzle(): void {
+    const sequence = WELFARE_EVENTS.firstPuzzle.sequence;
+    if (this.puzzleStep >= sequence.length) {
+      this.openDialogue("퍼즐", ["이미 풀었다. 하지만 도미토리엘이 설명한 원리는 기억에 남아 있다."]);
+      return;
+    }
+
+    this.openDialogue("첫 퍼즐", [
+      WELFARE_EVENTS.firstPuzzle.hint,
+      "가운데의 세 표식은 순서대로 반응한다.",
+    ], ["왼쪽 표식", "가운데 표식", "오른쪽 표식"]);
+  }
+
+  private proggithubEncounter(): void {
+    if (this.proggithubDone) {
+      this.openDialogue("프로깃허브", [
+        "이미 기본 메뉴는 배웠다.",
+        "이번에는 네가 원하는 방식으로 상황을 해결해 보렴.",
+      ]);
+      return;
+    }
+    this.proggithubDone = true;
+    this.openDialogue("프로깃허브", WELFARE_EVENTS.proggithub.tutorial, [
+      "말을 건다",
+      "상태를 살핀다",
+      "자비를 시도한다",
+    ]);
+  }
+
+  private secondRankInteraction(): void {
+    this.openDialogue("전교 2등", [
+      "책을 꼭 끌어안은 학생이 잠깐 당신을 바라본다.",
+      "당신이 무슨 말을 하기도 전에 책장을 넘기며 뒤로 물러난다.",
+      "조금 뒤, 그는 공부하러 가겠다는 듯 조용히 사라진다.",
+    ]);
+    WELFARE_EVENTS.secondRankSeen();
+  }
+
+  private openDialogue(speaker: string, lines: string[], choices?: string[]): void {
+    this.clearDialogue();
+    this.dialogue = { speaker, lines, page: 0, choices, choiceIndex: 0 };
     this.renderDialogue();
   }
 
-  private handleDialogueInput(): void {
-    const dialogue = this.dialogue;
-    if (!dialogue) return;
+  private handleDialogue(): void {
+    const d = this.dialogue;
+    if (!d) return;
 
-    if (!dialogue.choices || dialogue.page < dialogue.lines.length - 1) {
-      if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
-        dialogue.page += 1;
-        if (dialogue.page >= dialogue.lines.length && !dialogue.choices) {
-          this.closeDialogue();
+    if (d.choices && d.page >= d.lines.length - 1) {
+      if (Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.w)) {
+        d.choiceIndex = (d.choiceIndex + d.choices.length - 1) % d.choices.length;
+        this.renderDialogue();
+      } else if (Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.s)) {
+        d.choiceIndex = (d.choiceIndex + 1) % d.choices.length;
+        this.renderDialogue();
+      } else if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+        if (d.speaker === "첫 퍼즐") {
+          this.resolvePuzzleChoice(d.choiceIndex);
         } else {
-          this.renderDialogue();
+          this.clearDialogue();
+          if (d.speaker === "프로깃허브" && d.choiceIndex === 2) {
+            this.openDialogue("프로깃허브", [
+              "자비를 선택하려는 태도를 확인했다.",
+              "하지만 전투 메뉴 자체를 익히는 것이 먼저다. 이제 다음 조우에서는 직접 판단해 보렴.",
+            ]);
+          }
         }
       }
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.w)) {
-      dialogue.choiceIndex = (dialogue.choiceIndex + dialogue.choices.length - 1) % dialogue.choices.length;
-      this.renderDialogue();
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.s)) {
-      dialogue.choiceIndex = (dialogue.choiceIndex + 1) % dialogue.choices.length;
-      this.renderDialogue();
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
-      const selected = dialogue.choiceIndex;
-      const callback = dialogue.onChoose;
-      this.closeDialogue();
-      callback?.(selected);
+    if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+      d.page += 1;
+      if (d.page >= d.lines.length) this.clearDialogue();
+      else this.renderDialogue();
+    }
+  }
+
+  private resolvePuzzleChoice(index: number): void {
+    const expected = WELFARE_EVENTS.firstPuzzle.sequence[this.puzzleStep];
+    if (index === expected) {
+      this.puzzleStep += 1;
+      this.clearDialogue();
+      if (this.puzzleStep >= WELFARE_EVENTS.firstPuzzle.sequence.length) {
+        this.openDialogue("첫 퍼즐", ["딸깍.", "세 표식이 순서대로 빛나며 길이 열렸다."]);
+      } else {
+        this.openDialogue("첫 퍼즐", ["맞았다.", "다음 표식이 희미하게 빛난다."]);
+      }
+    } else {
+      this.openDialogue("첫 퍼즐", [
+        "아무 일도 일어나지 않는다.",
+        "도미토리엘이 말한 것처럼, 실패해도 다시 살펴볼 수 있다.",
+      ]);
     }
   }
 
   private renderDialogue(): void {
     this.clearDialogueObjects();
-    const dialogue = this.dialogue;
-    if (!dialogue) return;
+    const d = this.dialogue;
+    if (!d) return;
 
-    const panel = this.add.graphics().setDepth(40);
-    panel.fillStyle(0x080d10, 0.96).fillRect(48, 350, 864, 150);
-    panel.lineStyle(2, 0xb6a77a, 1).strokeRect(48, 350, 864, 150);
-    panel.lineStyle(1, 0x65736c, 0.8).strokeRect(55, 357, 850, 136);
+    const panel = this.add.graphics().setDepth(50);
+    panel.fillStyle(0x070b0d, 0.97).fillRoundedRect(42, 344, 876, 154, 12);
+    panel.lineStyle(2, 0xc1ad79, 0.95).strokeRoundedRect(42, 344, 876, 154, 12);
+    panel.lineStyle(1, 0x64726a, 0.7).strokeRoundedRect(52, 354, 856, 134, 8);
     this.dialogueObjects.push(panel);
 
-    this.dialogueObjects.push(
-      this.add.text(76, 362, dialogue.speaker, {
-        fontFamily: "sans-serif",
-        fontSize: "15px",
-        color: "#e3c77f",
-        fontStyle: "bold",
-      }).setDepth(41),
-    );
+    this.dialogueObjects.push(this.add.text(70, 366, d.speaker, {
+      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
+      fontSize: "15px",
+      color: "#e5cb8b",
+      fontStyle: "bold",
+    }).setDepth(51));
 
-    this.dialogueObjects.push(
-      this.add.text(76, dialogue.choices ? 382 : 393, dialogue.lines[Math.min(dialogue.page, dialogue.lines.length - 1)] ?? "", {
-        fontFamily: "sans-serif",
-        fontSize: dialogue.choices ? "15px" : "17px",
-        color: "#f1ead7",
-        wordWrap: { width: 790 },
-        lineSpacing: 6,
-      }).setDepth(41),
-    );
+    this.dialogueObjects.push(this.add.text(70, 396, d.lines[d.page] ?? "", {
+      fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
+      fontSize: "16px",
+      color: "#f1ead7",
+      wordWrap: { width: 800 },
+      lineSpacing: 7,
+    }).setDepth(51));
 
-    if (dialogue.page < dialogue.lines.length - 1) {
-      this.dialogueObjects.push(
-        this.add.text(884, 474, "ENTER  ▶", {
-          fontFamily: "monospace",
-          fontSize: "12px",
-          color: "#b6a77a",
-        }).setOrigin(1, 0.5).setDepth(41),
-      );
-      return;
-    }
-
-    if (dialogue.choices) {
-      dialogue.choices.forEach((choice, index) => {
-        const selected = index === dialogue.choiceIndex;
-        this.dialogueObjects.push(
-          this.add.text(98, 421 + index * 25, (selected ? "▶  " : "    ") + choice, {
-            fontFamily: "sans-serif",
-            fontSize: "16px",
-            color: selected ? "#f2d58f" : "#bdc7bc",
-          }).setDepth(41),
-        );
+    if (d.page < d.lines.length - 1) {
+      this.dialogueObjects.push(this.add.text(890, 468, "ENTER ▶", {
+        fontFamily: "monospace",
+        fontSize: "11px",
+        color: "#a9b29f",
+      }).setOrigin(1, 0.5).setDepth(51));
+    } else if (d.choices) {
+      d.choices.forEach((choice, index) => {
+        this.dialogueObjects.push(this.add.text(90, 430 + index * 20, (index === d.choiceIndex ? "▶ " : "  ") + choice, {
+          fontFamily: '"Noto Sans KR", "Malgun Gothic", sans-serif',
+          fontSize: "14px",
+          color: index === d.choiceIndex ? "#f0d58f" : "#b9c1b9",
+        }).setDepth(51));
       });
-      this.dialogueObjects.push(
-        this.add.text(884, 474, "↑↓ 선택 · ENTER 확정", {
-          fontFamily: "monospace",
-          fontSize: "11px",
-          color: "#b6a77a",
-        }).setOrigin(1, 0.5).setDepth(41),
-      );
-    } else {
-      this.dialogueObjects.push(
-        this.add.text(884, 474, "ENTER  ▶", {
-          fontFamily: "monospace",
-          fontSize: "12px",
-          color: "#b6a77a",
-        }).setOrigin(1, 0.5).setDepth(41),
-      );
+      this.dialogueObjects.push(this.add.text(890, 468, "↑↓ 선택 · ENTER", {
+        fontFamily: "monospace",
+        fontSize: "10px",
+        color: "#a9b29f",
+      }).setOrigin(1, 0.5).setDepth(51));
     }
+  }
+
+  private clearDialogue(): void {
+    this.dialogue = undefined;
+    this.clearDialogueObjects();
   }
 
   private clearDialogueObjects(): void {
     for (const object of this.dialogueObjects) object.destroy();
     this.dialogueObjects = [];
-  }
-
-  private closeDialogue(): void {
-    this.clearDialogueObjects();
-    this.dialogue = undefined;
-    this.promptText?.setText("");
   }
 }
