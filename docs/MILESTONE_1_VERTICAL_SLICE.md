@@ -1,6 +1,6 @@
 # Milestone 1 — 교육복지실 Vertical Slice
 
-> 상태: 초기 구현 반영 — 빌드 및 브라우저 검증 대기
+> 상태: 초기 구현 반영 — 빌드 통과, 브라우저 검증 대기
 >
 > 정사 기준: `CREATIVE_DECISION_WORKBOOK.md`, `docs/CANON_BASELINE.md`
 >
@@ -183,7 +183,9 @@ HP 0 이후 세계관에서 어떤 일이 벌어지는지는 보류한다. 프�
 |---|---|
 | GitHub 원격 파일·씬 연결 재확인 | PASS — 원격 파일 확인 |
 | 구현 논리·입력 흐름 정적 검토 | PASS — 코드 검토 |
+| GitHub Actions 푸시 빌드 | PASS — run 45716583686 |
+| GitHub Actions PR 빌드 | PASS — run 45716592114 |
 | npm run build | NOT RUN — 실행 환경에서 저장소 내려받기가 DNS 오류로 차단됨 |
-| 브라우저 전체 플레이 | NOT RUN — 브라우저 실행 환경 미연결 |
+| 브라우저 전체 플레이 | NOT RUN — 실제 브라우저 플레이 확인은 아직 안 됨 |
 
 위 두 실행 테스트를 통과하기 전에는 Milestone 1을 완료 처리하지 않는다.
