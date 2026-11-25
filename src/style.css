@@ -1,3 +1,9 @@
+:root {
+  color-scheme: dark;
+  font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+  background: #10151b;
+}
+
 html,
 body,
 #game {
@@ -6,11 +12,49 @@ body,
   height: 100%;
   min-height: 100%;
   overflow: hidden;
-  background: #000;
+  background: #10151b;
 }
 
 body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+#game {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+}
+
+#game canvas {
+  display: block;
+  image-rendering: auto;
+  touch-action: none;
+}
+
+.underfail-name-input {
+  box-sizing: border-box;
+  width: min(430px, 72vw);
+  padding: 14px 18px;
+  border: 2px solid #b6a77a;
+  border-radius: 2px;
+  outline: none;
+  background: #0d1418;
+  color: #f1ead7;
+  font: 20px "Noto Sans KR", "Malgun Gothic", sans-serif;
+  text-align: center;
+  letter-spacing: 2px;
+  box-shadow: 0 8px 28px rgb(0 0 0 / 30%);
+}
+
+.underfail-name-input::placeholder {
+  color: #718078;
+}
+
+.underfail-name-input:focus {
+  border-color: #e3c77f;
+  box-shadow: 0 0 0 3px rgb(227 199 127 / 12%), 0 8px 28px rgb(0 0 0 / 30%);
 }
