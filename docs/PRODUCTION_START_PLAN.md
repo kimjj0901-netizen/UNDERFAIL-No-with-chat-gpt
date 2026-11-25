@@ -44,9 +44,9 @@
 
 ### Milestone 1 — 교육복지실 Vertical Slice
 
-**초기 구현 반영 — GitHub Actions 빌드 통과, 브라우저 직접 플레이 검증 대기.**
+**기존 코드 빌드 통과 / 스토리·아트 방향 재설계 필요.**
 
-2026-11-26 현재 타이틀, 이름 입력, 도입부, 교육복지실 탐험, 조사·대화, 도미토리엘 대립, ACT 기반 평화 해결, 출입문 개방과 프로토타입 종료 흐름이 작업 브랜치에 구현되어 있다. GitHub Actions에서 TypeScript 검사와 Vite 프로덕션 빌드는 통과했다. 실제 브라우저에서 전체 흐름을 직접 플레이하는 검증은 아직 남아 있으므로 완료 상태가 아니다.
+2026-11-26 사용자 검토에서 스토리 전개, 맵·캐릭터 디자인, UI, 원작 기능과의 비교 부족, 오프닝의 컨셉 이탈 문제가 지적되었다. 기존 프로토타입은 코드가 빌드되는 참고 구현일 뿐, 스토리 중심 Vertical Slice의 승인된 완성본으로 취급하지 않는다. 새 제작 기준은 스토리 색인과 스토리 중심 마스터 프롬프트를 따른다. GitHub Actions 빌드 통과와 실제 브라우저 플레이·시각 검토는 별개의 확인 항목이다.
 
 목표 흐름:
 
@@ -64,31 +64,38 @@
 
 구체적 완료 조건과 범위 밖 항목은 `docs/MILESTONE_1_VERTICAL_SLICE.md`에 정리되어 있다.
 
-## 4. 통합 자율 제작 프롬프트
+## 4. 스토리 중심 제작 기준 문서
 
-ChatGPT가 저장소를 직접 조사하고 기획·설계·구현·검토·개선까지 수행할 때는 다음 문서를 기준으로 한다.
+이제부터 스토리 재설계·맵·캐릭터·애니메이션·UI·전투·연출의 실제 제작에는 아래 문서를 우선 적용한다.
 
-- `docs/CHATGPT_AUTONOMOUS_PRODUCTION_MASTER_PROMPT.md` — ChatGPT용 통합 자율 제작 지침. 저장소 접근, 정사 보호, 조사, 구현, 검증, 작업 지속성 및 최종 보고 규칙을 정의한다.
-- 이 문서는 창작 워크북이나 Milestone 명세를 대체하지 않는다. 실행 범위와 현재 완료 기준은 각 Milestone 문서를 따른다.
+- `docs/CHATGPT_STORY_DRIVEN_PRODUCTION_MASTER_PROMPT.md` — 이번 사용자 요청에 따라 만든 스토리 중심 자율 제작·리빌드 지침. 기존 프로토타입 감사, Undertale 기능 비교, 시간순 스토리 준수, 아트·UI 품질, 구현·검증·지속성 규칙을 정의한다.
+- `docs/story/UNDERFAIL_START_TO_CHAMBER_BATTLE_DIALOGUE_INDEX_v5.md` — 도입부부터 체임버쌤 첫 정식 보스전 개시까지의 시간순 대화·분기 색인. 0~1.7 보존 구간을 포함한다.
+- `docs/CHATGPT_AUTONOMOUS_PRODUCTION_MASTER_PROMPT.md` — 이전의 일반 통합 제작 지침. 보조 참고용이며 스토리 순서·연출·품질 기준에서 새 스토리 중심 프롬프트와 충돌하면 새 프롬프트가 우선한다.
+
+이 문서들은 CREATIVE_DECISION_WORKBOOK.md를 대체하지 않는다. 정사 우선순위는 워크북과 최신 사용자 지시를 따른다.
 
 ## 4. 다음 단계에 사용할 Copilot 컨텍스트
 
-첫 구현 요청에는 다음 다섯 파일을 사용한다.
+스토리 중심 구현을 시작할 때는 다음 파일을 우선 컨텍스트로 사용한다.
 
 ```text
 #file: CREATIVE_DECISION_WORKBOOK.md
+#file: docs/story/UNDERFAIL_START_TO_CHAMBER_BATTLE_DIALOGUE_INDEX_v5.md
 #file: docs/CANON_BASELINE.md
 #file: docs/TECH_ARCHITECTURE.md
-#file: docs/IMPLEMENTATION_ROADMAP.md
-#file: docs/MILESTONE_1_VERTICAL_SLICE.md
+#file: docs/CHATGPT_STORY_DRIVEN_PRODUCTION_MASTER_PROMPT.md
 ```
+
+기존 MILESTONE_1_VERTICAL_SLICE.md는 이전 프로토타입의 구현 범위를 설명하는 참고 문서이며, 새 스토리 색인의 시간순 사건 구조를 덮어쓰지 않는다.
 
 Copilot은 먼저 현재 브랜치·파일·코드를 확인하고 명세와 충돌하는 점을 보고한 뒤 구현한다. 사용자 승인 없이 정사나 보류 항목을 수정하지 않는다.
 
 ## 5. 진행 원칙
 
-1. 한 번에 하나의 Milestone을 완성한다.
-2. 전체 게임을 한꺼번에 만들지 않는다.
-3. 대량의 최종 아트를 만들기 전에 플레이 루프와 시스템을 검증한다.
-4. TypeScript 검사와 빌드, 브라우저 직접 테스트를 구분해 기록한다.
-5. 실행하지 않은 테스트를 성공했다고 보고하지 않는다.
+1. 스토리 시간순을 최우선으로 지키고 한 번에 하나의 구간을 완성한다.
+2. 넓은 지역을 임시 도형으로 채우기보다 짧은 구간의 맵·캐릭터·UI·연출을 제대로 만든다.
+3. 원작은 기능적으로 조사·비교하되 문장·아트·맵·음악·패턴을 복제하지 않는다.
+4. 사용자 정사·제안·미정/보류를 분리한다.
+5. TypeScript 검사와 빌드, 브라우저 직접 테스트를 구분해 기록한다.
+6. 실행하지 않은 테스트를 성공했다고 보고하지 않는다.
+7. 사용자 원본과 main 브랜치를 보호하고 의미 있는 커밋으로 진행 상태를 저장한다.
