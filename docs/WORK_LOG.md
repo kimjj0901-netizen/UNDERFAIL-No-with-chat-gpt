@@ -310,3 +310,30 @@
 - 이 run은 해당 SHA의 저장소 코드와 문서가 빌드되는지 검증한다.
 - 브라우저 직접 플레이, 물리 키 입력, 화면 캡처/패널 겹침, 한국어 텍스트, 사운드 청취: NOT RUN.
 - PR #2는 Draft / open 상태로 유지한다. 브라우저 실기 QA가 수행되지 않았으므로 main에 병합하지 않는다.
+
+## 2026-11-26 — Phaser 4.2.1 키 캡처 수명주기 수정
+
+### 발견한 문제
+- `GameInput`이 `keyboard.addKey(code)`의 기본 옵션을 사용해 개별 키마다 전역 browser-key capture를 생성하고 있었다.
+- Phaser v4.2.1에서 `addKey`의 `enableCapture` 기본값은 true다.
+- Phaser의 KeyboardPlugin은 Scene에 소속되지만, 실제 key capture는 KeyboardManager 전역 상태다.
+- KeyboardPlugin shutdown의 `removeAllKeys(true)`는 `removeCapture=false` 기본값을 사용한다. 따라서 TitleScene 종료 후에도 Z/Space 등의 브라우저 기본 키 캡처가 남을 가능성이 있다.
+- NameEntryScene은 DOM input을 사용하므로, 이 상태가 남으면 Z 또는 Space가 문자열로 입력되지 않을 위험이 있다.
+
+### 실제 코드 수정
+- `src/input/GameInput.ts`의 모든 `addKey` 호출을 `addKey(code, false)`로 변경.
+- 브라우저 스크롤을 발생시킬 수 있는 방향키와 Space만 GameInput이 활성화된 Scene 동안 명시적으로 capture.
+- Scene의 SHUTDOWN 이벤트에서 해당 capture를 해제.
+- 현재 게임 흐름에서 GameInput이 있는 플레이 Scene은 한 번에 하나만 활성화된다는 전제를 주석/문서에 명시.
+
+### 테스트 계획
+- `IN-20`: TitleScene 종료 뒤 NameEntry에서 Z를 문자로 입력.
+- `IN-21`: NameEntry에서 Space와 방향키가 DOM input 기본 입력으로 동작.
+- `IN-22`: GameInput Scene 종료 후 방향키/Space 캡처 해제.
+- 위 테스트는 실제 브라우저 실행 전까지 NOT RUN이다.
+
+### 근거
+- Phaser 4.2.1 source: `src/input/keyboard/KeyboardPlugin.js`, `src/input/keyboard/keys/JustDown.js`.
+- Source reference: https://github.com/phaserjs/phaser/blob/v4.2.1/src/input/keyboard/KeyboardPlugin.js
+- Source reference: https://github.com/phaserjs/phaser/blob/v4.2.1/src/input/keyboard/keys/JustDown.js
+

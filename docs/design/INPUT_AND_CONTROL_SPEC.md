@@ -21,10 +21,10 @@ PC Undertale FAQ는 Z/Enter, X/Shift, C/Ctrl을 각각 동작의 대체 입력�
 ## 2. 입력 계층
 `src/input/GameInput.ts`가 현재 공통 키 별칭을 관리한다.
 - `isDown(action)`: 누르고 있는 상태.
-- `justPressed(action)`: 눌린 첫 프레임의 동작을 한 번 소비.
+- `justPressed(action)`: 눌린 첫 프레임의 동작을 한 번 소비. Phaser 4.2.1 `JustDown`은 키 눌림마다 한 번만 true를 반환한다.
 - Confirm 별칭(Z/Enter/Space)을 동시에 눌러도 한 번의 논리 액션만 발생한다. INTERACT는 E만 포함하며, 탐험 상태에서 Scene이 CONFIRM을 근접 조사로 별도 라우팅한다.
 
-## 3. 상태별 입력 원칙
+## 3. Phaser 4.2.1 키 캡처 수명주기\n\nPhaser 4.2.1 소스에서 확인한 동작:\n- `KeyboardPlugin.addKey`의 `enableCapture` 기본값은 `true`다.\n- `addCapture`/ `removeCapture`는 Scene별 로컬이 아니라 KeyboardManager의 전역 캡처 목록을 변경한다.\n- `removeAllKeys()`의 기본 `removeCapture` 값은 `false`다. 따라서 Key 객체를 제거했다고 브라우저 기본 키 캡처까지 자동 해제된다고 가정하지 않는다.\n- GameInput은 Key 객체 생성 시 `addKey(code, false)`를 사용하고, 브라우저 스크롤을 일으킬 수 있는 방향키/Space만 플레이 Scene이 활성화된 동안 캡처한 뒤 Scene SHUTDOWN에서 해제한다.\n- 현재 구조는 GameInput이 있는 플레이 Scene이 한 번에 하나만 활성화된다는 전제다. 향후 동시 실행 HUD/오버레이 Scene을 추가한다면 캡처 소유권을 중앙화해야 한다.\n\n출처: [Phaser 4.2.1 KeyboardPlugin source](https://github.com/phaserjs/phaser/blob/v4.2.1/src/input/keyboard/KeyboardPlugin.js), [Phaser 4.2.1 JustDown source](https://github.com/phaserjs/phaser/blob/v4.2.1/src/input/keyboard/keys/JustDown.js).\n\n## 4. 상태별 입력 원칙
 - Title: Confirm으로 시작.
 - Name Entry: DOM input이 문자를 직접 받는다. Z를 글로벌 Confirm으로 가로채지 않는다. Enter는 이름 제출.
 - Prologue: Confirm으로 페이지 진행, pointer는 보조.
@@ -35,16 +35,16 @@ PC Undertale FAQ는 Z/Enter, X/Shift, C/Ctrl을 각각 동작의 대체 입력�
 - Soul Dodge: 방향키/WASD로 SOUL 이동, 메뉴 Confirm은 무시.
 - Transition: 입력 잠금 또는 한 번만 소비.
 
-## 4. 호환성 원칙
+## 5. 호환성 원칙
 기존 플레이어가 이미 사용하던 Enter/Space/E/C 동작을 갑자기 제거하지 않는다. 새 키는 별칭으로 추가한다. 실제 플레이 테스트 뒤 사용 빈도와 브라우저 단축키 충돌을 확인하고 최종 기본값을 확정한다.
 
-## 5. 주의 사항
+## 6. 주의 사항
 - C는 현재 전화 호출에 쓰이므로 MENU와 동시에 구현하지 않는다.
 - Ctrl은 브라우저 기본 단축키와 충돌할 수 있으므로 메뉴 기능 구현 전 검사한다.
 - Escape는 브라우저 전체 동작/페이지 이동과 연관될 수 있으므로 게임 내 취소 동작만 수행하고 페이지를 닫는 기능으로 연결하지 않는다.
 - 이름 입력 중 Z 키가 문자로 입력되어야 한다.
 
-## 6. 구현 파일
+## 7. 구현 파일
 - `src/input/GameInput.ts`
 - TitleScene, PrologueScene, FlowerFieldScene, RoomScene, WelfareCorridorScene
 - BattleScene, BullyBattleScene, SecondRankEncounterScene, RegularEncounterScene, NerdstablookEncounterScene
