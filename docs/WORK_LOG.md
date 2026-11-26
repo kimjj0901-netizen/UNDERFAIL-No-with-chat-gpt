@@ -300,3 +300,13 @@
 - 브라우저 직접 플레이, 실제 키보드 조작, 레이아웃 캡처, 사운드 청취: NOT RUN.
 - TypeScript/Vite 빌드 성공은 브라우저 플레이·시각적 완성·게임 재미의 검증을 의미하지 않는다.
 
+
+## 2026-11-26 — 리빌드 기준선 CI 검증
+
+- PR #2 head `1e3d07a4c7baf2ec1f1249920c7832c7e6881167`.
+- GitHub Actions run `45833696169`: completed / success.
+- Install dependencies: PASS.
+- TypeScript and production build: PASS.
+- 이 run은 해당 SHA의 저장소 코드와 문서가 빌드되는지 검증한다.
+- 브라우저 직접 플레이, 물리 키 입력, 화면 캡처/패널 겹침, 한국어 텍스트, 사운드 청취: NOT RUN.
+- PR #2는 Draft / open 상태로 유지한다. 브라우저 실기 QA가 수행되지 않았으므로 main에 병합하지 않는다.
