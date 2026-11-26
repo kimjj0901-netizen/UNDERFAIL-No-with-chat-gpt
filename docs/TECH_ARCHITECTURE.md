@@ -191,3 +191,12 @@ BootScene
 - 공통 helper는 표현 계층만 공유하고, 전투 규칙을 강제로 공통화하지 않는다.
 - TitleScene은 같은 짙은 청록/낡은 금색 시각 언어의 시작 선택 프레임을 사용한다.
 - [검증 한계] CI 빌드 성공은 실제 화면의 한국어 잘림·패널 겹침·선택 상태를 확인한 것이 아니다.
+
+
+## 14. 입력 액션 별칭 분리
+- `CONFIRM`: Z / Enter / Space.
+- `INTERACT`: E only.
+- 탐험 Scene은 대화가 활성화되지 않은 상태에서 Confirm 또는 E를 조사에 사용.
+- 대화 상태는 Scene 자체의 state branch에서 Confirm을 소비하므로 탐험 상호작용과 충돌하지 않는다.
+- `PHONE_CALL`: C.
+- `MENU`: Ctrl 예약. C는 기존 전화 호출 때문에 메뉴 키로 사용하지 않는다.

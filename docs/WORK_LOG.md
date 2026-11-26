@@ -36,3 +36,13 @@
 - 대화가 활성화되면 Scene이 탐험 업데이트를 중단하고 Confirm은 대화 처리기에서만 사용.
 - MENU는 Ctrl만 예약 입력으로 두고, C는 기존 전화 단축키로 유지.
 - 이 변경으로 Confirm 키 별칭이 두 개의 액션 배열에서 동시에 소비되는 문제를 제거.
+
+
+### 최신 입력 및 CI 기록 — 2026-11-26
+- `GameInput.INTERACT`를 E-only로 분리해 Confirm과 같은 key object가 두 action에서 소비되는 위험 제거.
+- RoomScene/WelfareCorridorScene/FlowerFieldScene은 탐험 상태에서 E 또는 Confirm으로 상호작용.
+- 대화가 열리면 Scene 업데이트가 handleDialogue로 조기 반환하므로 Confirm은 대화만 진행.
+- `MENU`는 Ctrl 예약, C는 전화 단축키.
+- 최신 커밋: `a4ec9b21c5bfc20408bcfac48c24b8a03a93609c`.
+- GitHub Actions run `45832181281`: completed / success; Install dependencies PASS; TypeScript and production build PASS.
+- 브라우저 직접 입력/레이아웃 QA는 NOT RUN.

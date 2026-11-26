@@ -39,3 +39,10 @@
 - 공통 ACT/ITEM 선택 행: 브랜치 구현, CI 검증 대기.
 - 대화 패널·전투 보드·FIGHT 타이밍·보스별 프레젠테이션: 후속 설계/구현 필요.
 - 브라우저 QA 전에는 화면 통일 완료로 표시하지 않는다.
+
+
+## 최신 검증 상태 — 2026-11-26
+- Input action alias 충돌 수정: 브랜치 반영, CI PASS.
+- Title/Encounter menu/panel/shared choice list: 브랜치 반영, CI PASS(해당 커밋별 runs 기록 참조).
+- Browser play, screenshot QA, physical keyboard checks: NOT RUN.
+- PR은 Draft 유지. 브라우저 QA가 불가능한 상태에서 main 병합이나 출시 준비 완료 표시를 하지 않는다.
