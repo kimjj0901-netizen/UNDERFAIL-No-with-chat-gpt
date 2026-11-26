@@ -181,3 +181,13 @@ BootScene
 - C는 전화 단축키를 위해 유지하며 Menu 액션은 현재 예약 상태다.
 - 이 변경은 입력 구조의 일관성을 높이는 첫 단계다. 전투/대화 상태머신 전체를 공통화한 것은 아니다.
 - [검증 한계] 브라우저에서 키 입력을 실제 플레이로 검증하기 전까지 완전한 조작 검수 완료로 처리하지 않는다.
+
+
+## 13. 공통 전투 UI 프레젠테이션
+
+- `src/ui/EncounterMenu.ts`가 공통 명령 행, 공통 ACT/ITEM 선택 목록, 공통 대화/명령 프레임을 제공한다.
+- 적용 Scene: BattleScene, BullyBattleScene, SecondRankEncounterScene, RegularEncounterScene, NerdstablookEncounterScene.
+- 각 Scene의 적별 대사·행동·해결 로직은 계속 Scene/콘텐츠 데이터가 소유한다.
+- 공통 helper는 표현 계층만 공유하고, 전투 규칙을 강제로 공통화하지 않는다.
+- TitleScene은 같은 짙은 청록/낡은 금색 시각 언어의 시작 선택 프레임을 사용한다.
+- [검증 한계] CI 빌드 성공은 실제 화면의 한국어 잘림·패널 겹침·선택 상태를 확인한 것이 아니다.

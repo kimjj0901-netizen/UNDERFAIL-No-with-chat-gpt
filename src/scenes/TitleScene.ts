@@ -40,17 +40,26 @@ export class TitleScene extends Phaser.Scene {
       letterSpacing: 10,
     }).setOrigin(0.5);
 
-    const rule = this.add.rectangle(width / 2, 347, 265, 1, 0xc5b184, 0.65);
-    const startLabel = this.add.text(width / 2, 390, "새로운 이야기를 시작한다", {
+    const rule = this.add.rectangle(width / 2, 347, 265, 1, 0xc5b184, 0.72).setDepth(4);
+    const startPlate = this.add.rectangle(width / 2, 390, 430, 58, 0x12262d, 0.92)
+      .setStrokeStyle(2, 0xc5b184, 0.86)
+      .setDepth(5)
+      .setInteractive({ useHandCursor: true });
+    const startMarker = this.add.text(width / 2 - 184, 390, "›", {
+      fontFamily: "Georgia, serif",
+      fontSize: "32px",
+      color: "#e2c98e",
+    }).setOrigin(0.5).setDepth(6);
+    const startLabel = this.add.text(width / 2 + 8, 390, "새로운 이야기를 시작한다", {
       fontFamily: "'Noto Sans KR', sans-serif",
-      fontSize: "19px",
+      fontSize: "18px",
       color: "#f0dfb8",
-      padding: { x: 18, y: 10 },
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      padding: { x: 12, y: 8 },
+    }).setOrigin(0.5).setDepth(6).setInteractive({ useHandCursor: true });
 
     this.tweens.add({
-      targets: [startLabel, rule],
-      alpha: { from: 0.62, to: 1 },
+      targets: [startLabel, startPlate, startMarker, rule],
+      alpha: { from: 0.76, to: 1 },
       duration: 1800,
       yoyo: true,
       repeat: -1,
@@ -83,7 +92,9 @@ export class TitleScene extends Phaser.Scene {
     };
 
     this.launch = start;
+    startPlate.on("pointerdown", start);
     startLabel.on("pointerdown", start);
+    startMarker.setInteractive({ useHandCursor: true }).on("pointerdown", start);
   }
 
   update(): void {

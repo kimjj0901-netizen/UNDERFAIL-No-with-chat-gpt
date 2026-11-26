@@ -14,3 +14,17 @@
 - 입력 타입을 `readonly string[]`으로 변경.
 - 수정 커밋 `09434ce5e6fb4a56d8f679f80180e0dcb4e0e634`, CI run 45830752017: success.
 - 패널 UI는 다음 코드 커밋에서 CI 검증 예정.
+
+
+## 2026-11-26 — 타이틀 선택 UI 및 시각 스타일 바이블
+
+### 구현
+- TitleScene의 시작 항목을 어두운 청록 선택 프레임 + 금색 테두리 + 선택 마커로 표현.
+- Z/Enter/Space Confirm과 프레임/텍스트 클릭은 동일한 시작 콜백을 사용.
+- 기존 단일 시작 기능만 시각적으로 강조했으며 가짜 Continue/Settings 항목은 추가하지 않음.
+
+### 디자인 문서
+- `docs/design/VISUAL_STYLE_BIBLE.md`: 현재 SVG에서 추출한 색상/장면 역할/시각 위계.
+- `docs/design/UI_DESIGN_SYSTEM.md`: 타이틀, 패널, 전투 명령, 하위 선택 목록의 규칙.
+- `docs/design/ASSET_PRODUCTION_SPEC.md`: 960×540 배경 및 캐릭터 에셋 시트 제작 규격 초안.
+- [검증 한계] 이 규격은 현재 코드/에셋을 토대로 한 1차 제안이다. 브라우저 화면 캡처로 최종 승인하지 않았다.
