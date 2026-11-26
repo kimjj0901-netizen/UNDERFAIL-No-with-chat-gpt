@@ -337,3 +337,11 @@
 - Source reference: https://github.com/phaserjs/phaser/blob/v4.2.1/src/input/keyboard/KeyboardPlugin.js
 - Source reference: https://github.com/phaserjs/phaser/blob/v4.2.1/src/input/keyboard/keys/JustDown.js
 
+## 2026-11-26 — 입력 QA 문서 형식 정리
+
+- 입력 수용 테스트에 추가한 IN-20~IN-22 시나리오의 행 구분이 문자 그대로 `\\n`로 기록된 서식 오류를 수정했다.
+- Phaser 4.2.1 입력 수명주기 절의 줄바꿈도 실제 Markdown 줄바꿈으로 교정했다.
+- 문서 렌더링 전제의 코드/내용을 다시 확인했다. QA 행 3개가 별도 표 행으로 분리되며, 입력 명세의 3절 키 캡처 수명주기가 정상적인 Markdown 구조를 갖는다.
+- 이 수정은 문서 형식만 정리하며 기능 동작의 브라우저 검증을 대신하지 않는다.
+- IN-20~IN-22: NOT RUN.
+
