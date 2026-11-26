@@ -22,7 +22,10 @@
 | IN-14 | SOUL 회피 중 방향키/WASD | 회피 이동 | NOT RUN |
 | IN-15 | Z와 Enter 동시 누름 | Confirm 중복 실행 금지 | NOT RUN |
 | IN-16 | 전환 중 연속 입력 | 이전/다음 Scene에서 이중 실행 금지 | NOT RUN |
-| IN-17 | C/Ctrl | C는 전화 호출, Ctrl은 예약 메뉴 액션. 미구현 메뉴는 열리지 않음 | NOT RUN |\n| IN-20 | 타이틀 종료 후 NameEntry에서 Z 입력 | 이전 Scene의 키 캡처가 남지 않아 문자 Z가 입력됨 | NOT RUN |\n| IN-21 | NameEntry에서 Space/방향키 입력 | 공백 및 커서 이동이 DOM input 기본 동작으로 작동 | NOT RUN |\n| IN-22 | 플레이 Scene 종료 후 다른 화면 진입 | 방향키/Space 브라우저 스크롤 캡처가 해제됨 | NOT RUN |
+| IN-17 | C/Ctrl | C는 전화 호출, Ctrl은 예약 메뉴 액션. 미구현 메뉴는 열리지 않음 | NOT RUN |
+| IN-20 | 타이틀 종료 후 NameEntry에서 Z 입력 | 이전 Scene의 키 캡처가 남지 않아 문자 Z가 입력됨 | NOT RUN |
+| IN-21 | NameEntry에서 Space/방향키 입력 | 공백 및 커서 이동이 DOM input 기본 동작으로 작동 | NOT RUN |
+| IN-22 | 플레이 Scene 종료 후 다른 화면 진입 | 방향키/Space 브라우저 스크롤 캡처가 해제됨 | NOT RUN |
 
 ## 테스트 기록
 브라우저 플레이 환경이 연결되면 실제 게임을 실행하고, 각 결과를 PASS/FAIL 및 재현 절차로 갱신한다. 빌드 통과는 이 표의 PASS와 다르다.
@@ -43,7 +46,8 @@
 - PHONE_CALL은 C, MENU는 Ctrl만 예약.
 - 실제 브라우저에서 입력 충돌/중복을 검사하기 전까지 위 시나리오는 NOT RUN.
 
-\n
+
+
 ## Phaser 4.2.1 전역 키 캡처 회귀 테스트
 - `KeyboardPlugin.addKey(key, enableCapture)`의 기본값은 `enableCapture=true`다.
 - 키 캡처는 KeyboardManager 전역 상태이며, Scene의 기본 `removeAllKeys()` 호출은 `removeCapture=false`로 실행된다.
