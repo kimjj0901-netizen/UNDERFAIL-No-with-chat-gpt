@@ -3,7 +3,11 @@ import assert from "node:assert/strict";
 
 import { EncounterFlowController } from "../src/combat/EncounterFlowController.ts";
 import { FixedStepRunner } from "../src/combat/FixedStepRunner.ts";
-import { evaluateRhythmTiming, RHYTHM_TIMING_DURATION_MS } from "../src/combat/FightTiming.ts";
+import {
+  evaluateRhythmTiming,
+  RHYTHM_TIMING_DURATION_MS,
+  RHYTHM_DODGE_INTERVALS_MS,
+} from "../src/combat/FightTiming.ts";
 import { WELFARE_REGULAR_ENCOUNTERS } from "../src/data/welfareEncounterContent.ts";
 
 test("encounter flow accepts the main gameplay path", () => {
@@ -95,4 +99,9 @@ test("rhythm mote provides the observation clue used by its FIGHT timing", () =>
   assert.match(watch.response, /세 번의 짧은 빛과 한 번의 긴 빛/);
   assert.equal(rhythmMote.resolveAt, 2);
   assert.equal(new Set(rhythmMote.actOptions.map((option) => option.id)).size, rhythmMote.actOptions.length);
+});
+
+test("rhythm dodge uses three short intervals followed by one long interval", () => {
+  assert.deepEqual(RHYTHM_DODGE_INTERVALS_MS, [300, 300, 300, 900]);
+  assert.equal(RHYTHM_DODGE_INTERVALS_MS.reduce((sum, value) => sum + value, 0), RHYTHM_TIMING_DURATION_MS);
 });
