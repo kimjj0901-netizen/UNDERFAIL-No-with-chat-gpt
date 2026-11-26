@@ -291,7 +291,7 @@
 ### 출처 기반 결론
 - Toby Fox 개발자 기고는 전투 엔진을 다른 게임 요소보다 먼저 만들었다고 설명하고, 짧은 공격 패턴·적 조합·조우 빈도의 신선도를 중요 설계 요소로 언급한다.
 - 공식 FAQ는 PC 키보드에서 Enter/Shift/Ctrl을 Z/X/C 대체 입력으로 사용할 수 있다고 안내한다.
-- Phaser 공식 API 문서는 KeyboardPlugin이 Scene 소유 입력 시스템이며 Key 객체를 게임 루프에서 조회할 수 있다고 설명한다. 현재 확인한 API 페이지는 Phaser 4.1 문서이고 프로젝트는 4.2.1이므로, 세부 변경은 설치 버전/빌드에서 계속 검증한다.
+- Phaser v4.2.1 공식 소스의 KeyboardPlugin.js와 JustDown.js를 직접 확인했다. Key capture는 KeyboardManager의 전역 상태이며 addKey 기본값은 capture 활성화, removeAllKeys 기본값은 capture를 해제하지 않는 것으로 확인했다.
 
 ### 검증 상태
 - 입력/전투 UI 구현은 PR #2 선행 커밋에 포함되어 있다.
@@ -344,4 +344,14 @@
 - 문서 렌더링 전제의 코드/내용을 다시 확인했다. QA 행 3개가 별도 표 행으로 분리되며, 입력 명세의 3절 키 캡처 수명주기가 정상적인 Markdown 구조를 갖는다.
 - 이 수정은 문서 형식만 정리하며 기능 동작의 브라우저 검증을 대신하지 않는다.
 - IN-20~IN-22: NOT RUN.
+
+## 2026-11-26 — 입력 리빌드 CI 결과 및 최종 브랜치 점검
+
+- 코드 수정 커밋 dcfa4fca0df917f0f4a41178cb59d7721796eff3의 GitHub Actions run 45834341717: completed / success.
+- 문서 서식 수정 커밋 a38d6e55e212c43bc33b4b70088406a92f62a970의 GitHub Actions run 45834756003: completed / success.
+- 두 run 모두 dependency install 및 TypeScript / Vite production build 단계 PASS.
+- 최신 브랜치 HEAD는 이 로그 추가 커밋에서 갱신되므로, PR metadata에서 다시 확인한다.
+- IN-20~IN-22 (DOM name entry Z/Space 입력 및 global capture 해제): 브라우저 직접 테스트 NOT RUN.
+- 전투 패널 겹침, 긴 한국어 대사, 선택 커서 표시, 화면 비율 및 실제 전투 템포: 브라우저 직접 테스트 NOT RUN / REVIEW NEEDED.
+- PR #2는 Draft / open으로 유지. 브라우저 실기 QA 및 사용자 플레이 감각 확인 전 main에 병합하지 않는다.
 
