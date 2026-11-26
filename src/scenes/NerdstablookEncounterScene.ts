@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
-import { drawEncounterCommandRow, drawEncounterChoiceList } from "../ui/EncounterMenu";
+import { drawEncounterCommandRow, drawEncounterChoiceList, drawEncounterPanel } from "../ui/EncounterMenu";
 import { NERDSTABLOOK_CONTENT } from "../data/welfareEncounterContent";
 import { GameSession } from "../state/GameSession";
 
@@ -55,6 +55,8 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
       backgroundColor: "#22383d",
       padding: { x: 8, y: 4 },
     }).setOrigin(0.5).setDepth(20);
+
+    drawEncounterPanel(this, { centerX: 480, centerY: 404, width: 876, height: 140, depth: 30 });
 
     this.message = this.add.text(480, 368, NERDSTABLOOK_CONTENT.intro.join("\n"), {
       fontFamily: "'Noto Sans KR', sans-serif",

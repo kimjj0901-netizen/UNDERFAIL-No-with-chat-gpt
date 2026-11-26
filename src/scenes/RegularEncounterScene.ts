@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
-import { drawEncounterCommandRow, drawEncounterChoiceList } from "../ui/EncounterMenu";
+import { drawEncounterCommandRow, drawEncounterChoiceList, drawEncounterPanel } from "../ui/EncounterMenu";
 import {
   WELFARE_REGULAR_ENCOUNTERS,
   type WelfareRegularEnemyId,
@@ -91,6 +91,8 @@ export class RegularEncounterScene extends Phaser.Scene {
     this.add.rectangle(480, 305, 344, 134, 0x182c32, 0.46)
       .setStrokeStyle(1, 0x60756c, 0.72)
       .setDepth(25);
+
+    drawEncounterPanel(this, { centerX: 480, centerY: 408, width: 876, height: 150, depth: 30 });
 
     this.add.text(480, 46, enemy.name, {
       fontFamily: "'Noto Serif KR', serif",

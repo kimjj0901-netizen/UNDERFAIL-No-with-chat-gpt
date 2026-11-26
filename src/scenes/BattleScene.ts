@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
-import { drawEncounterCommandRow, drawEncounterChoiceList } from "../ui/EncounterMenu";
+import { drawEncounterCommandRow, drawEncounterChoiceList, drawEncounterPanel } from "../ui/EncounterMenu";
 import { PROTOTYPE_SETTINGS } from "../data/prototypeContent";
 import { GameSession } from "../state/GameSession";
 
@@ -61,6 +61,7 @@ export class BattleScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     this.drawDomitoriellPortrait();
+    drawEncounterPanel(this, { centerX: 480, centerY: 245, width: 820, height: 92, depth: 10, fillColor: 0x101e24, fillAlpha: 0.88 });
     this.battleInfo = this.add.text(480, 245, "", {
       fontFamily: "sans-serif",
       fontSize: "16px",
@@ -68,7 +69,7 @@ export class BattleScene extends Phaser.Scene {
       align: "center",
       wordWrap: { width: 660 },
       lineSpacing: 8,
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(11);
     this.battleInfo.setText("도미토리엘은 걱정스러운 눈으로 당신을 바라본다.\n당신이 원하는 길을 포기하길 바라지는 않지만, 쉽게 보내줄 수도 없다.");
 
     this.statusText = this.add.text(480, 388, "", {

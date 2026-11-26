@@ -149,3 +149,37 @@ export function drawEncounterChoiceList(
 
   return objects;
 }
+
+
+export interface EncounterPanelOptions {
+  centerX?: number;
+  centerY?: number;
+  width?: number;
+  height?: number;
+  depth?: number;
+  fillColor?: number;
+  fillAlpha?: number;
+}
+
+export function drawEncounterPanel(
+  scene: Phaser.Scene,
+  options: EncounterPanelOptions = {},
+): Phaser.GameObjects.Graphics {
+  const centerX = options.centerX ?? 480;
+  const centerY = options.centerY ?? 390;
+  const width = options.width ?? 876;
+  const height = options.height ?? 148;
+  const depth = options.depth ?? 30;
+  const fillColor = options.fillColor ?? 0x09151d;
+  const fillAlpha = options.fillAlpha ?? 0.96;
+  const x = centerX - width / 2;
+  const y = centerY - height / 2;
+  const frame = scene.add.graphics().setDepth(depth);
+
+  frame.fillStyle(fillColor, fillAlpha).fillRoundedRect(x, y, width, height, 8);
+  frame.lineStyle(2, 0xbca981, 0.94).strokeRoundedRect(x, y, width, height, 8);
+  frame.lineStyle(1, 0x64766d, 0.72)
+    .strokeRoundedRect(x + 10, y + 10, width - 20, height - 20, 5);
+
+  return frame;
+}

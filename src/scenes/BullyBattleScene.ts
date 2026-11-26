@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
-import { drawEncounterCommandRow } from "../ui/EncounterMenu";
+import { drawEncounterCommandRow, drawEncounterPanel } from "../ui/EncounterMenu";
 import { Atmosphere } from "../audio/Atmosphere";
 import { GameSession } from "../state/GameSession";
 
@@ -103,9 +103,7 @@ export class BullyBattleScene extends Phaser.Scene {
   private showIntro(): void {
     this.mode = "intro";
     Atmosphere.setMood("uneasy");
-    const panel = this.add.rectangle(480, 383, 864, 148, 0x0c1820, 0.94)
-      .setStrokeStyle(2, 0xb6a47d, 0.92)
-      .setDepth(25);
+    const panel = drawEncounterPanel(this, { centerX: 480, centerY: 383, width: 864, height: 148, depth: 25 });
     this.message = this.add.text(82, 334,
       "불리는 친근한 척 손을 내민다.\n" +
       "그 손끝에서 이상한 상징들이 번뜩인다.\n" +
@@ -138,9 +136,7 @@ export class BullyBattleScene extends Phaser.Scene {
     this.message?.destroy();
     this.message = undefined;
     this.clearMenu();
-    const menuPanel = this.add.rectangle(480, 414, 874, 158, 0x0b171e, 0.96)
-      .setStrokeStyle(2, 0xb6a47d, 0.94)
-      .setDepth(28);
+    const menuPanel = drawEncounterPanel(this, { centerX: 480, centerY: 414, width: 874, height: 158, depth: 28 });
     const items = [
       { label: "FIGHT", subtitle: "밀어내기" },
       { label: "ACT", subtitle: "상황 살피기" },

@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
-import { drawEncounterCommandRow, drawEncounterChoiceList } from "../ui/EncounterMenu";
+import { drawEncounterCommandRow, drawEncounterChoiceList, drawEncounterPanel } from "../ui/EncounterMenu";
 import { GameSession } from "../state/GameSession";
 import { WELFARE_EVENTS } from "../data/storyEvents";
 
@@ -51,10 +51,7 @@ export class SecondRankEncounterScene extends Phaser.Scene {
       padding: { x: 7, y: 4 },
     }).setOrigin(0.5).setDepth(20);
 
-    const panel = this.add.graphics().setDepth(30);
-    panel.fillStyle(0x09151d, 0.97).fillRoundedRect(42, 326, 876, 176, 10);
-    panel.lineStyle(2, 0xbca981, 0.94).strokeRoundedRect(42, 326, 876, 176, 10);
-    panel.lineStyle(1, 0x64766d, 0.72).strokeRoundedRect(52, 336, 856, 156, 7);
+    drawEncounterPanel(this, { centerX: 480, centerY: 414, width: 876, height: 176, depth: 30 });
 
     this.add.text(72, 347, "전교 2등", {
       fontFamily: "'Noto Serif KR', serif",
