@@ -18,3 +18,7 @@
 - 연구 문서에 외부 링크 및 제한된 미리보기로만 사용.
 - 최종 게임 자산에 포함하지 않음.
 - 원작 화면을 그대로 재현하는 개발 지시로 사용하지 않음.
+
+| IMG-07 | Snowdin 이동 경로/지역 카운터 | https://rebelofalltrades.files.wordpress.com/2017/08/snowdinkillcounter.png?auto=webp&disable=upscale&quality=80&w=646&width=1280 | 공간에서 캐릭터와 HUD의 상대 크기 관찰 | 플레이 영상/스크린샷 한 장은 전체 맵을 증명하지 않음 |
+| IMG-08 | 전투 ACT 메뉴/그리드 | https://www.superjumpmagazine.com/content/images/2022/03/Screenshot-2022-03-12-at-15.52.39.png | 상단 적 영역·중앙 대사/ACT·하단 상태/명령의 계층 | SUPERJUMP 분석자의 캡처·설명 |
+| IMG-09 | Ruins 인물 대면 장면 | https://images.squarespace-cdn.com/content/v1/5017c2ace4b01a67d6bdc30c/1522705423533-ISJ55CLJUMS6RYDNGTID/Undertale_20180301230241.jpg | 두 인물의 거리·방의 프레이밍·대화 상황 | 2차 블로그 이미지

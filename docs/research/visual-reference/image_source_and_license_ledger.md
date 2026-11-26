@@ -20,3 +20,7 @@
 5. 미확인 자산은 최종 빌드에서 제외.
 
 원작 스크린샷은 저작권이 확인되더라도 UNDERFAIL용 게임 자산으로 사용할 권한이 자동으로 생기지 않는다.
+
+| IMG-07 | Rebel of All Trades 이미지 미러 | https://rebelofalltrades.files.wordpress.com/2017/08/snowdinkillcounter.png?auto=webp&disable=upscale&quality=80&w=646&width=1280 | 분석용 참조. 원작 스크린샷 저작권은 권리자에게 귀속 | 게임 배포 금지 |
+| IMG-08 | SUPERJUMP 기사 내 캡처 | https://www.superjumpmagazine.com/content/images/2022/03/Screenshot-2022-03-12-at-15.52.39.png | 분석용 화면 구성 참조 | 게임 배포 금지 |
+| IMG-09 | Squarespace 블로그 이미지 미러 | https://images.squarespace-cdn.com/content/v1/5017c2ace4b01a67d6bdc30c/1522705423533-ISJ55CLJUMS6RYDNGTID/Undertale_20180301230241.jpg | 분석용 탐험 화면 참조 | 게임 배포 금지
