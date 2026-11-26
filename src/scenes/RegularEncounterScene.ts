@@ -12,6 +12,7 @@ import { FixedStepRunner } from "../combat/FixedStepRunner";
 import {
   evaluateRhythmTiming,
   RHYTHM_TIMING_DURATION_MS,
+  RHYTHM_DODGE_INTERVALS_MS,
 } from "../combat/FightTiming";
 type Bullet = {
   object: Phaser.GameObjects.Arc;
@@ -623,8 +624,15 @@ export class RegularEncounterScene extends Phaser.Scene {
       this.player.y = Phaser.Math.Clamp(this.player.y + (dy / length) * 190 * dt, 244, 366);
     }
 
-    const spawnInterval = Math.max(120, enemy.patternIntervalMs / this.intensity);
-    while (this.spawnElapsed >= spawnInterval && this.mode === "dodge") {
+    while (
+      this.mode === "dodge" &&
+      this.waveElapsed < enemy.patternDurationMs
+    ) {
+      const baseInterval = enemy.pattern === "rhythm"
+        ? RHYTHM_DODGE_INTERVALS_MS[this.bulletIndex % RHYTHM_DODGE_INTERVALS_MS.length]
+        : enemy.patternIntervalMs;
+      const spawnInterval = Math.max(120, baseInterval / this.intensity);
+      if (this.spawnElapsed < spawnInterval) break;
       this.spawnElapsed -= spawnInterval;
       this.spawnPattern(enemy.pattern);
     }
