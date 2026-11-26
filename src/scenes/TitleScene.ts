@@ -1,12 +1,17 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
 import { Atmosphere } from "../audio/Atmosphere";
 
 export class TitleScene extends Phaser.Scene {
+  private controls!: GameInput;
+  private launch?: () => void;
+
   constructor() {
     super("TitleScene");
   }
 
   create(): void {
+    this.controls = new GameInput(this);
     const { width, height } = this.scale;
     const backdrop = this.add.image(width / 2, height / 2, "title-art").setDisplaySize(width, height);
     backdrop.setAlpha(0.96);
@@ -52,7 +57,7 @@ export class TitleScene extends Phaser.Scene {
       ease: "Sine.InOut",
     });
 
-    this.add.text(width / 2, 454, "ENTER  ·  SPACE  ·  CLICK", {
+    this.add.text(width / 2, 454, "Z  ·  ENTER  ·  SPACE  ·  CLICK", {
       fontFamily: "monospace",
       fontSize: "11px",
       color: "#c1b89f",
@@ -77,8 +82,11 @@ export class TitleScene extends Phaser.Scene {
       this.time.delayedCall(320, () => this.scene.start("NameEntryScene"));
     };
 
+    this.launch = start;
     startLabel.on("pointerdown", start);
-    this.input.keyboard?.once("keydown-ENTER", start);
-    this.input.keyboard?.once("keydown-SPACE", start);
+  }
+
+  update(): void {
+    if (this.controls.justPressed("CONFIRM")) this.launch?.();
   }
 }

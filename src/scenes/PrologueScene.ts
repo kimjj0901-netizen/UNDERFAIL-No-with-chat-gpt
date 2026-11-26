@@ -1,9 +1,11 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
 import { OPENING_PAGES } from "../data/openingContent";
 import { Atmosphere } from "../audio/Atmosphere";
 import { GameSession } from "../state/GameSession";
 
 export class PrologueScene extends Phaser.Scene {
+  private controls!: GameInput;
   private page = 0;
   private backdrop!: Phaser.GameObjects.Image;
   private kicker!: Phaser.GameObjects.Text;
@@ -17,6 +19,7 @@ export class PrologueScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.controls = new GameInput(this);
     this.backdrop = this.add.image(480, 270, OPENING_PAGES[0].image).setDisplaySize(960, 540);
     this.add.rectangle(480, 270, 960, 540, 0x08131a, 0.12);
 
@@ -49,23 +52,23 @@ export class PrologueScene extends Phaser.Scene {
       letterSpacing: 1,
     }).setDepth(11);
 
-    this.continuation = this.add.text(866, 488, "ENTER  ▶", {
+    this.continuation = this.add.text(866, 488, "Z / ENTER  ▶", {
       fontFamily: "monospace",
       fontSize: "12px",
       color: "#e1c994",
     }).setOrigin(1, 0.5).setDepth(11);
 
-    this.input.keyboard?.on("keydown-ENTER", this.advance, this);
-    this.input.keyboard?.on("keydown-SPACE", this.advance, this);
     this.input.on("pointerdown", this.advance, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.input.keyboard?.off("keydown-ENTER", this.advance, this);
-      this.input.keyboard?.off("keydown-SPACE", this.advance, this);
       this.input.off("pointerdown", this.advance, this);
     });
 
     this.renderPage();
     this.cameras.main.fadeIn(450, 0, 0, 0);
+  }
+
+  update(): void {
+    if (this.controls.justPressed("CONFIRM")) this.advance();
   }
 
   private renderPage(): void {
@@ -87,7 +90,7 @@ export class PrologueScene extends Phaser.Scene {
       Atmosphere.cue("paper");
     }
     Atmosphere.setMood(page.mood);
-    this.continuation.setText(this.page === OPENING_PAGES.length - 1 ? "꽃밭으로  ▶" : "ENTER  ▶");
+    this.continuation.setText(this.page === OPENING_PAGES.length - 1 ? "꽃밭으로  ▶" : "Z / ENTER  ▶");
   }
 
   private advance(): void {

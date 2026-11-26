@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
 import { NERDSTABLOOK_CONTENT } from "../data/welfareEncounterContent";
 import { GameSession } from "../state/GameSession";
 
@@ -8,7 +9,7 @@ const OPTIONS = ["FIGHT", "ACT", "ITEM", "MERCY"];
 
 export class NerdstablookEncounterScene extends Phaser.Scene {
   private mode: Mode = "intro";
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private controls!: GameInput;
   private menuIndex = 0;
   private actIndex = 0;
   private positiveActs = 0;
@@ -63,7 +64,7 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
       lineSpacing: 8,
     }).setOrigin(0.5).setDepth(31);
 
-    this.hint = this.add.text(878, 486, "ENTER  —  대화 이어가기", {
+    this.hint = this.add.text(878, 486, "Z / ENTER  —  대화 이어가기", {
       fontFamily: "monospace",
       fontSize: "11px",
       color: "#e1c995",
@@ -74,21 +75,7 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
       color: "#aab6a5",
     }).setDepth(31);
 
-    const keyboard = this.input.keyboard;
-    if (!keyboard) throw new Error("Keyboard input is unavailable in NerdstablookEncounterScene.");
-    this.keys = {
-      up: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      enter: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-      esc: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
-    };
+    this.controls = new GameInput(this);
 
     this.input.on("pointerdown", this.handlePointer, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -116,15 +103,17 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.esc) && this.mode === "act") {
+    if (this.controls.justPressed("CANCEL") && this.mode === "act") {
       this.drawMainMenu();
       return;
     }
 
-    const up = Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.w) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.left) || Phaser.Input.Keyboard.JustDown(this.keys.a);
-    const down = Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.s) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.right) || Phaser.Input.Keyboard.JustDown(this.keys.d);
+    const upPressed = this.controls.justPressed("UP");
+    const downPressed = this.controls.justPressed("DOWN");
+    const leftPressed = this.controls.justPressed("LEFT");
+    const rightPressed = this.controls.justPressed("RIGHT");
+    const up = upPressed || leftPressed;
+    const down = downPressed || rightPressed;
     if (up) {
       if (this.mode === "main") this.menuIndex = (this.menuIndex + OPTIONS.length - 1) % OPTIONS.length;
       else this.actIndex = (this.actIndex + NERDSTABLOOK_CONTENT.actOptions.length - 1) % NERDSTABLOOK_CONTENT.actOptions.length;
@@ -139,7 +128,7 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
   }
 
   private confirmPressed(): boolean {
-    return Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space);
+    return this.controls.justPressed("CONFIRM");
   }
 
   private handlePointer(): void {
@@ -187,7 +176,7 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
       color: "#e9dfcc",
       align: "center",
     }).setOrigin(0.5).setDepth(31);
-    this.hint?.setText("↑↓ 선택 · ENTER 확정 · ACT에서 ESC");
+    this.hint?.setText("↑↓ 선택 · Z / Z / ENTER 확정 · ACT에서 X / SHIFT 취소");
   }
 
   private drawActMenu(): void {
@@ -214,7 +203,7 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
       color: "#e2d7c2",
       align: "center",
     }).setOrigin(0.5).setDepth(31);
-    this.hint?.setText("↑↓ 선택 · ENTER 확정 · ESC 돌아가기");
+    this.hint?.setText("↑↓ 선택 · Z / ENTER 확정 · ESC 돌아가기");
   }
 
   private confirmSelection(): void {
@@ -283,7 +272,7 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
       wordWrap: { width: 790 },
       lineSpacing: 7,
     }).setOrigin(0.5).setDepth(31);
-    this.hint?.setText(dodge ? "ENTER  —  다음 반응을 살핀다" : "ENTER  —  계속");
+    this.hint?.setText(dodge ? "Z / ENTER  —  다음 반응을 살핀다" : "Z / ENTER  —  계속");
   }
 
   private beginDodge(): void {
@@ -313,10 +302,10 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
     const pace = this.negativeActs >= 2 ? 1.5 : 1;
     let dx = 0;
     let dy = 0;
-    if (this.keys.left.isDown || this.keys.a.isDown) dx -= 1;
-    if (this.keys.right.isDown || this.keys.d.isDown) dx += 1;
-    if (this.keys.up.isDown || this.keys.w.isDown) dy -= 1;
-    if (this.keys.down.isDown || this.keys.s.isDown) dy += 1;
+    if (this.controls.isDown("LEFT")) dx -= 1;
+    if (this.controls.isDown("RIGHT")) dx += 1;
+    if (this.controls.isDown("UP")) dy -= 1;
+    if (this.controls.isDown("DOWN")) dy += 1;
     if (this.player && (dx || dy)) {
       const length = Math.hypot(dx, dy) || 1;
       this.player.x = Phaser.Math.Clamp(this.player.x + (dx / length) * 210 * dt, 324, 636);

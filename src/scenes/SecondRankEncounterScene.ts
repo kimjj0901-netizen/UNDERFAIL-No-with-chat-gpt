@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
 import { GameSession } from "../state/GameSession";
 import { WELFARE_EVENTS } from "../data/storyEvents";
 
@@ -11,7 +12,7 @@ export class SecondRankEncounterScene extends Phaser.Scene {
   private mode: Mode = "main";
   private mainIndex = 0;
   private actIndex = 0;
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private controls!: GameInput;
   private menuObjects: Phaser.GameObjects.GameObject[] = [];
   private playerText?: Phaser.GameObjects.Text;
   private message?: Phaser.GameObjects.Text;
@@ -69,21 +70,7 @@ export class SecondRankEncounterScene extends Phaser.Scene {
       wordWrap: { width: 780 },
     }).setDepth(31);
 
-    const keyboard = this.input.keyboard;
-    if (!keyboard) throw new Error("Keyboard input is unavailable in SecondRankEncounterScene.");
-    this.keys = {
-      up: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      enter: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-      esc: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
-    };
+    this.controls = new GameInput(this);
 
     this.addMenuHint();
     this.drawMainMenu();
@@ -99,23 +86,25 @@ export class SecondRankEncounterScene extends Phaser.Scene {
     if (this.mode === "resolution") return;
 
     if (this.mode === "response") {
-      if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+      if (this.controls.justPressed("CONFIRM")) {
         this.mode = "main";
         this.drawMainMenu();
       }
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.esc) && this.mode === "act") {
+    if (this.controls.justPressed("CANCEL") && this.mode === "act") {
       this.mode = "main";
       this.drawMainMenu();
       return;
     }
 
-    const up = Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.w) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.left) || Phaser.Input.Keyboard.JustDown(this.keys.a);
-    const down = Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.s) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.right) || Phaser.Input.Keyboard.JustDown(this.keys.d);
+    const upPressed = this.controls.justPressed("UP");
+    const downPressed = this.controls.justPressed("DOWN");
+    const leftPressed = this.controls.justPressed("LEFT");
+    const rightPressed = this.controls.justPressed("RIGHT");
+    const up = upPressed || leftPressed;
+    const down = downPressed || rightPressed;
 
     if (up) {
       if (this.mode === "main") this.mainIndex = (this.mainIndex + MAIN_OPTIONS.length - 1) % MAIN_OPTIONS.length;
@@ -126,13 +115,13 @@ export class SecondRankEncounterScene extends Phaser.Scene {
       if (this.mode === "main") this.mainIndex = (this.mainIndex + 1) % MAIN_OPTIONS.length;
       else this.actIndex = (this.actIndex + 1) % WELFARE_EVENTS.secondRankEncounter.actOptions.length;
       this.mode === "main" ? this.drawMainMenu() : this.drawActMenu();
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+    } else if (this.controls.justPressed("CONFIRM")) {
       this.confirmSelection();
     }
   }
 
   private addMenuHint(): void {
-    this.hint = this.add.text(878, 298, "↑↓ 선택 · ENTER 확정", {
+    this.hint = this.add.text(878, 298, "↑↓ 선택 · Z / ENTER 확정", {
       fontFamily: "monospace",
       fontSize: "11px",
       color: "#b9b39f",
@@ -163,7 +152,7 @@ export class SecondRankEncounterScene extends Phaser.Scene {
       this.menuObjects.push(card, text);
     });
     this.message?.setText(WELFARE_EVENTS.secondRankEncounter.intro.join("\n"));
-    this.hint?.setText("↑↓ 선택 · ENTER 확정");
+    this.hint?.setText("↑↓ 선택 · Z / ENTER 확정");
   }
 
   private drawActMenu(): void {
@@ -183,7 +172,7 @@ export class SecondRankEncounterScene extends Phaser.Scene {
       });
       this.menuObjects.push(text);
     });
-    this.hint?.setText("↑↓ 선택 · ENTER 확정 · ESC 돌아가기");
+    this.hint?.setText("↑↓ 선택 · Z / ENTER 확정 · X / SHIFT 취소");
   }
 
   private confirmSelection(): void {
@@ -214,7 +203,7 @@ export class SecondRankEncounterScene extends Phaser.Scene {
     this.mode = "response";
     this.clearMenu();
     this.message?.setText(WELFARE_EVENTS.secondRankEncounter.itemResponse);
-    this.hint?.setText("ENTER  —  메뉴로 돌아가기");
+    this.hint?.setText("Z / ENTER  —  메뉴로 돌아가기");
   }
 
   private resolve(action: Action, detail?: string): void {

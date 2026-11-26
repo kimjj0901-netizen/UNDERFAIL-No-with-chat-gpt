@@ -210,3 +210,41 @@
 
 ### 다음 단계
 **교육복지반 1.8 간식 바구니와 거미 모양 과자 판매대부터 원문 순서대로 이어서 구현한다. 브라우저 직접 플레이 검수도 그 다음 코드 변경의 승인 기준으로 남겨둔다.**
+
+
+## 2026-11-26 — 심층 리서치 기반 기준선 감사 및 입력 리빌드
+
+### 조사 및 설계
+- `docs/audit/BASELINE_AUDIT.md`에 현재 Scene·입력·아트·전투 구조의 정적 기준선을 기록했다.
+- `docs/research/visual-reference/`에 Undertale의 타이틀, 오프닝, 방, 캐릭터, 전투, UI, 애니메이션, 전환, 색상, 시각 격차를 분류했다.
+- 이미지 참조는 분석용 링크/미리보기로만 문서화했으며 원작 이미지를 게임 자산으로 복제하지 않았다.
+- `docs/design/GAMEPLAY_PILLARS.md`, `CORE_GAME_LOOP.md`, `INPUT_AND_CONTROL_SPEC.md`, `COMBAT_SYSTEM_SPEC.md`를 작성했다.
+- 입력 QA 테스트 계획 및 단계적 리빌드 계획을 작성했다.
+
+### 코드 변경 준비
+- `src/input/GameInput.ts` 공통 입력 레이어.
+- TitleScene / PrologueScene / FlowerFieldScene의 Confirm 입력 통합.
+- RoomScene / WelfareCorridorScene의 이동·상호작용·전화 입력 통합.
+- BattleScene / BullyBattleScene / SecondRankEncounterScene / RegularEncounterScene / NerdstablookEncounterScene의 메뉴·취소·회피 입력 통합.
+- Z/Enter/Space Confirm, X/Shift/Escape Cancel, 방향키/WASD 이동, E 조사 호환, C 전화 호환.
+- NameEntryScene의 DOM 텍스트 입력은 별도 유지.
+- RoomScene의 교육복지실 출구 화자 문자열 불일치 수정.
+- BattleScene의 도미토리엘 임시 Graphics 초상을 기존 공유 SVG 에셋으로 대체.
+
+### 테스트 상태
+| 항목 | 상태 | 근거 |
+|---|---|---|
+| 최신 main과 보호 문서 확인 | PASS | GitHub main/tree/docs 조회 |
+| 주요 Scene/에셋 정적 감사 | PASS | GitHub 소스 및 에셋 확인 |
+| 공통 입력 및 Scene 이관 작성 | 구현 준비 | 변경 blob 생성, 브랜치 tree/commit 및 CI 검증 전 |
+| TypeScript | NOT RUN | 이 브랜치의 변경은 아직 CI 전 |
+| Vite production build | NOT RUN | 이 브랜치의 변경은 아직 CI 전 |
+| 브라우저 조작 | NOT RUN | 사용할 수 있는 브라우저 조작 도구 미확인 |
+| 시각 QA | REVIEW NEEDED | 실제 캡처/플레이 확인 필요 |
+| 사운드 청취 | NOT RUN | 실제 게임 사운드 청취 미실시 |
+
+### 다음 작업
+1. 변경 blob을 브랜치 tree/commit에 통합하고 GitHub Actions를 실행한다.
+2. CI 실패가 있으면 로그를 확인해 수정한다.
+3. 브라우저 실행 환경이 확보되면 `docs/qa/CONTROL_INPUT_ACCEPTANCE_TESTS.md`를 실제 결과로 갱신한다.
+4. 입력 검증 후 UI 규격 통일, 화면비 A/B 목업, 방향별 스프라이트/표정 시트, 공통 전투 상태머신으로 확장한다.

@@ -138,21 +138,10 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private drawDomitoriellPortrait(): void {
-    const g = this.add.graphics();
-    g.fillStyle(0x11191d, 0.5).fillEllipse(480, 195, 120, 26);
-    g.fillStyle(0x7c6958).fillRoundedRect(438, 114, 84, 88, 16);
-    g.fillStyle(0x9c866b).fillEllipse(480, 102, 62, 73);
-    g.fillStyle(0x332c28).fillEllipse(480, 77, 60, 35);
-    g.fillStyle(0x1c2424).fillCircle(463, 104, 4);
-    g.fillStyle(0x1c2424).fillCircle(497, 104, 4);
-    g.lineStyle(2, 0x3d3027).lineBetween(468, 128, 492, 128);
-    this.add.text(480, 160, "도미토리엘", {
-      fontFamily: "sans-serif",
-      fontSize: "12px",
-      color: "#f0e7d3",
-      backgroundColor: "#263638",
-      padding: { x: 6, y: 3 },
-    }).setOrigin(0.5);
+    // Reuse the established character artwork instead of a one-off placeholder drawing.
+    this.add.image(480, 150, "character-domitoriell")
+      .setDisplaySize(112, 153)
+      .setDepth(12);
   }
 
   private moveSelection(direction: number): void {

@@ -89,16 +89,25 @@ BootScene
 - 사용자 정사 문장과 임시 문구를 혼합해 확정 대사처럼 취급하지 않는다.
 - 이후 JSON 또는 외부 편집기 도입은 현재 Milestone에서 필요하지 않으면 미룬다.
 
-## 5. 입력 규칙 초안
+## 5. 공통 입력 규칙
 
-| 입력 | 기능 |
-|---|---|
-| 방향키 / WASD | 방 이동 |
-| Enter / Space | 상호작용, 대화 진행, 메뉴 선택 |
-| 방향키 | 선택지/전투 메뉴 이동 |
-| Escape | 취소 또는 메뉴 닫기(가능한 상태에서만) |
+모든 플레이 가능 Scene은 `src/input/GameInput.ts`의 공통 액션을 사용한다. Scene은 물리 키 코드 대신 `CONFIRM`, `CANCEL`, `UP` 등의 액션을 조회한다.
 
-입력 중복, 대화 중 이동, 전투 중 탐험 입력이 동시에 작동하지 않도록 현재 상태에 따라 입력을 제한한다. 터치 전용 이동 UI는 별도 설계 전까지 범위에 넣지 않는다.
+| Game Action | 기본 입력 | 호환/보조 입력 | 의미 |
+|---|---|---|---|
+| UP / DOWN / LEFT / RIGHT | 방향키 | WASD | 탐험 이동 및 메뉴 선택 |
+| CONFIRM | Z | Enter, Space | 확정·대화 진행 |
+| CANCEL | X | Shift, Escape | 허용된 하위 메뉴/대화에서 취소 |
+| INTERACT | E | Z, Enter, Space | 조사/상호작용 |
+| PHONE_CALL | C | — | 기존 도미토리엘 전화 단축키 |
+| MENU | C | Ctrl | 예약 액션. 실제 메뉴 UI를 구현하기 전에는 사용 안내하지 않음 |
+
+- 이름 입력 Scene의 DOM input은 글로벌 Confirm 입력으로 가로채지 않는다. Z는 이름 문자열로 입력 가능해야 하며 Enter는 제출에 사용한다.
+- C는 현재 전화 단축키와 겹치므로 일반 메뉴 진입 기능을 아직 연결하지 않는다.
+- Confirm 별칭을 여러 개 동시에 눌러도 한 번만 처리하도록 GameInput이 별칭 그룹 전체를 소비한다.
+- 각 Scene은 대화/전투/전환 등 현재 상태에 맞지 않는 액션을 처리하지 않는다.
+- 브라우저 기본 단축키와 Ctrl 조합은 메뉴 기능 구현 시 별도 검증한다.
+- 포인터 입력은 접근성 및 보조 조작으로 유지할 수 있으나, 키보드만으로 주요 플레이 경로를 완료할 수 있어야 한다.
 
 ## 6. 프로토타입 시각 규칙
 
@@ -162,3 +171,13 @@ BootScene
 - main.ts: 신규 Scene을 Phaser Scene registry에 등록.
 
 일반 조우와 너드스타블룩의 전투 시각 요소는 추상적인 비현실적 빛/종이 문양이다. 이 구조는 HP 0, 사망/제압, SAVE/RESET, 루트 카운터 및 세계관적 저장 의미를 다루지 않는다.
+
+
+## 12. 2026-11-26 공통 입력 리빌드
+
+- `src/input/GameInput.ts`가 키 코드를 공통 액션으로 변환한다.
+- 적용 대상: TitleScene, PrologueScene, FlowerFieldScene, RoomScene, WelfareCorridorScene, BattleScene, BullyBattleScene, SecondRankEncounterScene, RegularEncounterScene, NerdstablookEncounterScene.
+- NameEntryScene은 DOM input이므로 글로벌 입력 객체에 연결하지 않는다.
+- C는 전화 단축키를 위해 유지하며 Menu 액션은 현재 예약 상태다.
+- 이 변경은 입력 구조의 일관성을 높이는 첫 단계다. 전투/대화 상태머신 전체를 공통화한 것은 아니다.
+- [검증 한계] 브라우저에서 키 입력을 실제 플레이로 검증하기 전까지 완전한 조작 검수 완료로 처리하지 않는다.

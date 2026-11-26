@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
 import {
   WELFARE_REGULAR_ENCOUNTERS,
   type WelfareRegularEnemyId,
@@ -20,7 +21,7 @@ export class RegularEncounterScene extends Phaser.Scene {
   private enemyId: WelfareRegularEnemyId = "timidPeer";
   private withCompanion = false;
   private mode: Mode = "intro";
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private controls!: GameInput;
   private menuIndex = 0;
   private actIndex = 0;
   private actProgress = 0;
@@ -107,7 +108,7 @@ export class RegularEncounterScene extends Phaser.Scene {
       lineSpacing: 8,
     }).setOrigin(0.5).setDepth(31);
 
-    this.hint = this.add.text(878, 486, "ENTER  —  계속", {
+    this.hint = this.add.text(878, 486, "Z / ENTER  —  계속", {
       fontFamily: "monospace",
       fontSize: "11px",
       color: "#dfc994",
@@ -119,21 +120,7 @@ export class RegularEncounterScene extends Phaser.Scene {
       color: "#9dac9e",
     }).setDepth(31);
 
-    const keyboard = this.input.keyboard;
-    if (!keyboard) throw new Error("Keyboard input is unavailable in RegularEncounterScene.");
-    this.keys = {
-      up: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      enter: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-      esc: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
-    };
+    this.controls = new GameInput(this);
 
     this.input.on("pointerdown", this.handlePointerAdvance, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -168,15 +155,17 @@ export class RegularEncounterScene extends Phaser.Scene {
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.esc) && this.mode === "act") {
+    if (this.controls.justPressed("CANCEL") && this.mode === "act") {
       this.drawMainMenu();
       return;
     }
 
-    const up = Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.w) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.left) || Phaser.Input.Keyboard.JustDown(this.keys.a);
-    const down = Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.s) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.right) || Phaser.Input.Keyboard.JustDown(this.keys.d);
+    const upPressed = this.controls.justPressed("UP");
+    const downPressed = this.controls.justPressed("DOWN");
+    const leftPressed = this.controls.justPressed("LEFT");
+    const rightPressed = this.controls.justPressed("RIGHT");
+    const up = upPressed || leftPressed;
+    const down = downPressed || rightPressed;
 
     if (up) {
       if (this.mode === "main") this.menuIndex = (this.menuIndex + MAIN_OPTIONS.length - 1) % MAIN_OPTIONS.length;
@@ -192,7 +181,7 @@ export class RegularEncounterScene extends Phaser.Scene {
   }
 
   private justConfirm(): boolean {
-    return Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space);
+    return this.controls.justPressed("CONFIRM");
   }
 
   private handlePointerAdvance(): void {
@@ -247,7 +236,7 @@ export class RegularEncounterScene extends Phaser.Scene {
       align: "center",
       wordWrap: { width: 760 },
     }).setOrigin(0.5).setDepth(31);
-    this.hint?.setText("↑↓ 선택 · ENTER 확정 · ACT에서 ESC");
+    this.hint?.setText("↑↓ 선택 · Z / Z / ENTER 확정 · ACT에서 X / SHIFT 취소");
   }
 
   private drawActMenu(): void {
@@ -276,7 +265,7 @@ export class RegularEncounterScene extends Phaser.Scene {
       });
       this.menuObjects.push(text);
     });
-    this.hint?.setText("↑↓ 선택 · ENTER 확정 · ESC 돌아가기");
+    this.hint?.setText("↑↓ 선택 · Z / ENTER 확정 · ESC 돌아가기");
   }
 
   private confirmSelection(): void {
@@ -343,10 +332,10 @@ export class RegularEncounterScene extends Phaser.Scene {
       lineSpacing: 8,
     }).setOrigin(0.5).setDepth(31);
     if (launchDodge) {
-      this.hint?.setText("ENTER  —  상대의 다음 반응을 살핀다");
+      this.hint?.setText("Z / ENTER  —  상대의 다음 반응을 살핀다");
       this.pendingDodge = true;
     } else {
-      this.hint?.setText("ENTER  —  메뉴로 돌아가기");
+      this.hint?.setText("Z / ENTER  —  메뉴로 돌아가기");
       this.pendingDodge = false;
     }
   }
@@ -382,10 +371,10 @@ export class RegularEncounterScene extends Phaser.Scene {
 
     let dx = 0;
     let dy = 0;
-    if (this.keys.left.isDown || this.keys.a.isDown) dx -= 1;
-    if (this.keys.right.isDown || this.keys.d.isDown) dx += 1;
-    if (this.keys.up.isDown || this.keys.w.isDown) dy -= 1;
-    if (this.keys.down.isDown || this.keys.s.isDown) dy += 1;
+    if (this.controls.isDown("LEFT")) dx -= 1;
+    if (this.controls.isDown("RIGHT")) dx += 1;
+    if (this.controls.isDown("UP")) dy -= 1;
+    if (this.controls.isDown("DOWN")) dy += 1;
     if (this.player && (dx || dy)) {
       const length = Math.hypot(dx, dy) || 1;
       this.player.x = Phaser.Math.Clamp(this.player.x + (dx / length) * 205 * dt, 326, 634);
@@ -478,7 +467,7 @@ export class RegularEncounterScene extends Phaser.Scene {
         lineSpacing: 8,
       }).setOrigin(0.5).setDepth(31);
       this.status?.setText("상대는 더 이야기하지 않고 통로 가장자리로 물러났다.");
-      this.hint?.setText("ENTER  —  복도로 돌아가기");
+      this.hint?.setText("Z / ENTER  —  복도로 돌아가기");
       this.mode = "response";
       this.pendingDodge = false;
       this.withdrawAfterResponse = true;
@@ -499,7 +488,7 @@ export class RegularEncounterScene extends Phaser.Scene {
         wordWrap: { width: 780 },
       },
     ).setOrigin(0.5).setDepth(31);
-    this.hint?.setText("ENTER  —  메뉴로 돌아가기");
+    this.hint?.setText("Z / ENTER  —  메뉴로 돌아가기");
   }
 
   private withdrawAfterResponse = false;
@@ -527,7 +516,8 @@ export class RegularEncounterScene extends Phaser.Scene {
       wordWrap: { width: 780 },
       lineSpacing: 8,
     }).setOrigin(0.5).setDepth(31);
-    this.hint?.setText("ENTER  —  복도로 돌아가기");
+    this.hint?.setText("Z / ENTER  —  복도로 돌아가기");
+    this.input.keyboard?.once("keydown-Z", () => this.returnToCorridor(outcome));
     this.input.keyboard?.once("keydown-ENTER", () => this.returnToCorridor(outcome));
     this.input.keyboard?.once("keydown-SPACE", () => this.returnToCorridor(outcome));
     this.input.once("pointerdown", () => this.returnToCorridor(outcome));
