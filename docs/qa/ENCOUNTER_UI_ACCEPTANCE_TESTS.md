@@ -18,3 +18,10 @@
 | BUI-12 | Mercy 미충족 상태 | 사용 가능 상태로 오인되지 않음 | NOT RUN |
 
 자동 빌드 통과는 이 테스트의 PASS를 의미하지 않는다.
+
+
+## CI 확인
+- 최신 PR 커밋 `fd1300b1db4dd7e5530696ba2e13b95175afabfa`.
+- GitHub Actions run `45829690229`: completed / success.
+- TypeScript and Vite production build: PASS.
+- BUI-01~BUI-12는 브라우저 실기 검수 전이므로 NOT RUN 유지.

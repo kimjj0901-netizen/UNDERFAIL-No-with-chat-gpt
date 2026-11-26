@@ -1,6 +1,6 @@
 # 조우 UI 공통 시스템 — 1차 명세
 
-상태: 첫 구현안 / 화면 실기 검수 전
+상태: 공통 명령 행 구현됨 / 브라우저 실기 검수 전
 
 ## 목적
 모든 조우에서 FIGHT / ACT / ITEM / MERCY의 화면 위치, 선택 강조, 타이포그래피, 포인터 보조 입력을 공통 규칙으로 제공한다. 적의 개성과 스토리는 각 명령의 부제, 대사, 전투 배경, ACT 데이터, 공격 패턴에서 표현한다.
@@ -50,3 +50,10 @@ ACT/ITEM 선택 목록, 적 대사 패널, 상태 정보, SOUL 회피 보드의 
 - 포인터/키보드가 동일한 명령을 실행하는지.
 - Mercy 비활성 설명과 클릭 결과가 서로 모순되지 않는지.
 - Scene 전환/재진입 후 중복 카드가 남지 않는지.
+
+
+## 구현 현황 — 2026-11-26
+- 공통 4명령 카드 행을 `src/ui/EncounterMenu.ts`로 구현했다.
+- 적용 Scene: BattleScene, BullyBattleScene, SecondRankEncounterScene, RegularEncounterScene, NerdstablookEncounterScene.
+- TypeScript/Vite production build: GitHub Actions run 45829690229 PASS.
+- 브라우저 화면 검수: NOT RUN.

@@ -259,3 +259,25 @@
 - Install dependencies: PASS.
 - TypeScript and production build: PASS.
 - PR은 Draft 상태로 유지. 자동 빌드 성공만으로 브라우저 플레이·시각 QA·상업 출시 검증이 완료된 것으로 간주하지 않는다.
+
+
+## 2026-11-26 — 공통 조우 명령 UI 적용
+
+### 코드 변경
+- `src/ui/EncounterMenu.ts` 추가.
+- `BattleScene`, `BullyBattleScene`, `SecondRankEncounterScene`, `RegularEncounterScene`, `NerdstablookEncounterScene`의 FIGHT / ACT / ITEM / MERCY 명령 행을 공통 카드 렌더러로 통일.
+- 카드 크기, 간격, 테두리, 선택 강조, 제목/부제 서체를 공통화.
+- 조우별 부제, Mercy 상태, 명령 실행 함수는 각 Scene 데이터/로직에서 유지.
+- 포인터 입력과 키보드 입력 모두 같은 명령 콜백을 사용.
+
+### 검증
+- GitHub Actions run `45829690229` — latest head `fd1300b1db4dd7e5530696ba2e13b95175afabfa`, completed / success.
+- Install dependencies: PASS.
+- TypeScript and production build: PASS.
+- 브라우저 메뉴 조작/카드 잘림/작은 창 검수: NOT RUN.
+- PR #2: Draft 유지.
+
+### 남은 작업
+- ACT 하위 목록과 대화 패널 공통화.
+- 전투 보드/SOUL 영역과 적별 화면 변형 규칙.
+- 실제 브라우저 캡처 및 키보드/포인터 플레이테스트.
