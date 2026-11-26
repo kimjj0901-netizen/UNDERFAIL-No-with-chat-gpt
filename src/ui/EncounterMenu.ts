@@ -94,7 +94,7 @@ export interface EncounterChoiceListOptions {
  */
 export function drawEncounterChoiceList(
   scene: Phaser.Scene,
-  labels: string[],
+  labels: readonly string[],
   selectedIndex: number,
   onSelect: (index: number) => void,
   options: EncounterChoiceListOptions = {},
