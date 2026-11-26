@@ -23,13 +23,16 @@
 8. 세션 상태에 불리 구출 여부와 튜토리얼 피격 횟수를 기록.
 9. 첫 구간의 입력 처리 중 매 프레임 Key 객체를 새로 생성하던 문제를 제거.
 
-### 검증 상태
-- TypeScript: NOT RUN
-- Vite production build: NOT RUN
-- GitHub Actions: 현재 커밋에 연결된 PR workflow run을 도구에서 확인하지 못함
+### 검증 상태 (현재 최신 커밋 기준으로 갱신)
+- Phaser 4.2.1 + TypeScript + Vite: 원격 package/architecture 설정에서 확인
+- 최신 커밋 `3e308e55e84aa85c3ad6c8e09ba5ad793dfce540` GitHub Actions push run `45725638154`: PASS
+- 최신 커밋 동일 SHA GitHub Actions PR run `45725644918`: PASS
+- 두 workflow 모두 "TypeScript and production build" step: PASS
+- 로컬 TypeScript / Vite 실행: NOT RUN (현재 작업 환경에서 로컬 npm 실행 미확보)
 - 브라우저 직접 플레이: NOT RUN
 - 시각 검토: REVIEW NEEDED
-- 이유: 현재 실행 환경에서 GitHub/npm 네트워크 접근이 불가능하여 로컬 설치 및 브라우저 실행을 수행하지 못함.
+- 오디오 청취 검수: REVIEW NEEDED
+- CI 통과는 타입 검사와 프로덕션 빌드를 의미하며, 브라우저 플레이·화면 품질 검수를 의미하지 않는다.
 
 ### 주의
 - Phaser Graphics 기반 절차형 시각 자산은 이번 구간의 독립적인 게임 화면을 구성하기 위한 구현물이며, 최종 아트 패스 완료를 의미하지 않는다.
@@ -114,3 +117,19 @@
 - 전교 2등 조우 외 일반 조우와 후속 분기
 - 실제 브라우저에서 키보드/마우스/취소/반복 선택 검수
 - 캐릭터 방향별 이동 프레임, 감정별 표정, 사운드 레벨 설정
+
+
+## 2026-11-26 — 최신 커밋 검증 상태 확정
+
+- 최신 HEAD: `3e308e55e84aa85c3ad6c8e09ba5ad793dfce540`
+- GitHub Actions push run `45725638154`: completed / success
+- GitHub Actions PR run `45725644918`: completed / success
+- 두 run 모두 dependency install 및 `TypeScript and production build` 단계 성공.
+- PR #1은 open Draft 상태, base는 main이며 병합되지 않았다.
+- 변경 파일은 총 43개.
+- `CREATIVE_DECISION_WORKBOOK.md`는 PR 변경 파일에 포함되지 않아 수정되지 않았다.
+- 사용자 스토리 색인 파일은 이전 작업에서 저장소에 추가된 원본 사본이며, 이번 수정에서 내용/0~1.7 보존구간을 고치지 않았다.
+- 브라우저 플레이, 실제 시각 크기 검수, 소리 청취는 이 세션에서 수행하지 않았으므로 각각 NOT RUN / REVIEW NEEDED다.
+
+### 이어서 실행할 작업
+**스토리 색인 1.3부터 1.7까지의 NPC·일반 조우·아이템·전화·너드스타블룩·생활 공간·출구 대립을 한 구역씩 원문 대조하고 구현한다. 특히 현재 RoomScene은 첫 퍼즐·프로깃허브·전교 2등 특수 조우의 첫 통합 패스까지이며 1.3~1.7 전체 구현이 완료된 상태가 아니다.**
