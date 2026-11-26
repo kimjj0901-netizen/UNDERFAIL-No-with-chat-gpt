@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
+import { drawEncounterCommandRow } from "../ui/EncounterMenu";
 import { GameSession } from "../state/GameSession";
 import { WELFARE_EVENTS } from "../data/storyEvents";
 
@@ -131,26 +132,22 @@ export class SecondRankEncounterScene extends Phaser.Scene {
   private drawMainMenu(): void {
     this.mode = "main";
     this.clearMenu();
-    MAIN_OPTIONS.forEach((label, index) => {
-      const x = 150 + index * 220;
-      const selected = index === this.mainIndex;
-      const card = this.add.rectangle(x, 455, 184, 54, selected ? 0x3a5148 : 0x17282e, 0.97)
-        .setStrokeStyle(selected ? 2 : 1, selected ? 0xe1c68d : 0x63746d, 0.9)
-        .setDepth(34)
-        .setInteractive({ useHandCursor: true });
-      const text = this.add.text(x, 455, label, {
-        fontFamily: "Georgia, serif",
-        fontSize: "18px",
-        fontStyle: "bold",
-        color: selected ? "#f1e3bd" : "#bac4ba",
-        letterSpacing: 1,
-      }).setOrigin(0.5).setDepth(35);
-      card.on("pointerdown", () => {
+    const items = MAIN_OPTIONS.map((label) => ({
+      label,
+      subtitle: label === "FIGHT" ? "대립" :
+        label === "ACT" ? "상대 이해하기" :
+        label === "ITEM" ? "소지품" : "비폭력 해결",
+    }));
+    this.menuObjects.push(...drawEncounterCommandRow(
+      this,
+      items,
+      this.mainIndex,
+      (index) => {
         this.mainIndex = index;
         this.confirmSelection();
-      });
-      this.menuObjects.push(card, text);
-    });
+      },
+      { centerX: 480, centerY: 455, cardWidth: 184, cardHeight: 54, gap: 36, depth: 34 },
+    ));
     this.message?.setText(WELFARE_EVENTS.secondRankEncounter.intro.join("\n"));
     this.hint?.setText("↑↓ 선택 · Z / ENTER 확정");
   }

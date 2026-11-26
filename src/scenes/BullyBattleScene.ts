@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
+import { drawEncounterCommandRow } from "../ui/EncounterMenu";
 import { Atmosphere } from "../audio/Atmosphere";
 import { GameSession } from "../state/GameSession";
 
@@ -140,34 +141,22 @@ export class BullyBattleScene extends Phaser.Scene {
     const menuPanel = this.add.rectangle(480, 414, 874, 158, 0x0b171e, 0.96)
       .setStrokeStyle(2, 0xb6a47d, 0.94)
       .setDepth(28);
-    const options = ["FIGHT", "ACT", "ITEM", "MERCY"];
-    const descriptions = ["밀어내기", "상황 살피기", "소지품", "물러나기"];
-    options.forEach((label, index) => {
-      const x = 150 + index * 220;
-      const selected = index === this.menuIndex;
-      const card = this.add.rectangle(x, 460, 186, 58,
-        selected ? 0x3c5148 : 0x17262b, selected ? 0.98 : 0.88)
-        .setStrokeStyle(selected ? 2 : 1, selected ? 0xe1c68d : 0x64746a, selected ? 1 : 0.75)
-        .setDepth(29)
-        .setInteractive({ useHandCursor: true });
-      const title = this.add.text(x, 449, label, {
-        fontFamily: "Georgia, serif",
-        fontSize: "17px",
-        fontStyle: "bold",
-        color: selected ? "#f4e5bf" : "#c5c7ba",
-        letterSpacing: 1,
-      }).setOrigin(0.5).setDepth(30);
-      const subtitle = this.add.text(x, 472, descriptions[index] ?? "", {
-        fontFamily: "'Noto Sans KR', sans-serif",
-        fontSize: "10px",
-        color: selected ? "#e0d2b4" : "#96a398",
-      }).setOrigin(0.5).setDepth(30);
-      card.on("pointerdown", () => {
+    const items = [
+      { label: "FIGHT", subtitle: "밀어내기" },
+      { label: "ACT", subtitle: "상황 살피기" },
+      { label: "ITEM", subtitle: "소지품" },
+      { label: "MERCY", subtitle: "물러나기" },
+    ];
+    this.menuObjects.push(...drawEncounterCommandRow(
+      this,
+      items,
+      this.menuIndex,
+      (index) => {
         this.menuIndex = index;
         this.confirmMenu();
-      });
-      this.menuObjects.push(card, title, subtitle);
-    });
+      },
+      { centerX: 480, centerY: 460, cardWidth: 184, cardHeight: 58, gap: 36, depth: 29 },
+    ));
     this.menuObjects.push(menuPanel);
 
     this.message = this.add.text(84, 330, this.getMenuDescription(), {

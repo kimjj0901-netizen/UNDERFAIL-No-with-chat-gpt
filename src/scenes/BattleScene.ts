@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
+import { drawEncounterCommandRow } from "../ui/EncounterMenu";
 import { PROTOTYPE_SETTINGS } from "../data/prototypeContent";
 import { GameSession } from "../state/GameSession";
 
@@ -23,7 +24,7 @@ export class BattleScene extends Phaser.Scene {
   private mainIndex = 0;
   private subIndex = 0;
   private controls!: GameInput;
-  private menuTexts: Phaser.GameObjects.Text[] = [];
+  private menuTexts: Phaser.GameObjects.GameObject[] = [];
   private uiObjects: Phaser.GameObjects.GameObject[] = [];
   private bullets: Bullet[] = [];
   private dodgePlayer?: Phaser.GameObjects.Text;
@@ -183,26 +184,24 @@ export class BattleScene extends Phaser.Scene {
     this.clearMenuTexts();
     this.mode = "main";
     const session = GameSession.get();
-    const options = MAIN_OPTIONS.map((name, index) => {
-      const ready = name === "MERCY" && session.determinationCount >= PROTOTYPE_SETTINGS.mercyActsRequired;
-      return (index === this.mainIndex ? "▶ " : "  ") + name + (name === "MERCY" && ready ? "  !" : "");
-    });
-
-    options.forEach((label, index) => {
-      const x = 145 + index * 222;
-      const text = this.add.text(x, 476, label, {
-        fontFamily: "Georgia, serif",
-        fontSize: "22px",
-        color: index === this.mainIndex ? "#f1d38c" : (index === 3 && !readyMercy(session.determinationCount) ? "#7e8885" : "#c4cbbf"),
-        padding: { x: 8, y: 5 },
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-      text.on("pointerdown", () => {
+    const items = MAIN_OPTIONS.map((name) => ({
+      label: name,
+      subtitle: name === "FIGHT" ? "대립" :
+        name === "ACT" ? "상대 살피기" :
+        name === "ITEM" ? "소지품" :
+        readyMercy(session.determinationCount) ? "비폭력 해결 가능" : "비폭력 해결",
+      muted: name === "MERCY" && !readyMercy(session.determinationCount),
+    }));
+    this.menuTexts.push(...drawEncounterCommandRow(
+      this,
+      items,
+      this.mainIndex,
+      (index) => {
         this.mainIndex = index;
         this.confirmSelection();
-      });
-      this.menuTexts.push(text);
-    });
+      },
+      { centerX: 478, centerY: 476, cardWidth: 184, cardHeight: 58, gap: 38, depth: 40 },
+    ));
 
     this.statusText.setText(
       "HP " + session.hp + "/" + session.maxHp +
@@ -218,16 +217,23 @@ export class BattleScene extends Phaser.Scene {
 
     options.forEach((label, index) => {
       const selected = index === this.subIndex;
-      const text = this.add.text(480, 452 + index * 28, (selected ? "▶ " : "  ") + label, {
+      const card = this.add.rectangle(480, 452 + index * 28, 760, 24,
+        selected ? 0x293f3b : 0x13232a, selected ? 0.94 : 0.58)
+        .setStrokeStyle(selected ? 1 : 0, selected ? 0xd8bd83 : 0x586960, 0.8)
+        .setDepth(40)
+        .setInteractive({ useHandCursor: true });
+      const text = this.add.text(480, 452 + index * 28, (selected ? "▶  " : "   ") + label, {
         fontFamily: "sans-serif",
         fontSize: "16px",
         color: selected ? "#f1d38c" : "#c4cbbf",
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-      text.on("pointerdown", () => {
+      }).setOrigin(0.5).setDepth(41).setInteractive({ useHandCursor: true });
+      const choose = () => {
         this.subIndex = index;
         this.confirmSelection();
-      });
-      this.menuTexts.push(text);
+      };
+      card.on("pointerdown", choose);
+      text.on("pointerdown", choose);
+      this.menuTexts.push(card, text);
     });
 
     if (this.mode === "act") {

@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
+import { drawEncounterCommandRow } from "../ui/EncounterMenu";
 import {
   WELFARE_REGULAR_ENCOUNTERS,
   type WelfareRegularEnemyId,
@@ -205,30 +206,21 @@ export class RegularEncounterScene extends Phaser.Scene {
     this.message?.destroy();
     const enemy = WELFARE_REGULAR_ENCOUNTERS[this.enemyId];
     const labels = ["대응하기", "상황 살피기", "소지품", this.actProgress >= enemy.resolveAt ? "MERCY · 가능" : "MERCY · 아직"];
-    MAIN_OPTIONS.forEach((command, index) => {
-      const x = 138 + index * 218;
-      const selected = index === this.menuIndex;
-      const card = this.add.rectangle(x, 449, 184, 60, selected ? 0x3d554b : 0x182a30, 0.98)
-        .setStrokeStyle(selected ? 2 : 1, selected ? 0xe0c88f : 0x687a70, selected ? 1 : 0.78)
-        .setDepth(34)
-        .setInteractive({ useHandCursor: true });
-      const title = this.add.text(x, 438, command, {
-        fontFamily: "Georgia, serif",
-        fontSize: "16px",
-        fontStyle: "bold",
-        color: selected ? "#f3e4bd" : "#c2c7bb",
-      }).setOrigin(0.5).setDepth(35);
-      const subtitle = this.add.text(x, 463, labels[index] ?? "", {
-        fontFamily: "'Noto Sans KR', sans-serif",
-        fontSize: "10px",
-        color: selected ? "#e6d4ae" : "#96a399",
-      }).setOrigin(0.5).setDepth(35);
-      card.on("pointerdown", () => {
+    const items = MAIN_OPTIONS.map((command, index) => ({
+      label: command,
+      subtitle: labels[index] ?? "",
+      muted: index === 3 && this.actProgress < enemy.resolveAt,
+    }));
+    this.menuObjects.push(...drawEncounterCommandRow(
+      this,
+      items,
+      this.menuIndex,
+      (index) => {
         this.menuIndex = index;
         this.confirmSelection();
-      });
-      this.menuObjects.push(card, title, subtitle);
-    });
+      },
+      { centerX: 465, centerY: 449, cardWidth: 184, cardHeight: 60, gap: 34, depth: 34 },
+    ));
     this.message = this.add.text(480, 300, "이 조우는 상대의 태도에 맞는 행동으로 해결할 수 있다.", {
       fontFamily: "'Noto Sans KR', sans-serif",
       fontSize: "14px",

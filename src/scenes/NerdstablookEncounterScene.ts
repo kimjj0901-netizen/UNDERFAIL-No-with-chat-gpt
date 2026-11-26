@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
+import { drawEncounterCommandRow } from "../ui/EncounterMenu";
 import { NERDSTABLOOK_CONTENT } from "../data/welfareEncounterContent";
 import { GameSession } from "../state/GameSession";
 
@@ -146,30 +147,20 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
     this.clearMenu();
     this.message?.destroy();
     const captions = ["대응하기", "만화 이야기", "소지품", this.positiveActs >= 2 ? "MERCY · 가능" : "MERCY · 아직"];
-    OPTIONS.forEach((command, index) => {
-      const x = 138 + index * 218;
-      const selected = index === this.menuIndex;
-      const card = this.add.rectangle(x, 450, 184, 60, selected ? 0x3e514a : 0x192a31, 0.98)
-        .setStrokeStyle(selected ? 2 : 1, selected ? 0xe2c78f : 0x65776f, 0.8)
-        .setDepth(34)
-        .setInteractive({ useHandCursor: true });
-      const title = this.add.text(x, 438, command, {
-        fontFamily: "Georgia, serif",
-        fontSize: "16px",
-        fontStyle: "bold",
-        color: selected ? "#f1e4c3" : "#c0c6bc",
-      }).setOrigin(0.5).setDepth(35);
-      const sub = this.add.text(x, 464, captions[index] ?? "", {
-        fontFamily: "'Noto Sans KR', sans-serif",
-        fontSize: "10px",
-        color: selected ? "#e4d2ad" : "#9aa89c",
-      }).setOrigin(0.5).setDepth(35);
-      card.on("pointerdown", () => {
+    const items = OPTIONS.map((command, index) => ({
+      label: command,
+      subtitle: captions[index] ?? "",
+    }));
+    this.menuObjects.push(...drawEncounterCommandRow(
+      this,
+      items,
+      this.menuIndex,
+      (index) => {
         this.menuIndex = index;
         this.confirmSelection();
-      });
-      this.menuObjects.push(card, title, sub);
-    });
+      },
+      { centerX: 465, centerY: 450, cardWidth: 184, cardHeight: 60, gap: 34, depth: 34 },
+    ));
     this.message = this.add.text(480, 354, "그가 좋아하는 것을 조심스럽게 물어볼 수 있다.", {
       fontFamily: "'Noto Sans KR', sans-serif",
       fontSize: "14px",
