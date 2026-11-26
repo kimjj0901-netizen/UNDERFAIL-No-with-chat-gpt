@@ -210,3 +210,231 @@
 
 ### 다음 단계
 **교육복지반 1.8 간식 바구니와 거미 모양 과자 판매대부터 원문 순서대로 이어서 구현한다. 브라우저 직접 플레이 검수도 그 다음 코드 변경의 승인 기준으로 남겨둔다.**
+
+## 2026-11-26 — 공통 전투/조우 패널 프레임
+
+- `drawEncounterPanel()`을 `src/ui/EncounterMenu.ts`에 추가.
+- BattleScene, BullyBattleScene, SecondRankEncounterScene, RegularEncounterScene, NerdstablookEncounterScene에 적용.
+- 짙은 청록 배경, 금색 외곽선, 낮은 대비 내부선을 공통 패널 규칙으로 사용.
+- Scene별 위치와 크기는 캐릭터/보드/텍스트 배치를 고려해 개별 지정.
+- 패널은 배경 역할이며 적별 내용 및 게임 로직은 Scene에 유지.
+- 브라우저 실제 화면/긴 한국어/보드 전환 검수는 NOT RUN.
+
+### 빌드 검증
+- ACT Choice List 최초 커밋에서 readonly tuple -> string[] 타입 불일치가 발생해 CI 실패(run 45830548971).
+- 입력 타입을 `readonly string[]`으로 변경.
+- 수정 커밋 `09434ce5e6fb4a56d8f679f80180e0dcb4e0e634`, CI run 45830752017: success.
+- 패널 UI는 다음 코드 커밋에서 CI 검증 예정.
+
+
+## 2026-11-26 — 타이틀 선택 UI 및 시각 스타일 바이블
+
+### 구현
+- TitleScene의 시작 항목을 어두운 청록 선택 프레임 + 금색 테두리 + 선택 마커로 표현.
+- Z/Enter/Space Confirm과 프레임/텍스트 클릭은 동일한 시작 콜백을 사용.
+- 기존 단일 시작 기능만 시각적으로 강조했으며 가짜 Continue/Settings 항목은 추가하지 않음.
+
+### 디자인 문서
+- `docs/design/VISUAL_STYLE_BIBLE.md`: 현재 SVG에서 추출한 색상/장면 역할/시각 위계.
+- `docs/design/UI_DESIGN_SYSTEM.md`: 타이틀, 패널, 전투 명령, 하위 선택 목록의 규칙.
+- `docs/design/ASSET_PRODUCTION_SPEC.md`: 960×540 배경 및 캐릭터 에셋 시트 제작 규격 초안.
+- [검증 한계] 이 규격은 현재 코드/에셋을 토대로 한 1차 제안이다. 브라우저 화면 캡처로 최종 승인하지 않았다.
+
+
+## 2026-11-26 — Confirm/Interact 중복 소비 방지
+- `INTERACT`는 E 전용 액션으로 분리.
+- RoomScene/WelfareCorridorScene/FlowerFieldScene은 탐험 상태에서 E 또는 Confirm으로 상호작용.
+- 대화가 활성화되면 Scene이 탐험 업데이트를 중단하고 Confirm은 대화 처리기에서만 사용.
+- MENU는 Ctrl만 예약 입력으로 두고, C는 기존 전화 단축키로 유지.
+- 이 변경으로 Confirm 키 별칭이 두 개의 액션 배열에서 동시에 소비되는 문제를 제거.
+
+
+### 최신 입력 및 CI 기록 — 2026-11-26
+- `GameInput.INTERACT`를 E-only로 분리해 Confirm과 같은 key object가 두 action에서 소비되는 위험 제거.
+- RoomScene/WelfareCorridorScene/FlowerFieldScene은 탐험 상태에서 E 또는 Confirm으로 상호작용.
+- 대화가 열리면 Scene 업데이트가 handleDialogue로 조기 반환하므로 Confirm은 대화만 진행.
+- `MENU`는 Ctrl 예약, C는 전화 단축키.
+- 최신 커밋: `a4ec9b21c5bfc20408bcfac48c24b8a03a93609c`.
+- GitHub Actions run `45832181281`: completed / success; Install dependencies PASS; TypeScript and production build PASS.
+- 브라우저 직접 입력/레이아웃 QA는 NOT RUN.
+
+## 2026-11-26 — 리빌드 기준선 기록 보존 및 스크린샷 분석 확장
+
+### 작업 대상과 기준
+- 저장소: `kimjj0901-netizen/UNDERFAIL-No-with-chat-gpt`
+- 작업 브랜치: `rebuild/input-and-visual-baseline`
+- Draft PR: #2
+- PR base: main `f0a8cd6a4e5280d75f8efb552710de3386610048`
+- PR head는 후속 커밋마다 갱신되므로 현재 GitHub ref를 다시 확인한다.
+- 보호 파일 `CREATIVE_DECISION_WORKBOOK.md`와 스토리 색인 0~1.7은 이번 변경 범위에 포함하지 않았다.
+
+### 기록 보존
+- PR 브랜치에서 `docs/WORK_LOG.md`가 49줄의 최신 기록만 남기고 main의 기존 제작 이력 213줄을 대체한 문제를 확인했다.
+- main의 기존 전체 작업 로그를 보존하고, PR 브랜치에 추가된 새 작업 기록을 뒤에 이어 붙였다.
+- 과거 실패/수정/통합 이력은 삭제하지 않았다.
+
+### 입력 명세 정정
+- `docs/TECH_ARCHITECTURE.md`의 입력 표에서 INTERACT를 E 전용으로 분리했다.
+- 탐험 상태에서 Confirm도 조사로 사용할 수 있지만, 이는 Scene이 상태에 따라 별도로 라우팅하며 GameInput의 별칭이 중복되는 구조가 아니다.
+- C는 기존 전화 호출, Ctrl은 아직 실제 메뉴 UI에 연결되지 않은 예약 액션으로 정리했다.
+- `docs/design/INPUT_AND_CONTROL_SPEC.md`에서도 같은 규칙을 적용하고 공식 Undertale FAQ 출처를 `https://undertale.jp/help/`로 수정했다.
+- 브라우저 기본 단축키와 Ctrl 조합은 실제 브라우저 테스트 전까지 미검증이다.
+
+### 이미지 기반 조사 확장
+- `docs/research/visual-reference/12_SCREENSHOT_ANALYSIS_CASES.md` 추가.
+- 타이틀, 전투 화면, ACT 하위 메뉴, Ruins 생활 공간, Ruins 퍼즐, Snowdin 이동 경로, 보호자형 인물의 등장, 팬 제작 방향별 스프라이트 시트를 사례별로 분석했다.
+- 이미지 카탈로그와 출처/라이선스 장부에 IMG-10~IMG-17 추가.
+- 640×480은 MobyGames 페이지가 해당 타이틀 스크린샷에 표시한 크기이며, 게임 내부 논리 해상도로 단정하지 않는다.
+- 팬 제작 스프라이트 이미지는 공식 자료가 아니며, 제작 체크리스트용 보조 예시로만 표시했다.
+- 모든 Undertale 이미지는 분석 링크 용도다. 게임 에셋으로 복사하거나 배포하지 않는다.
+
+### 출처 기반 결론
+- Toby Fox 개발자 기고는 전투 엔진을 다른 게임 요소보다 먼저 만들었다고 설명하고, 짧은 공격 패턴·적 조합·조우 빈도의 신선도를 중요 설계 요소로 언급한다.
+- 공식 FAQ는 PC 키보드에서 Enter/Shift/Ctrl을 Z/X/C 대체 입력으로 사용할 수 있다고 안내한다.
+- Phaser v4.2.1 공식 소스의 KeyboardPlugin.js와 JustDown.js를 직접 확인했다. Key capture는 KeyboardManager의 전역 상태이며 addKey 기본값은 capture 활성화, removeAllKeys 기본값은 capture를 해제하지 않는 것으로 확인했다.
+
+### 검증 상태
+- 입력/전투 UI 구현은 PR #2 선행 커밋에 포함되어 있다.
+- 이번 세션의 추가 변경은 기록 보존, 문서 정정, 스크린샷 분석 자료다.
+- GitHub Actions의 최신 브랜치 커밋 run은 실행/완료 상태를 조회해 아래에 갱신한다.
+- 브라우저 직접 플레이, 실제 키보드 조작, 레이아웃 캡처, 사운드 청취: NOT RUN.
+- TypeScript/Vite 빌드 성공은 브라우저 플레이·시각적 완성·게임 재미의 검증을 의미하지 않는다.
+
+
+## 2026-11-26 — 리빌드 기준선 CI 검증
+
+- PR #2 head `1e3d07a4c7baf2ec1f1249920c7832c7e6881167`.
+- GitHub Actions run `45833696169`: completed / success.
+- Install dependencies: PASS.
+- TypeScript and production build: PASS.
+- 이 run은 해당 SHA의 저장소 코드와 문서가 빌드되는지 검증한다.
+- 브라우저 직접 플레이, 물리 키 입력, 화면 캡처/패널 겹침, 한국어 텍스트, 사운드 청취: NOT RUN.
+- PR #2는 Draft / open 상태로 유지한다. 브라우저 실기 QA가 수행되지 않았으므로 main에 병합하지 않는다.
+
+## 2026-11-26 — Phaser 4.2.1 키 캡처 수명주기 수정
+
+### 발견한 문제
+- `GameInput`이 `keyboard.addKey(code)`의 기본 옵션을 사용해 개별 키마다 전역 browser-key capture를 생성하고 있었다.
+- Phaser v4.2.1에서 `addKey`의 `enableCapture` 기본값은 true다.
+- Phaser의 KeyboardPlugin은 Scene에 소속되지만, 실제 key capture는 KeyboardManager 전역 상태다.
+- KeyboardPlugin shutdown의 `removeAllKeys(true)`는 `removeCapture=false` 기본값을 사용한다. 따라서 TitleScene 종료 후에도 Z/Space 등의 브라우저 기본 키 캡처가 남을 가능성이 있다.
+- NameEntryScene은 DOM input을 사용하므로, 이 상태가 남으면 Z 또는 Space가 문자열로 입력되지 않을 위험이 있다.
+
+### 실제 코드 수정
+- `src/input/GameInput.ts`의 모든 `addKey` 호출을 `addKey(code, false)`로 변경.
+- 브라우저 스크롤을 발생시킬 수 있는 방향키와 Space만 GameInput이 활성화된 Scene 동안 명시적으로 capture.
+- Scene의 SHUTDOWN 이벤트에서 해당 capture를 해제.
+- 현재 게임 흐름에서 GameInput이 있는 플레이 Scene은 한 번에 하나만 활성화된다는 전제를 주석/문서에 명시.
+
+### 테스트 계획
+- `IN-20`: TitleScene 종료 뒤 NameEntry에서 Z를 문자로 입력.
+- `IN-21`: NameEntry에서 Space와 방향키가 DOM input 기본 입력으로 동작.
+- `IN-22`: GameInput Scene 종료 후 방향키/Space 캡처 해제.
+- 위 테스트는 실제 브라우저 실행 전까지 NOT RUN이다.
+
+### 근거
+- Phaser 4.2.1 source: `src/input/keyboard/KeyboardPlugin.js`, `src/input/keyboard/keys/JustDown.js`.
+- Source reference: https://github.com/phaserjs/phaser/blob/v4.2.1/src/input/keyboard/KeyboardPlugin.js
+- Source reference: https://github.com/phaserjs/phaser/blob/v4.2.1/src/input/keyboard/keys/JustDown.js
+
+## 2026-11-26 — 입력 QA 문서 형식 정리
+
+- 입력 수용 테스트에 추가한 IN-20~IN-22 시나리오의 행 구분이 문자 그대로 `\\n`로 기록된 서식 오류를 수정했다.
+- Phaser 4.2.1 입력 수명주기 절의 줄바꿈도 실제 Markdown 줄바꿈으로 교정했다.
+- 문서 렌더링 전제의 코드/내용을 다시 확인했다. QA 행 3개가 별도 표 행으로 분리되며, 입력 명세의 3절 키 캡처 수명주기가 정상적인 Markdown 구조를 갖는다.
+- 이 수정은 문서 형식만 정리하며 기능 동작의 브라우저 검증을 대신하지 않는다.
+- IN-20~IN-22: NOT RUN.
+
+## 2026-11-26 — 입력 리빌드 CI 결과 및 최종 브랜치 점검
+
+- 코드 수정 커밋 dcfa4fca0df917f0f4a41178cb59d7721796eff3의 GitHub Actions run 45834341717: completed / success.
+- 문서 서식 수정 커밋 a38d6e55e212c43bc33b4b70088406a92f62a970의 GitHub Actions run 45834756003: completed / success.
+- 두 run 모두 dependency install 및 TypeScript / Vite production build 단계 PASS.
+- 최신 브랜치 HEAD는 이 로그 추가 커밋에서 갱신되므로, PR metadata에서 다시 확인한다.
+- IN-20~IN-22 (DOM name entry Z/Space 입력 및 global capture 해제): 브라우저 직접 테스트 NOT RUN.
+- 전투 패널 겹침, 긴 한국어 대사, 선택 커서 표시, 화면 비율 및 실제 전투 템포: 브라우저 직접 테스트 NOT RUN / REVIEW NEEDED.
+- PR #2는 Draft / open으로 유지. 브라우저 실기 QA 및 사용자 플레이 감각 확인 전 main에 병합하지 않는다.
+
+
+
+## 2026-11-27 — Milestone 2A 첫 전투 규칙 통합: 박자 먼지 기준 조우
+
+### 작업 목적과 판단
+- 이전 조사 결과의 권고에 따라 전투 UI 재작성 대신, 기존 명령 UI 아래에서 실제 작동하는 전투 규칙을 먼저 연결했다.
+- 첫 기준 조우는 rhythmMote(박자 먼지)로 선택했다. 기존 ACT watch가 “세 번의 짧은 빛과 한 번의 긴 빛” 단서를 제공하고, 현재 데이터가 리듬 회피 패턴을 보유해 관찰(ACT)과 FIGHT 타이밍을 같은 규칙으로 시험할 수 있기 때문이다.
+- timidPeer는 고유 ACT와 비폭력 해결을 검증하기 좋은 후보지만, 타이밍 FIGHT를 캐릭터의 기존 단서와 결합할 근거는 rhythmMote보다 약했다.
+- 작업은 PR #2의 기존 작업 브랜치 rebuild/input-and-visual-baseline에서만 진행했다. main에 병합하지 않았고 PR #2도 Draft 상태를 유지한다.
+
+### 실제 코드 변경
+- src/combat/EncounterFlowController.ts 추가
+  - intro → command → act/item/fightTiming → response → telegraph → dodge → reaction → command/resolved 경로를 명시적으로 제한한다.
+  - Scene 병합이나 캐릭터별 대사·행동의 범용화는 하지 않고, 상태 전이 검증 책임만 분리했다.
+- src/combat/FixedStepRunner.ts 추가
+  - 회피 시뮬레이션을 60Hz 고정 스텝으로 진행한다.
+  - 프레임 지연 시 프레임당 최대 100ms / 최대 6스텝으로 catch-up을 제한한다.
+  - 실제 충돌·이동·패턴 시간은 동일한 스텝을 사용하도록 RegularEncounterScene에서 연결했다.
+- src/combat/FightTiming.ts 추가
+  - 박자 먼지 FIGHT의 판정 계산을 순수 함수로 분리했다.
+  - 판정은 precise / steady / miss 3단계이며, 타깃은 3개의 짧은 박자 뒤 이어지는 긴 박자의 중앙으로 둔다.
+  - ACT watch를 먼저 수행하면 판정 허용 범위가 넓어진다. 타이밍 수치는 현재 밸런스용 프로토타입이며 정사/최종 수치가 아니다.
+- src/scenes/RegularEncounterScene.ts 수정
+  - 해당 Scene에 상태 전이 검증기를 연결했다.
+  - rhythmMote에서만 FIGHT 타이밍 시제품을 사용한다. 다른 일반 조우 및 전용 전투 Scene의 FIGHT는 아직 이 시스템으로 이관하지 않았다.
+  - 적의 다음 행동을 420ms 동안 표시하는 telegraph 단계를 추가했다.
+  - 회피는 고정 스텝으로 이동·패턴 시계·충돌을 함께 계산한다.
+  - 겹친 탄환은 무적 시간과 무관하게 제거하고, 피격 피드백만 650ms 무적 간격으로 제한한다.
+  - ACT watch 관찰 결과가 FIGHT 판정 창과 피드백에 영향을 준다.
+  - ITEM 하위 목록을 추가해 따뜻한 차와 돌아가기를 선택할 수 있게 했다.
+  - 전투 종료 Confirm을 GameInput 단일 입력 경로로 소비하고, 결과 기록 및 Scene 전환이 중복 실행되지 않도록 방어했다.
+  - 일반 조우의 비현실적인 패턴은 시각적 피드백만 제공하며, HP 0·사망·제압 규칙을 추가하지 않았다.
+- tests/combat.test.mjs 추가: Node 내장 테스트 러너로 7개 테스트를 작성했다.
+- package.json: npm test 스크립트를 추가했다.
+- .github/workflows/ci.yml: 프로덕션 빌드 뒤 npm test를 실행하도록 연결했다.
+- 새 외부 라이브러리/런타임 의존성은 추가하지 않았다.
+
+### 검증 결과
+- PR #2 head: 1a34b96269589f8b2833d378934c511ea82ae914 (이 작업 로그 커밋으로 이후 갱신됨).
+- GitHub Actions run 45854306185: completed / success.
+- Node.js: v22.23.5.
+- npm install: PASS, audit 0 vulnerabilities.
+- npm run build: PASS (TypeScript 및 Vite production build).
+- npm test: PASS, 7 tests / 7 pass / 0 fail.
+- Vite는 minified JS chunk가 500 kB 기준을 넘는 경고를 출력했다. 현재 산출물 JS는 1,497.05 kB, gzip 403.18 kB다. 기능 실패는 아니지만 후속 번들 분할/초기 로딩 성능 검토 항목으로 남긴다.
+- GitHub Actions는 actions/checkout@v4 및 setup-node@v4의 Node 20 런타임이 Node 24로 강제 전환되었다는 유지보수 경고를 표시했다. 이번 빌드 실패는 아니며 추후 공식 지원 버전 확인 후 업데이트할 항목이다.
+- 브라우저 직접 플레이, 화면 캡처, 실키 입력, 체감 난도/타이밍 테스트, 960×540 외 크기 레이아웃 테스트, 사운드 테스트: NOT RUN.
+
+### 범위와 미완료 사항
+- 이번 변경은 전체 전투 엔진 완성이 아니라 RegularEncounterScene 안의 첫 번째 통합 기준 조우다.
+- BattleScene, NerdstablookEncounterScene, BullyBattleScene, SecondRankEncounterScene은 아직 각자 전투/회피 흐름을 유지한다. 공통 상태 머신/회피 러너의 전체 이관은 미완료다.
+- FIGHT 타이밍은 rhythmMote에만 연결했다. 다른 캐릭터의 전용 타이밍 규칙/장비별 판정은 미구현이다.
+- ACT/ITEM/MERCY 전 데이터의 보편적 effect schema, 보유 아이템 전체 목록, 관계 상태의 장기 반영은 미구현이다.
+- 공격 예고·패턴 난이도·충돌 크기·타이밍 허용 창은 실제 브라우저에서 반복 조정해야 한다.
+- 픽셀/벡터 A/B 아트 비교, 스프라이트 시트, 음악/효과음, HP 0, SAVE/RESET 및 루트 규칙은 이번 작업 범위 밖이며 보류를 유지한다.
+- 따라서 Milestone 2는 완료 판정하지 않는다. 다음 단계는 브라우저 실기 QA와 발견된 수정사항 반영, 이후 다른 조우로 공통 규칙을 점진적으로 확대하는 것이다.
+
+
+## 2026-11-27 — 박자 단서/실제 발사 간격 정합성 수정 및 8개 테스트 검증
+
+### 추가 검토에서 발견한 불일치
+- rhythmMote의 ACT watch 대사는 짧은 빛 세 번 뒤 긴 빛 한 번이 반복된다고 알려 주지만, 앞선 구현에서는 dodge 발사 간격이 전부 동일했다.
+- 이 상태는 관찰로 얻은 정보와 실제 패턴이 서로 다르므로 잘못된 설계였다.
+
+### 수정
+- FightTiming.ts에 RHYTHM_DODGE_INTERVALS_MS = [300, 300, 300, 900]을 단일 밸런스 데이터로 분리했다.
+- RegularEncounterScene의 rhythm 패턴은 위 네 간격을 반복 사용한다.
+- 이 네 간격의 합은 1,800ms로 FIGHT 타이밍 표시의 전체 순환 시간과 일치한다.
+- 패턴 지속 시간이 끝나면 새 투사체를 더 생성하지 않도록 생성 루프를 제한했다.
+- 테스트를 8개로 늘려 세 짧은 간격 + 긴 간격 구조와 총 시간이 FIGHT 시계와 일치하는지 검증했다.
+
+### 최종 코드 검증
+- 코드 HEAD: 4b1f7716458a99ff37dd35760fd3bce49db538cf.
+- GitHub Actions run 45854830776: completed / success.
+- TypeScript / Vite production build: PASS.
+- Node.js 22.23.5 기준 npm test: 8 tests / 8 pass / 0 fail.
+- Vite의 500 kB 초과 번들 경고는 지속된다. 기능 실패가 아니며 초기 로딩 최적화 대상으로 남긴다.
+- 브라우저의 실제 입력, 타이밍 체감, 충돌·화면 QA는 여전히 NOT RUN이다.
+
+### CI 유지보수
+- workflow 내부 런타임 경고를 줄이기 위해 actions/checkout 및 actions/setup-node를 v7로 갱신했다.
+- 프로젝트가 사용하는 Node.js 실행 버전은 계속 22로 유지한다. 액션 내부 런타임 갱신과 프로젝트 실행 버전 변경은 서로 다른 일이다.
+- 이 CI 액션 갱신 커밋 이후의 새 실행은 이 기록 작성 시점에 아직 확인되지 않았으므로 별도 PASS로 주장하지 않는다.

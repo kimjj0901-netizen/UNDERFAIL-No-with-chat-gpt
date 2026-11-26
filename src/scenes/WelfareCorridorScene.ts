@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
 import {
   WELFARE_HALL_PUZZLE,
   WELFARE_PHONE_CALLS,
@@ -40,7 +41,7 @@ const ENCOUNTER_TARGETS: Array<{
 export class WelfareCorridorScene extends Phaser.Scene {
   private x = 188;
   private y = 432;
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private controls!: GameInput;
   private player!: Phaser.GameObjects.Image;
   private targets: Target[] = [];
   private nearest?: Target;
@@ -88,23 +89,7 @@ export class WelfareCorridorScene extends Phaser.Scene {
       padding: { x: 10, y: 6 },
     }).setOrigin(0.5).setDepth(31);
 
-    const keyboard = this.input.keyboard;
-    if (!keyboard) throw new Error("Keyboard input is unavailable in WelfareCorridorScene.");
-    this.keys = {
-      up: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      e: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E),
-      c: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C),
-      enter: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-      esc: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
-    };
+    this.controls = new GameInput(this);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.clearDialogue();
@@ -138,10 +123,10 @@ export class WelfareCorridorScene extends Phaser.Scene {
     const speed = 178 * Math.min(delta, 40) / 1000;
     let dx = 0;
     let dy = 0;
-    if (this.isDown("left", "a")) dx -= 1;
-    if (this.isDown("right", "d")) dx += 1;
-    if (this.isDown("up", "w")) dy -= 1;
-    if (this.isDown("down", "s")) dy += 1;
+    if (this.controls.isDown("LEFT")) dx -= 1;
+    if (this.controls.isDown("RIGHT")) dx += 1;
+    if (this.controls.isDown("UP")) dy -= 1;
+    if (this.controls.isDown("DOWN")) dy += 1;
 
     if (dx || dy) {
       const length = Math.hypot(dx, dy) || 1;
@@ -153,12 +138,8 @@ export class WelfareCorridorScene extends Phaser.Scene {
     }
 
     this.updateNearest();
-    if (Phaser.Input.Keyboard.JustDown(this.keys.e)) this.interact();
-    if (Phaser.Input.Keyboard.JustDown(this.keys.c)) this.callDomitoriell();
-  }
-
-  private isDown(...names: string[]): boolean {
-    return names.some((name) => this.keys[name].isDown);
+    if (this.controls.justPressed("INTERACT") || this.controls.justPressed("CONFIRM")) this.interact();
+    if (this.controls.justPressed("PHONE_CALL")) this.callDomitoriell();
   }
 
   private drawCharactersAndObjects(): void {
@@ -274,7 +255,7 @@ export class WelfareCorridorScene extends Phaser.Scene {
       }
     }
     this.nearest = nearest;
-    this.prompt.setText(nearest ? "E  " + nearest.label : "");
+    this.prompt.setText(nearest ? "Z / ENTER / E  " + nearest.label : "");
   }
 
   private interact(): void {
@@ -406,7 +387,7 @@ export class WelfareCorridorScene extends Phaser.Scene {
     const dialogue = this.dialogue;
     if (!dialogue) return;
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.esc)) {
+    if (this.controls.justPressed("CANCEL")) {
       if (dialogue.speaker.toLowerCase().includes("프로깃허브")) {
         GameSession.recordProggithubDialogueSkip(dialogue.lines.length - dialogue.page);
       }
@@ -416,13 +397,15 @@ export class WelfareCorridorScene extends Phaser.Scene {
     }
 
     if (dialogue.choices && dialogue.page >= dialogue.lines.length - 1) {
-      if (Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.w)) {
+      const upPressed = this.controls.justPressed("UP");
+      const downPressed = this.controls.justPressed("DOWN");
+      if (upPressed) {
         dialogue.choiceIndex = (dialogue.choiceIndex + dialogue.choices.length - 1) % dialogue.choices.length;
         this.renderDialogue();
-      } else if (Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.s)) {
+      } else if (downPressed) {
         dialogue.choiceIndex = (dialogue.choiceIndex + 1) % dialogue.choices.length;
         this.renderDialogue();
-      } else if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+      } else if (this.controls.justPressed("CONFIRM")) {
         const selected = dialogue.choiceIndex;
         const speaker = dialogue.speaker;
         this.clearDialogue();
@@ -445,7 +428,7 @@ export class WelfareCorridorScene extends Phaser.Scene {
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+    if (this.controls.justPressed("CONFIRM")) {
       dialogue.page += 1;
       if (dialogue.page >= dialogue.lines.length) {
         if (dialogue.speaker === WELFARE_PROGGITHUB_NPCS.guide.speaker) {
@@ -483,7 +466,7 @@ export class WelfareCorridorScene extends Phaser.Scene {
     }).setDepth(51));
 
     if (dialogue.page < dialogue.lines.length - 1) {
-      this.dialogueObjects.push(this.add.text(886, 468, "ENTER ▶", {
+      this.dialogueObjects.push(this.add.text(886, 468, "Z / ENTER ▶", {
         fontFamily: "monospace",
         fontSize: "10px",
         color: "#aab39f",
@@ -496,7 +479,7 @@ export class WelfareCorridorScene extends Phaser.Scene {
           color: index === dialogue.choiceIndex ? "#f0d48f" : "#bbc4b9",
         }).setDepth(51));
       });
-      this.dialogueObjects.push(this.add.text(886, 468, "↑↓ 선택 · ENTER", {
+      this.dialogueObjects.push(this.add.text(886, 468, "↑↓ 선택 · Z / ENTER", {
         fontFamily: "monospace",
         fontSize: "10px",
         color: "#aab39f",

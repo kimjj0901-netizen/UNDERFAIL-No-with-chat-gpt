@@ -15,12 +15,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Install dependencies
         run: npm install
       - name: TypeScript and production build
         run: npm run build
+      - name: Combat logic tests
+        run: npm test

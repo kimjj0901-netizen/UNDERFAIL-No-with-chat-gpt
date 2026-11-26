@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
+import { drawEncounterCommandRow, drawEncounterChoiceList, drawEncounterPanel } from "../ui/EncounterMenu";
 import { PROTOTYPE_SETTINGS } from "../data/prototypeContent";
 import { GameSession } from "../state/GameSession";
 
@@ -21,8 +23,8 @@ export class BattleScene extends Phaser.Scene {
   private mode: BattleMode = "main";
   private mainIndex = 0;
   private subIndex = 0;
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
-  private menuTexts: Phaser.GameObjects.Text[] = [];
+  private controls!: GameInput;
+  private menuTexts: Phaser.GameObjects.GameObject[] = [];
   private uiObjects: Phaser.GameObjects.GameObject[] = [];
   private bullets: Bullet[] = [];
   private dodgePlayer?: Phaser.GameObjects.Text;
@@ -44,22 +46,7 @@ export class BattleScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor("#151b20");
     this.drawBattleBackdrop();
 
-    const keyboard = this.input.keyboard;
-    if (!keyboard) throw new Error("Keyboard input is unavailable in BattleScene.");
-
-    this.keys = {
-      up: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      enter: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-      escape: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
-    };
+    this.controls = new GameInput(this);
 
     this.add.text(480, 34, "도미토리엘 선생님과의 대립", {
       fontFamily: "serif",
@@ -74,6 +61,7 @@ export class BattleScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     this.drawDomitoriellPortrait();
+    drawEncounterPanel(this, { centerX: 480, centerY: 245, width: 820, height: 92, depth: 10, fillColor: 0x101e24, fillAlpha: 0.88 });
     this.battleInfo = this.add.text(480, 245, "", {
       fontFamily: "sans-serif",
       fontSize: "16px",
@@ -81,7 +69,7 @@ export class BattleScene extends Phaser.Scene {
       align: "center",
       wordWrap: { width: 660 },
       lineSpacing: 8,
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(11);
     this.battleInfo.setText("도미토리엘은 걱정스러운 눈으로 당신을 바라본다.\n당신이 원하는 길을 포기하길 바라지는 않지만, 쉽게 보내줄 수도 없다.");
 
     this.statusText = this.add.text(480, 388, "", {
@@ -107,20 +95,22 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.escape) && this.mode !== "main") {
+    if (this.controls.justPressed("CANCEL") && this.mode !== "main") {
       this.mode = "main";
       this.subIndex = 0;
       this.drawMainMenu();
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.left) ||
-        Phaser.Input.Keyboard.JustDown(this.keys.w) || Phaser.Input.Keyboard.JustDown(this.keys.a)) {
+    const upPressed = this.controls.justPressed("UP");
+    const downPressed = this.controls.justPressed("DOWN");
+    const leftPressed = this.controls.justPressed("LEFT");
+    const rightPressed = this.controls.justPressed("RIGHT");
+    if (upPressed || leftPressed) {
       this.moveSelection(-1);
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.right) ||
-        Phaser.Input.Keyboard.JustDown(this.keys.s) || Phaser.Input.Keyboard.JustDown(this.keys.d)) {
+    } else if (downPressed || rightPressed) {
       this.moveSelection(1);
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+    } else if (this.controls.justPressed("CONFIRM")) {
       this.confirmSelection();
     }
   }
@@ -138,21 +128,10 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private drawDomitoriellPortrait(): void {
-    const g = this.add.graphics();
-    g.fillStyle(0x11191d, 0.5).fillEllipse(480, 195, 120, 26);
-    g.fillStyle(0x7c6958).fillRoundedRect(438, 114, 84, 88, 16);
-    g.fillStyle(0x9c866b).fillEllipse(480, 102, 62, 73);
-    g.fillStyle(0x332c28).fillEllipse(480, 77, 60, 35);
-    g.fillStyle(0x1c2424).fillCircle(463, 104, 4);
-    g.fillStyle(0x1c2424).fillCircle(497, 104, 4);
-    g.lineStyle(2, 0x3d3027).lineBetween(468, 128, 492, 128);
-    this.add.text(480, 160, "도미토리엘", {
-      fontFamily: "sans-serif",
-      fontSize: "12px",
-      color: "#f0e7d3",
-      backgroundColor: "#263638",
-      padding: { x: 6, y: 3 },
-    }).setOrigin(0.5);
+    // Reuse the established character artwork instead of a one-off placeholder drawing.
+    this.add.image(480, 150, "character-domitoriell")
+      .setDisplaySize(112, 153)
+      .setDepth(12);
   }
 
   private moveSelection(direction: number): void {
@@ -206,26 +185,24 @@ export class BattleScene extends Phaser.Scene {
     this.clearMenuTexts();
     this.mode = "main";
     const session = GameSession.get();
-    const options = MAIN_OPTIONS.map((name, index) => {
-      const ready = name === "MERCY" && session.determinationCount >= PROTOTYPE_SETTINGS.mercyActsRequired;
-      return (index === this.mainIndex ? "▶ " : "  ") + name + (name === "MERCY" && ready ? "  !" : "");
-    });
-
-    options.forEach((label, index) => {
-      const x = 145 + index * 222;
-      const text = this.add.text(x, 476, label, {
-        fontFamily: "Georgia, serif",
-        fontSize: "22px",
-        color: index === this.mainIndex ? "#f1d38c" : (index === 3 && !readyMercy(session.determinationCount) ? "#7e8885" : "#c4cbbf"),
-        padding: { x: 8, y: 5 },
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-      text.on("pointerdown", () => {
+    const items = MAIN_OPTIONS.map((name) => ({
+      label: name,
+      subtitle: name === "FIGHT" ? "대립" :
+        name === "ACT" ? "상대 살피기" :
+        name === "ITEM" ? "소지품" :
+        readyMercy(session.determinationCount) ? "비폭력 해결 가능" : "비폭력 해결",
+      muted: name === "MERCY" && !readyMercy(session.determinationCount),
+    }));
+    this.menuTexts.push(...drawEncounterCommandRow(
+      this,
+      items,
+      this.mainIndex,
+      (index) => {
         this.mainIndex = index;
         this.confirmSelection();
-      });
-      this.menuTexts.push(text);
-    });
+      },
+      { centerX: 478, centerY: 476, cardWidth: 184, cardHeight: 58, gap: 38, depth: 40 },
+    ));
 
     this.statusText.setText(
       "HP " + session.hp + "/" + session.maxHp +
@@ -239,22 +216,19 @@ export class BattleScene extends Phaser.Scene {
       ? ACT_OPTIONS
       : ["따뜻한 차 사용", "돌아가기"];
 
-    options.forEach((label, index) => {
-      const selected = index === this.subIndex;
-      const text = this.add.text(480, 452 + index * 28, (selected ? "▶ " : "  ") + label, {
-        fontFamily: "sans-serif",
-        fontSize: "16px",
-        color: selected ? "#f1d38c" : "#c4cbbf",
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-      text.on("pointerdown", () => {
+    this.menuTexts.push(...drawEncounterChoiceList(
+      this,
+      options,
+      this.subIndex,
+      (index) => {
         this.subIndex = index;
         this.confirmSelection();
-      });
-      this.menuTexts.push(text);
-    });
+      },
+      { left: 90, top: 440, width: 780, rowHeight: 28, fontSize: "15px", depth: 40 },
+    ));
 
     if (this.mode === "act") {
-      this.statusText.setText("↑↓ 선택 · ENTER 확정 · ESC 돌아가기");
+      this.statusText.setText("↑↓ 선택 · Z / ENTER 확정 · X / SHIFT 취소");
     } else {
       const hasTea = GameSession.get().hasWarmTea;
       this.statusText.setText(hasTea ? "가방에 따뜻한 차가 있다." : "사용할 수 있는 아이템이 없다.");
@@ -367,10 +341,10 @@ export class BattleScene extends Phaser.Scene {
 
     let dx = 0;
     let dy = 0;
-    if (this.keys.left.isDown || this.keys.a.isDown) dx -= 1;
-    if (this.keys.right.isDown || this.keys.d.isDown) dx += 1;
-    if (this.keys.up.isDown || this.keys.w.isDown) dy -= 1;
-    if (this.keys.down.isDown || this.keys.s.isDown) dy += 1;
+    if (this.controls.isDown("LEFT")) dx -= 1;
+    if (this.controls.isDown("RIGHT")) dx += 1;
+    if (this.controls.isDown("UP")) dy -= 1;
+    if (this.controls.isDown("DOWN")) dy += 1;
 
     if (dx !== 0 || dy !== 0) {
       const length = Math.hypot(dx, dy) || 1;

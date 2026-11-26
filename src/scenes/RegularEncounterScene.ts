@@ -1,12 +1,19 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
+import { drawEncounterCommandRow, drawEncounterChoiceList, drawEncounterPanel } from "../ui/EncounterMenu";
 import {
   WELFARE_REGULAR_ENCOUNTERS,
   type WelfareRegularEnemyId,
   type WelfareEncounterOutcome,
 } from "../data/welfareEncounterContent";
 import { GameSession } from "../state/GameSession";
-
-type Mode = "intro" | "main" | "act" | "response" | "dodge" | "ending";
+import { EncounterFlowController, type EncounterPhase } from "../combat/EncounterFlowController";
+import { FixedStepRunner } from "../combat/FixedStepRunner";
+import {
+  evaluateRhythmTiming,
+  RHYTHM_TIMING_DURATION_MS,
+  RHYTHM_DODGE_INTERVALS_MS,
+} from "../combat/FightTiming";
 type Bullet = {
   object: Phaser.GameObjects.Arc;
   velocityX: number;
@@ -19,10 +26,14 @@ const MAIN_OPTIONS = ["FIGHT", "ACT", "ITEM", "MERCY"];
 export class RegularEncounterScene extends Phaser.Scene {
   private enemyId: WelfareRegularEnemyId = "timidPeer";
   private withCompanion = false;
-  private mode: Mode = "intro";
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private readonly flow = new EncounterFlowController("intro");
+  private get mode(): EncounterPhase { return this.flow.phase; }
+  private set mode(next: EncounterPhase) { this.flow.transition(next); }
+
+  private controls!: GameInput;
   private menuIndex = 0;
   private actIndex = 0;
+  private itemIndex = 0;
   private actProgress = 0;
   private seenActs = new Set<string>();
   private fightCount = 0;
@@ -37,9 +48,22 @@ export class RegularEncounterScene extends Phaser.Scene {
   private waveElapsed = 0;
   private spawnElapsed = 0;
   private bulletIndex = 0;
-  private lastHitAt = 0;
   private intensity = 1;
   private ending = false;
+  private returning = false;
+  private pendingOutcome?: WelfareEncounterOutcome;
+
+  private readonly dodgeRunner = new FixedStepRunner();
+  private invulnerabilityMs = 0;
+  private hitThisTurn = false;
+  private rhythmObserved = false;
+
+  private fightElapsedMs = 0;
+  private fightTimingObjects: Phaser.GameObjects.GameObject[] = [];
+  private fightMarker?: Phaser.GameObjects.Rectangle;
+
+  private telegraphElapsedMs = 0;
+  private telegraphObjects: Phaser.GameObjects.GameObject[] = [];
 
   constructor() {
     super("RegularEncounterScene");
@@ -48,15 +72,26 @@ export class RegularEncounterScene extends Phaser.Scene {
   init(data: SceneInput): void {
     this.enemyId = data?.enemyId ?? "timidPeer";
     this.withCompanion = Boolean(data?.withCompanion);
-    this.mode = "intro";
+    this.flow.reset("intro");
     this.menuIndex = 0;
     this.actIndex = 0;
+    this.itemIndex = 0;
     this.actProgress = 0;
     this.seenActs.clear();
     this.fightCount = 0;
     this.hitCount = 0;
     this.intensity = this.withCompanion ? 1.25 : 1;
     this.ending = false;
+    this.returning = false;
+    this.pendingOutcome = undefined;
+    this.pendingDodge = false;
+    this.withdrawAfterResponse = false;
+    this.rhythmObserved = false;
+    this.hitThisTurn = false;
+    this.invulnerabilityMs = 0;
+    this.dodgeRunner.reset();
+    this.fightElapsedMs = 0;
+    this.telegraphElapsedMs = 0;
   }
 
   create(): void {
@@ -90,6 +125,8 @@ export class RegularEncounterScene extends Phaser.Scene {
       .setStrokeStyle(1, 0x60756c, 0.72)
       .setDepth(25);
 
+    drawEncounterPanel(this, { centerX: 480, centerY: 408, width: 876, height: 150, depth: 30 });
+
     this.add.text(480, 46, enemy.name, {
       fontFamily: "'Noto Serif KR', serif",
       fontSize: "19px",
@@ -107,7 +144,7 @@ export class RegularEncounterScene extends Phaser.Scene {
       lineSpacing: 8,
     }).setOrigin(0.5).setDepth(31);
 
-    this.hint = this.add.text(878, 486, "ENTER  —  계속", {
+    this.hint = this.add.text(878, 486, "Z / ENTER  —  계속", {
       fontFamily: "monospace",
       fontSize: "11px",
       color: "#dfc994",
@@ -119,27 +156,16 @@ export class RegularEncounterScene extends Phaser.Scene {
       color: "#9dac9e",
     }).setDepth(31);
 
-    const keyboard = this.input.keyboard;
-    if (!keyboard) throw new Error("Keyboard input is unavailable in RegularEncounterScene.");
-    this.keys = {
-      up: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      enter: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-      esc: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
-    };
+    this.controls = new GameInput(this);
 
     this.input.on("pointerdown", this.handlePointerAdvance, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.input.off("pointerdown", this.handlePointerAdvance, this);
       this.clearBullets();
       this.clearMenu();
+      this.clearFightTiming();
+      this.clearTelegraph();
+      this.dodgeRunner.reset();
       this.message?.destroy();
       this.hint?.destroy();
     });
@@ -147,20 +173,32 @@ export class RegularEncounterScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
-    if (this.ending) return;
+    if (this.ending) {
+      if (this.justConfirm()) this.returnToCorridor(this.pendingOutcome);
+      return;
+    }
+
     if (this.mode === "dodge") {
       this.updateDodge(delta);
       return;
     }
+    if (this.mode === "fightTiming") {
+      this.updateFightTiming(delta);
+      return;
+    }
+    if (this.mode === "telegraph") {
+      this.updateTelegraph(delta);
+      return;
+    }
 
-    if (this.mode === "intro" || this.mode === "response") {
+    if (this.mode === "intro" || this.mode === "response" || this.mode === "reaction") {
       if (this.justConfirm()) {
         if (this.mode === "intro") {
           this.drawMainMenu();
         } else if (this.withdrawAfterResponse) {
           this.returnToCorridor();
-        } else if (this.pendingDodge) {
-          this.beginDodge();
+        } else if (this.mode === "response" && this.pendingDodge) {
+          this.beginTelegraph();
         } else {
           this.drawMainMenu();
         }
@@ -168,40 +206,53 @@ export class RegularEncounterScene extends Phaser.Scene {
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.esc) && this.mode === "act") {
+    if (this.controls.justPressed("CANCEL") && (this.mode === "act" || this.mode === "item")) {
       this.drawMainMenu();
       return;
     }
 
-    const up = Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.w) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.left) || Phaser.Input.Keyboard.JustDown(this.keys.a);
-    const down = Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.s) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.right) || Phaser.Input.Keyboard.JustDown(this.keys.d);
+    const upPressed = this.controls.justPressed("UP");
+    const downPressed = this.controls.justPressed("DOWN");
+    const leftPressed = this.controls.justPressed("LEFT");
+    const rightPressed = this.controls.justPressed("RIGHT");
+    const up = upPressed || leftPressed;
+    const down = downPressed || rightPressed;
 
-    if (up) {
-      if (this.mode === "main") this.menuIndex = (this.menuIndex + MAIN_OPTIONS.length - 1) % MAIN_OPTIONS.length;
-      else this.actIndex = (this.actIndex + this.currentActOptions().length - 1) % this.currentActOptions().length;
-      this.mode === "main" ? this.drawMainMenu() : this.drawActMenu();
-    } else if (down) {
-      if (this.mode === "main") this.menuIndex = (this.menuIndex + 1) % MAIN_OPTIONS.length;
-      else this.actIndex = (this.actIndex + 1) % this.currentActOptions().length;
-      this.mode === "main" ? this.drawMainMenu() : this.drawActMenu();
+    if (up || down) {
+      const direction = up ? -1 : 1;
+      if (this.mode === "command") {
+        this.menuIndex = (this.menuIndex + MAIN_OPTIONS.length + direction) % MAIN_OPTIONS.length;
+        this.drawMainMenu();
+      } else if (this.mode === "act") {
+        const length = this.currentActOptions().length;
+        this.actIndex = (this.actIndex + length + direction) % length;
+        this.drawActMenu();
+      } else if (this.mode === "item") {
+        this.itemIndex = (this.itemIndex + 2 + direction) % 2;
+        this.drawItemMenu();
+      }
     } else if (this.justConfirm()) {
       this.confirmSelection();
     }
   }
 
   private justConfirm(): boolean {
-    return Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space);
+    return this.controls.justPressed("CONFIRM");
   }
 
   private handlePointerAdvance(): void {
-    if (this.ending) return;
+    if (this.ending) {
+      this.returnToCorridor(this.pendingOutcome);
+      return;
+    }
     if (this.mode === "intro") {
       this.drawMainMenu();
     } else if (this.mode === "response") {
       if (this.withdrawAfterResponse) this.returnToCorridor();
-      else if (this.pendingDodge) this.beginDodge();
+      else if (this.pendingDodge) this.beginTelegraph();
+      else this.drawMainMenu();
+    } else if (this.mode === "reaction") {
+      if (this.withdrawAfterResponse) this.returnToCorridor();
       else this.drawMainMenu();
     }
   }
@@ -211,35 +262,26 @@ export class RegularEncounterScene extends Phaser.Scene {
   }
 
   private drawMainMenu(): void {
-    this.mode = "main";
+    this.mode = "command";
     this.clearMenu();
     this.message?.destroy();
     const enemy = WELFARE_REGULAR_ENCOUNTERS[this.enemyId];
     const labels = ["대응하기", "상황 살피기", "소지품", this.actProgress >= enemy.resolveAt ? "MERCY · 가능" : "MERCY · 아직"];
-    MAIN_OPTIONS.forEach((command, index) => {
-      const x = 138 + index * 218;
-      const selected = index === this.menuIndex;
-      const card = this.add.rectangle(x, 449, 184, 60, selected ? 0x3d554b : 0x182a30, 0.98)
-        .setStrokeStyle(selected ? 2 : 1, selected ? 0xe0c88f : 0x687a70, selected ? 1 : 0.78)
-        .setDepth(34)
-        .setInteractive({ useHandCursor: true });
-      const title = this.add.text(x, 438, command, {
-        fontFamily: "Georgia, serif",
-        fontSize: "16px",
-        fontStyle: "bold",
-        color: selected ? "#f3e4bd" : "#c2c7bb",
-      }).setOrigin(0.5).setDepth(35);
-      const subtitle = this.add.text(x, 463, labels[index] ?? "", {
-        fontFamily: "'Noto Sans KR', sans-serif",
-        fontSize: "10px",
-        color: selected ? "#e6d4ae" : "#96a399",
-      }).setOrigin(0.5).setDepth(35);
-      card.on("pointerdown", () => {
+    const items = MAIN_OPTIONS.map((command, index) => ({
+      label: command,
+      subtitle: labels[index] ?? "",
+      muted: index === 3 && this.actProgress < enemy.resolveAt,
+    }));
+    this.menuObjects.push(...drawEncounterCommandRow(
+      this,
+      items,
+      this.menuIndex,
+      (index) => {
         this.menuIndex = index;
         this.confirmSelection();
-      });
-      this.menuObjects.push(card, title, subtitle);
-    });
+      },
+      { centerX: 465, centerY: 449, cardWidth: 184, cardHeight: 60, gap: 34, depth: 34 },
+    ));
     this.message = this.add.text(480, 300, "이 조우는 상대의 태도에 맞는 행동으로 해결할 수 있다.", {
       fontFamily: "'Noto Sans KR', sans-serif",
       fontSize: "14px",
@@ -247,7 +289,7 @@ export class RegularEncounterScene extends Phaser.Scene {
       align: "center",
       wordWrap: { width: 760 },
     }).setOrigin(0.5).setDepth(31);
-    this.hint?.setText("↑↓ 선택 · ENTER 확정 · ACT에서 ESC");
+    this.hint?.setText("↑↓ 선택 · Z / ENTER 확정 · ACT/ITEM에서 X / SHIFT 취소");
   }
 
   private drawActMenu(): void {
@@ -262,30 +304,43 @@ export class RegularEncounterScene extends Phaser.Scene {
       wordWrap: { width: 760 },
     }).setOrigin(0.5).setDepth(31);
 
-    this.currentActOptions().forEach((option, index) => {
-      const y = 383 + index * 28;
-      const selected = index === this.actIndex;
-      const text = this.add.text(92, y, (selected ? "▶ " : "  ") + option.label, {
-        fontFamily: "'Noto Sans KR', sans-serif",
-        fontSize: "14px",
-        color: selected ? "#f1d693" : "#c4c9bc",
-      }).setDepth(35).setInteractive({ useHandCursor: true });
-      text.on("pointerdown", () => {
+    this.menuObjects.push(...drawEncounterChoiceList(
+      this,
+      this.currentActOptions().map((option) => option.label),
+      this.actIndex,
+      (index) => {
         this.actIndex = index;
         this.confirmSelection();
-      });
-      this.menuObjects.push(text);
-    });
-    this.hint?.setText("↑↓ 선택 · ENTER 확정 · ESC 돌아가기");
+      },
+      { left: 80, top: 375, width: 800, rowHeight: 28, fontSize: "14px", depth: 35 },
+    ));
+    this.hint?.setText("↑↓ 선택 · Z / ENTER 확정 · ESC 돌아가기");
   }
 
   private confirmSelection(): void {
+    if (this.mode === "item") {
+      if (this.itemIndex === 1) {
+        this.drawMainMenu();
+        return;
+      }
+      const session = GameSession.get();
+      if (session.hasWarmTea && GameSession.useWarmTea()) {
+        this.showResponse("따뜻한 차를 마셨다. 숨을 고르고 다시 주변을 살핀다.", true);
+      } else {
+        this.showResponse("지금 사용할 수 있는 물건은 없다.", false);
+      }
+      return;
+    }
+
     if (this.mode === "act") {
       const choice = this.currentActOptions()[this.actIndex];
       if (!choice) return;
       const alreadySeen = this.seenActs.has(choice.id);
       this.seenActs.add(choice.id);
       if (!alreadySeen && choice.advances) this.actProgress += 1;
+      if (this.enemyId === "rhythmMote" && choice.id === "watch") {
+        this.rhythmObserved = true;
+      }
       const response = alreadySeen ? choice.repeatResponse : choice.response;
       const enemy = WELFARE_REGULAR_ENCOUNTERS[this.enemyId];
       if (this.actProgress >= enemy.resolveAt) {
@@ -298,6 +353,10 @@ export class RegularEncounterScene extends Phaser.Scene {
 
     switch (MAIN_OPTIONS[this.menuIndex]) {
       case "FIGHT":
+        if (this.enemyId === "rhythmMote") {
+          this.beginFightTiming();
+          break;
+        }
         this.fightCount += 1;
         this.intensity = Math.min(1.65, 1 + this.fightCount * 0.16);
         this.showResponse(
@@ -313,7 +372,8 @@ export class RegularEncounterScene extends Phaser.Scene {
         this.drawActMenu();
         break;
       case "ITEM":
-        this.useItem();
+        this.itemIndex = 0;
+        this.drawItemMenu();
         break;
       case "MERCY":
         this.resolveMercy();
@@ -321,13 +381,31 @@ export class RegularEncounterScene extends Phaser.Scene {
     }
   }
 
-  private useItem(): void {
-    const session = GameSession.get();
-    if (session.hasWarmTea && GameSession.useWarmTea()) {
-      this.showResponse("따뜻한 차를 마셨다. 숨을 고르고 다시 주변을 살핀다.", true);
-    } else {
-      this.showResponse("지금 사용할 수 있는 물건은 없다.", false);
-    }
+  private drawItemMenu(): void {
+    this.mode = "item";
+    this.clearMenu();
+    this.message?.destroy();
+    const hasWarmTea = GameSession.get().hasWarmTea;
+    this.message = this.add.text(480, 300, "가방에 있는 물건을 선택하자.", {
+      fontFamily: "'Noto Sans KR', sans-serif",
+      fontSize: "14px",
+      color: "#e8dfcb",
+      align: "center",
+      wordWrap: { width: 760 },
+    }).setOrigin(0.5).setDepth(31);
+
+    this.menuObjects.push(...drawEncounterChoiceList(
+      this,
+      [hasWarmTea ? "따뜻한 차 · 회복" : "따뜻한 차 · 없음", "돌아가기"],
+      this.itemIndex,
+      (index) => {
+        this.itemIndex = index;
+        this.confirmSelection();
+      },
+      { left: 80, top: 375, width: 800, rowHeight: 30, fontSize: "14px", depth: 35 },
+    ));
+    this.hint?.setText("↑↓ 선택 · Z / ENTER 확정 · X / SHIFT 취소");
+    if (!hasWarmTea) this.status?.setText("현재 사용할 수 있는 아이템이 없다.");
   }
 
   private showResponse(text: string, launchDodge: boolean): void {
@@ -343,15 +421,159 @@ export class RegularEncounterScene extends Phaser.Scene {
       lineSpacing: 8,
     }).setOrigin(0.5).setDepth(31);
     if (launchDodge) {
-      this.hint?.setText("ENTER  —  상대의 다음 반응을 살핀다");
+      this.hint?.setText("Z / ENTER  —  상대의 다음 반응을 살핀다");
       this.pendingDodge = true;
     } else {
-      this.hint?.setText("ENTER  —  메뉴로 돌아가기");
+      this.hint?.setText("Z / ENTER  —  메뉴로 돌아가기");
       this.pendingDodge = false;
     }
   }
 
   private pendingDodge = false;
+
+  private beginFightTiming(): void {
+    this.mode = "fightTiming";
+    this.clearMenu();
+    this.message?.destroy();
+    this.clearFightTiming();
+    this.fightElapsedMs = 0;
+
+    const panel = this.add.rectangle(480, 310, 440, 116, 0x0a171e, 0.96)
+      .setStrokeStyle(2, 0xbca981, 0.95)
+      .setDepth(36);
+    const title = this.add.text(480, 270, "세 번의 짧은 박자 뒤, 긴 박자에 맞춰 확정", {
+      fontFamily: "'Noto Sans KR', sans-serif",
+      fontSize: "14px",
+      color: "#efe3c8",
+      align: "center",
+    }).setOrigin(0.5).setDepth(37);
+
+    this.fightTimingObjects.push(panel, title);
+
+    const barLeft = 330;
+    const barY = 328;
+    const shortWidth = 48;
+    const longWidth = 144;
+    for (let index = 0; index < 3; index += 1) {
+      const beat = this.add.rectangle(
+        barLeft + shortWidth * index + shortWidth / 2,
+        barY,
+        shortWidth - 3,
+        24,
+        0x5a6d63,
+        0.96,
+      ).setDepth(37);
+      this.fightTimingObjects.push(beat);
+    }
+    const longBeat = this.add.rectangle(
+      barLeft + shortWidth * 3 + longWidth / 2,
+      barY,
+      longWidth - 3,
+      24,
+      this.rhythmObserved ? 0xc4a96f : 0x7e806d,
+      this.rhythmObserved ? 1 : 0.78,
+    ).setDepth(37);
+    this.fightTimingObjects.push(longBeat);
+
+    const outline = this.add.rectangle(546, barY, longWidth - 3, 30, 0x000000, 0)
+      .setStrokeStyle(2, this.rhythmObserved ? 0xf1d79c : 0xa7a18d, 0.9)
+      .setDepth(38);
+    this.fightTimingObjects.push(outline);
+
+    this.fightMarker = this.add.rectangle(barLeft, barY, 5, 38, 0xf5ead0, 1)
+      .setDepth(39);
+    this.fightTimingObjects.push(this.fightMarker);
+
+    this.hint?.setText(this.rhythmObserved
+      ? "관찰한 박자를 떠올려 긴 빛이 이어지는 동안 확정하자."
+      : "빛이 지나가는 흐름을 보고 긴 박자에 맞춰 확정하자.");
+    this.status?.setText(this.rhythmObserved
+      ? "박자를 관찰했다. 판정 범위가 조금 넓어졌다."
+      : "먼저 박자를 살펴보고 확정해도 된다.");
+  }
+
+  private updateFightTiming(delta: number): void {
+    this.fightElapsedMs += Math.min(Math.max(delta, 0), 100);
+    const progress = Math.min(1, this.fightElapsedMs / RHYTHM_TIMING_DURATION_MS);
+    if (this.fightMarker) this.fightMarker.x = 330 + 288 * progress;
+    if (this.fightElapsedMs >= RHYTHM_TIMING_DURATION_MS) {
+      this.finishFightTiming();
+    } else if (this.justConfirm()) {
+      this.finishFightTiming();
+    }
+  }
+
+  private finishFightTiming(): void {
+    if (this.mode !== "fightTiming") return;
+    const result = evaluateRhythmTiming(this.fightElapsedMs, this.rhythmObserved);
+    this.fightCount += 1;
+    this.clearFightTiming();
+
+    let response: string;
+    if (result.grade === "precise") {
+      this.intensity = Math.max(0.78, this.intensity - 0.14);
+      response = "긴 박자가 이어지는 순간, 당신의 움직임이 빛무리와 정확히 맞아떨어졌다. 빛이 한결 느긋해진다.";
+    } else if (result.grade === "steady") {
+      response = "박자를 크게 놓치지는 않았다. 빛무리는 잠시 흔들린 뒤 다시 리듬을 찾는다.";
+    } else {
+      this.intensity = Math.min(1.55, this.intensity + 0.12);
+      response = "확정이 조금 빨랐거나 늦었다. 빛무리는 박자를 다시 맞추려는 듯 더 빠르게 흔들린다.";
+    }
+
+    this.status?.setText(
+      result.grade === "precise" ? "정확 · 다음 빛의 간격이 느긋해졌다." :
+      result.grade === "steady" ? "안정 · 박자를 크게 놓치지 않았다." :
+      "놓침 · 다음 빛의 간격이 조금 짧아졌다.",
+    );
+    this.showResponse(response, true);
+  }
+
+  private clearFightTiming(): void {
+    this.fightTimingObjects.forEach((object) => object.destroy());
+    this.fightTimingObjects = [];
+    this.fightMarker = undefined;
+  }
+
+  private beginTelegraph(): void {
+    this.mode = "telegraph";
+    this.pendingDodge = false;
+    this.clearMenu();
+    this.message?.destroy();
+    this.clearTelegraph();
+    this.telegraphElapsedMs = 0;
+
+    const enemy = WELFARE_REGULAR_ENCOUNTERS[this.enemyId];
+    const panel = this.add.rectangle(480, 305, 390, 118, 0x0b1920, 0.97)
+      .setStrokeStyle(2, 0xc2ae80, 0.95)
+      .setDepth(36);
+    const warning = this.add.text(480, 285, "상대의 다음 행동을 예고한다", {
+      fontFamily: "'Noto Serif KR', serif",
+      fontSize: "15px",
+      color: "#f0dfb8",
+    }).setOrigin(0.5).setDepth(37);
+    const detail = this.add.text(480, 324, enemy.attackHint, {
+      fontFamily: "'Noto Sans KR', sans-serif",
+      fontSize: "13px",
+      color: "#c4d0c3",
+      align: "center",
+      wordWrap: { width: 340 },
+    }).setOrigin(0.5).setDepth(37);
+    this.telegraphObjects.push(panel, warning, detail);
+    this.hint?.setText("잠시 뒤 회피 구간이 시작된다.");
+  }
+
+  private updateTelegraph(delta: number): void {
+    this.telegraphElapsedMs += Math.min(Math.max(delta, 0), 100);
+    if (this.telegraphElapsedMs >= 420) {
+      this.clearTelegraph();
+      this.beginDodge();
+    }
+  }
+
+  private clearTelegraph(): void {
+    this.telegraphObjects.forEach((object) => object.destroy());
+    this.telegraphObjects = [];
+  }
 
   private beginDodge(): void {
     this.mode = "dodge";
@@ -363,6 +585,9 @@ export class RegularEncounterScene extends Phaser.Scene {
     this.waveElapsed = 0;
     this.spawnElapsed = 0;
     this.bulletIndex = 0;
+    this.invulnerabilityMs = 0;
+    this.hitThisTurn = false;
+    this.dodgeRunner.reset();
     this.clearBullets();
 
     const arena = this.add.rectangle(480, 305, 340, 148, 0x08151d, 0.98)
@@ -375,25 +600,40 @@ export class RegularEncounterScene extends Phaser.Scene {
   }
 
   private updateDodge(delta: number): void {
+    this.dodgeRunner.advance(delta, (stepMs) => this.stepDodge(stepMs));
+  }
+
+  private stepDodge(stepMs: number): void {
+    if (this.mode !== "dodge") return;
+
     const enemy = WELFARE_REGULAR_ENCOUNTERS[this.enemyId];
-    const dt = Math.min(delta, 40) / 1000;
-    this.waveElapsed += delta;
-    this.spawnElapsed += delta;
+    const dt = stepMs / 1000;
+    this.waveElapsed += stepMs;
+    this.spawnElapsed += stepMs;
+    this.invulnerabilityMs = Math.max(0, this.invulnerabilityMs - stepMs);
 
     let dx = 0;
     let dy = 0;
-    if (this.keys.left.isDown || this.keys.a.isDown) dx -= 1;
-    if (this.keys.right.isDown || this.keys.d.isDown) dx += 1;
-    if (this.keys.up.isDown || this.keys.w.isDown) dy -= 1;
-    if (this.keys.down.isDown || this.keys.s.isDown) dy += 1;
+    if (this.controls.isDown("LEFT")) dx -= 1;
+    if (this.controls.isDown("RIGHT")) dx += 1;
+    if (this.controls.isDown("UP")) dy -= 1;
+    if (this.controls.isDown("DOWN")) dy += 1;
     if (this.player && (dx || dy)) {
       const length = Math.hypot(dx, dy) || 1;
       this.player.x = Phaser.Math.Clamp(this.player.x + (dx / length) * 205 * dt, 326, 634);
       this.player.y = Phaser.Math.Clamp(this.player.y + (dy / length) * 190 * dt, 244, 366);
     }
 
-    if (this.spawnElapsed >= enemy.patternIntervalMs / this.intensity) {
-      this.spawnElapsed = 0;
+    while (
+      this.mode === "dodge" &&
+      this.waveElapsed < enemy.patternDurationMs
+    ) {
+      const baseInterval = enemy.pattern === "rhythm"
+        ? RHYTHM_DODGE_INTERVALS_MS[this.bulletIndex % RHYTHM_DODGE_INTERVALS_MS.length]
+        : enemy.patternIntervalMs;
+      const spawnInterval = Math.max(120, baseInterval / this.intensity);
+      if (this.spawnElapsed < spawnInterval) break;
+      this.spawnElapsed -= spawnInterval;
       this.spawnPattern(enemy.pattern);
     }
 
@@ -402,15 +642,30 @@ export class RegularEncounterScene extends Phaser.Scene {
       bullet.object.x += bullet.velocityX * dt;
       bullet.object.y += bullet.velocityY * dt;
       bullet.object.rotation += dt * (bullet.velocityX >= 0 ? 0.65 : -0.65);
-      if (this.player && Phaser.Math.Distance.Between(this.player.x, this.player.y, bullet.object.x, bullet.object.y) < 20 &&
-          this.time.now - this.lastHitAt > 650) {
-        this.lastHitAt = this.time.now;
-        this.hitCount += 1;
+
+      const collided = Boolean(
+        this.player &&
+        Phaser.Math.Distance.Between(this.player.x, this.player.y, bullet.object.x, bullet.object.y) < 20
+      );
+
+      if (collided) {
         bullet.object.destroy();
-        this.player.setAlpha(0.4);
-        this.tweens.add({ targets: this.player, alpha: 1, duration: 330, ease: "Sine.InOut" });
-        this.status?.setText("리듬에 잠깐 휩쓸렸다. 다시 움직일 수 있다.");
-      } else if (bullet.object.x > 300 && bullet.object.x < 660 && bullet.object.y > 220 && bullet.object.y < 390) {
+        this.hitThisTurn = true;
+        if (this.invulnerabilityMs <= 0) {
+          this.invulnerabilityMs = 650;
+          this.hitCount += 1;
+          this.player?.setAlpha(0.4);
+          if (this.player) {
+            this.tweens.add({ targets: this.player, alpha: 1, duration: 330, ease: "Sine.InOut" });
+          }
+          this.status?.setText("리듬에 잠깐 휩쓸렸다. 다시 움직일 수 있다.");
+        }
+      } else if (
+        bullet.object.x > 300 &&
+        bullet.object.x < 660 &&
+        bullet.object.y > 220 &&
+        bullet.object.y < 390
+      ) {
         remaining.push(bullet);
       } else {
         bullet.object.destroy();
@@ -465,9 +720,10 @@ export class RegularEncounterScene extends Phaser.Scene {
     this.player = undefined;
     this.menuObjects.forEach((object) => object.destroy());
     this.menuObjects = [];
+    this.dodgeRunner.reset();
     const enemy = WELFARE_REGULAR_ENCOUNTERS[this.enemyId];
 
-    if (this.fightCount >= 3) {
+    if (this.enemyId !== "rhythmMote" && this.fightCount >= 3) {
       this.message?.destroy();
       this.message = this.add.text(480, 300, enemy.withdrewExit.join("\n"), {
         fontFamily: "'Noto Sans KR', sans-serif",
@@ -478,19 +734,21 @@ export class RegularEncounterScene extends Phaser.Scene {
         lineSpacing: 8,
       }).setOrigin(0.5).setDepth(31);
       this.status?.setText("상대는 더 이야기하지 않고 통로 가장자리로 물러났다.");
-      this.hint?.setText("ENTER  —  복도로 돌아가기");
-      this.mode = "response";
+      this.hint?.setText("Z / ENTER  —  복도로 돌아가기");
+      this.mode = "reaction";
       this.pendingDodge = false;
       this.withdrawAfterResponse = true;
       return;
     }
 
-    this.mode = "response";
+    this.mode = "reaction";
     this.pendingDodge = false;
     this.withdrawAfterResponse = false;
     this.message?.destroy();
     this.message = this.add.text(480, 300,
-      this.hitCount > 0 ? "상대의 반응이 잦아들었다. 조금 전의 행동을 다시 생각해 보자." : "모든 빛무늬가 지나갔다. 이제 다시 선택할 수 있다.",
+      this.hitThisTurn
+        ? "상대의 반응이 잦아들었다. 조금 전의 움직임을 다시 살펴보자."
+        : "모든 빛무늬가 지나갔다. 이제 다시 선택할 수 있다.",
       {
         fontFamily: "'Noto Sans KR', sans-serif",
         fontSize: "15px",
@@ -499,7 +757,7 @@ export class RegularEncounterScene extends Phaser.Scene {
         wordWrap: { width: 780 },
       },
     ).setOrigin(0.5).setDepth(31);
-    this.hint?.setText("ENTER  —  메뉴로 돌아가기");
+    this.hint?.setText("Z / ENTER  —  명령으로 돌아가기");
   }
 
   private withdrawAfterResponse = false;
@@ -516,6 +774,7 @@ export class RegularEncounterScene extends Phaser.Scene {
   private finish(outcome: WelfareEncounterOutcome, lines: readonly string[]): void {
     if (this.ending) return;
     this.ending = true;
+    this.pendingOutcome = outcome;
     this.mode = "ending";
     this.clearMenu();
     this.message?.destroy();
@@ -527,14 +786,14 @@ export class RegularEncounterScene extends Phaser.Scene {
       wordWrap: { width: 780 },
       lineSpacing: 8,
     }).setOrigin(0.5).setDepth(31);
-    this.hint?.setText("ENTER  —  복도로 돌아가기");
-    this.input.keyboard?.once("keydown-ENTER", () => this.returnToCorridor(outcome));
-    this.input.keyboard?.once("keydown-SPACE", () => this.returnToCorridor(outcome));
-    this.input.once("pointerdown", () => this.returnToCorridor(outcome));
+    this.hint?.setText("Z / ENTER  —  복도로 돌아가기");
   }
 
   private returnToCorridor(outcome?: WelfareEncounterOutcome): void {
-    if (outcome) GameSession.recordWelfareEncounter(this.enemyId, outcome);
+    if (this.returning) return;
+    this.returning = true;
+    const resolvedOutcome = outcome ?? this.pendingOutcome;
+    if (resolvedOutcome) GameSession.recordWelfareEncounter(this.enemyId, resolvedOutcome);
     else if (this.withdrawAfterResponse) GameSession.recordWelfareEncounter(this.enemyId, "withdrew");
     this.scene.start("WelfareCorridorScene");
   }

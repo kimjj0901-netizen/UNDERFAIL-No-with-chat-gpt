@@ -1,14 +1,13 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
 import { Atmosphere } from "../audio/Atmosphere";
 import { GameSession } from "../state/GameSession";
 
 export class FlowerFieldScene extends Phaser.Scene {
+  private controls!: GameInput;
   private prompt?: Phaser.GameObjects.Text;
   private bully?: Phaser.GameObjects.Image;
   private player?: Phaser.GameObjects.Image;
-  private enter?: Phaser.Input.Keyboard.Key;
-  private eKey?: Phaser.Input.Keyboard.Key;
-  private spaceKey?: Phaser.Input.Keyboard.Key;
   private opened = false;
 
   constructor() {
@@ -16,6 +15,7 @@ export class FlowerFieldScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.controls = new GameInput(this);
     Atmosphere.setMood("uneasy");
     Atmosphere.cue("warning");
     GameSession.markBullyEncountered();
@@ -68,17 +68,13 @@ export class FlowerFieldScene extends Phaser.Scene {
       padding: { x: 7, y: 4 },
     }).setOrigin(0.5).setDepth(20);
 
-    this.prompt = this.add.text(480, 492, "ENTER / E  —  앞의 사람에게 다가가기", {
+    this.prompt = this.add.text(480, 492, "Z / ENTER / E  —  앞의 사람에게 다가가기", {
       fontFamily: "monospace",
       fontSize: "12px",
       color: "#e4d19e",
       backgroundColor: "#0b171d",
       padding: { x: 12, y: 8 },
     }).setOrigin(0.5).setDepth(25);
-
-    this.enter = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
-    this.eKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-    this.spaceKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     this.tweens.add({
       targets: this.bully,
@@ -97,10 +93,7 @@ export class FlowerFieldScene extends Phaser.Scene {
 
   update(): void {
     if (this.opened) return;
-    const pressed = (this.enter ? Phaser.Input.Keyboard.JustDown(this.enter) : false) ||
-      (this.eKey ? Phaser.Input.Keyboard.JustDown(this.eKey) : false) ||
-      (this.spaceKey ? Phaser.Input.Keyboard.JustDown(this.spaceKey) : false);
-    if (pressed) this.startEncounter();
+    if (this.controls.justPressed("INTERACT") || this.controls.justPressed("CONFIRM")) this.startEncounter();
   }
 
   private startEncounter(): void {

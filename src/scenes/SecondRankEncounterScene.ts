@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
+import { drawEncounterCommandRow, drawEncounterChoiceList, drawEncounterPanel } from "../ui/EncounterMenu";
 import { GameSession } from "../state/GameSession";
 import { WELFARE_EVENTS } from "../data/storyEvents";
 
@@ -11,7 +13,7 @@ export class SecondRankEncounterScene extends Phaser.Scene {
   private mode: Mode = "main";
   private mainIndex = 0;
   private actIndex = 0;
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private controls!: GameInput;
   private menuObjects: Phaser.GameObjects.GameObject[] = [];
   private playerText?: Phaser.GameObjects.Text;
   private message?: Phaser.GameObjects.Text;
@@ -49,10 +51,7 @@ export class SecondRankEncounterScene extends Phaser.Scene {
       padding: { x: 7, y: 4 },
     }).setOrigin(0.5).setDepth(20);
 
-    const panel = this.add.graphics().setDepth(30);
-    panel.fillStyle(0x09151d, 0.97).fillRoundedRect(42, 326, 876, 176, 10);
-    panel.lineStyle(2, 0xbca981, 0.94).strokeRoundedRect(42, 326, 876, 176, 10);
-    panel.lineStyle(1, 0x64766d, 0.72).strokeRoundedRect(52, 336, 856, 156, 7);
+    drawEncounterPanel(this, { centerX: 480, centerY: 414, width: 876, height: 176, depth: 30 });
 
     this.add.text(72, 347, "전교 2등", {
       fontFamily: "'Noto Serif KR', serif",
@@ -69,21 +68,7 @@ export class SecondRankEncounterScene extends Phaser.Scene {
       wordWrap: { width: 780 },
     }).setDepth(31);
 
-    const keyboard = this.input.keyboard;
-    if (!keyboard) throw new Error("Keyboard input is unavailable in SecondRankEncounterScene.");
-    this.keys = {
-      up: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      enter: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-      esc: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
-    };
+    this.controls = new GameInput(this);
 
     this.addMenuHint();
     this.drawMainMenu();
@@ -99,23 +84,25 @@ export class SecondRankEncounterScene extends Phaser.Scene {
     if (this.mode === "resolution") return;
 
     if (this.mode === "response") {
-      if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+      if (this.controls.justPressed("CONFIRM")) {
         this.mode = "main";
         this.drawMainMenu();
       }
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.esc) && this.mode === "act") {
+    if (this.controls.justPressed("CANCEL") && this.mode === "act") {
       this.mode = "main";
       this.drawMainMenu();
       return;
     }
 
-    const up = Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.w) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.left) || Phaser.Input.Keyboard.JustDown(this.keys.a);
-    const down = Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.s) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.right) || Phaser.Input.Keyboard.JustDown(this.keys.d);
+    const upPressed = this.controls.justPressed("UP");
+    const downPressed = this.controls.justPressed("DOWN");
+    const leftPressed = this.controls.justPressed("LEFT");
+    const rightPressed = this.controls.justPressed("RIGHT");
+    const up = upPressed || leftPressed;
+    const down = downPressed || rightPressed;
 
     if (up) {
       if (this.mode === "main") this.mainIndex = (this.mainIndex + MAIN_OPTIONS.length - 1) % MAIN_OPTIONS.length;
@@ -126,13 +113,13 @@ export class SecondRankEncounterScene extends Phaser.Scene {
       if (this.mode === "main") this.mainIndex = (this.mainIndex + 1) % MAIN_OPTIONS.length;
       else this.actIndex = (this.actIndex + 1) % WELFARE_EVENTS.secondRankEncounter.actOptions.length;
       this.mode === "main" ? this.drawMainMenu() : this.drawActMenu();
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+    } else if (this.controls.justPressed("CONFIRM")) {
       this.confirmSelection();
     }
   }
 
   private addMenuHint(): void {
-    this.hint = this.add.text(878, 298, "↑↓ 선택 · ENTER 확정", {
+    this.hint = this.add.text(878, 298, "↑↓ 선택 · Z / ENTER 확정", {
       fontFamily: "monospace",
       fontSize: "11px",
       color: "#b9b39f",
@@ -142,48 +129,40 @@ export class SecondRankEncounterScene extends Phaser.Scene {
   private drawMainMenu(): void {
     this.mode = "main";
     this.clearMenu();
-    MAIN_OPTIONS.forEach((label, index) => {
-      const x = 150 + index * 220;
-      const selected = index === this.mainIndex;
-      const card = this.add.rectangle(x, 455, 184, 54, selected ? 0x3a5148 : 0x17282e, 0.97)
-        .setStrokeStyle(selected ? 2 : 1, selected ? 0xe1c68d : 0x63746d, 0.9)
-        .setDepth(34)
-        .setInteractive({ useHandCursor: true });
-      const text = this.add.text(x, 455, label, {
-        fontFamily: "Georgia, serif",
-        fontSize: "18px",
-        fontStyle: "bold",
-        color: selected ? "#f1e3bd" : "#bac4ba",
-        letterSpacing: 1,
-      }).setOrigin(0.5).setDepth(35);
-      card.on("pointerdown", () => {
+    const items = MAIN_OPTIONS.map((label) => ({
+      label,
+      subtitle: label === "FIGHT" ? "대립" :
+        label === "ACT" ? "상대 이해하기" :
+        label === "ITEM" ? "소지품" : "비폭력 해결",
+    }));
+    this.menuObjects.push(...drawEncounterCommandRow(
+      this,
+      items,
+      this.mainIndex,
+      (index) => {
         this.mainIndex = index;
         this.confirmSelection();
-      });
-      this.menuObjects.push(card, text);
-    });
+      },
+      { centerX: 480, centerY: 455, cardWidth: 184, cardHeight: 54, gap: 36, depth: 34 },
+    ));
     this.message?.setText(WELFARE_EVENTS.secondRankEncounter.intro.join("\n"));
-    this.hint?.setText("↑↓ 선택 · ENTER 확정");
+    this.hint?.setText("↑↓ 선택 · Z / ENTER 확정");
   }
 
   private drawActMenu(): void {
     this.mode = "act";
     this.clearMenu();
-    WELFARE_EVENTS.secondRankEncounter.actOptions.forEach((label, index) => {
-      const y = 420 + index * 25;
-      const selected = index === this.actIndex;
-      const text = this.add.text(86, y, (selected ? "▶ " : "  ") + label, {
-        fontFamily: "'Noto Sans KR', sans-serif",
-        fontSize: "15px",
-        color: selected ? "#f1d58f" : "#c0c9be",
-      }).setDepth(35).setInteractive({ useHandCursor: true });
-      text.on("pointerdown", () => {
+    this.menuObjects.push(...drawEncounterChoiceList(
+      this,
+      WELFARE_EVENTS.secondRankEncounter.actOptions,
+      this.actIndex,
+      (index) => {
         this.actIndex = index;
         this.confirmSelection();
-      });
-      this.menuObjects.push(text);
-    });
-    this.hint?.setText("↑↓ 선택 · ENTER 확정 · ESC 돌아가기");
+      },
+      { left: 72, top: 412, width: 816, rowHeight: 25, fontSize: "14px", depth: 35 },
+    ));
+    this.hint?.setText("↑↓ 선택 · Z / ENTER 확정 · X / SHIFT 취소");
   }
 
   private confirmSelection(): void {
@@ -214,7 +193,7 @@ export class SecondRankEncounterScene extends Phaser.Scene {
     this.mode = "response";
     this.clearMenu();
     this.message?.setText(WELFARE_EVENTS.secondRankEncounter.itemResponse);
-    this.hint?.setText("ENTER  —  메뉴로 돌아가기");
+    this.hint?.setText("Z / ENTER  —  메뉴로 돌아가기");
   }
 
   private resolve(action: Action, detail?: string): void {

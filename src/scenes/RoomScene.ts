@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
 import { GameSession } from "../state/GameSession";
 import { WELFARE_EVENTS } from "../data/storyEvents";
 import { WELFARE_PHONE_CALLS } from "../data/welfareEncounterContent";
@@ -28,7 +29,7 @@ export class RoomScene extends Phaser.Scene {
   private dialogueObjects: Phaser.GameObjects.GameObject[] = [];
   private targets: Target[] = [];
   private nearest?: Target;
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private controls!: GameInput;
   private puzzleStep = 0;
   private secondRankSprite?: Phaser.GameObjects.Image;
   private proggithubSprite?: Phaser.GameObjects.Image;
@@ -60,23 +61,7 @@ export class RoomScene extends Phaser.Scene {
     this.drawPlayer();
     this.drawHud();
 
-    const k = this.input.keyboard;
-    if (!k) throw new Error("Keyboard input unavailable.");
-    this.keys = {
-      up: k.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: k.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: k.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: k.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: k.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: k.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: k.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: k.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      e: k.addKey(Phaser.Input.Keyboard.KeyCodes.E),
-      enter: k.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: k.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-      esc: k.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
-      c: k.addKey(Phaser.Input.Keyboard.KeyCodes.C),
-    };
+    this.controls = new GameInput(this);
 
     this.prompt = this.add.text(480, 504, "", {
       fontFamily: "monospace",
@@ -106,10 +91,10 @@ export class RoomScene extends Phaser.Scene {
     const speed = 180 * Math.min(delta, 40) / 1000;
     let dx = 0;
     let dy = 0;
-    if (this.isDown("left", "a")) dx -= 1;
-    if (this.isDown("right", "d")) dx += 1;
-    if (this.isDown("up", "w")) dy -= 1;
-    if (this.isDown("down", "s")) dy += 1;
+    if (this.controls.isDown("LEFT")) dx -= 1;
+    if (this.controls.isDown("RIGHT")) dx += 1;
+    if (this.controls.isDown("UP")) dy -= 1;
+    if (this.controls.isDown("DOWN")) dy += 1;
 
     if (dx || dy) {
       const length = Math.hypot(dx, dy) || 1;
@@ -123,12 +108,8 @@ export class RoomScene extends Phaser.Scene {
     }
 
     this.updateNearest();
-    if (Phaser.Input.Keyboard.JustDown(this.keys.e)) this.interact();
-    if (Phaser.Input.Keyboard.JustDown(this.keys.c)) this.callDomitoriell();
-  }
-
-  private isDown(...names: string[]): boolean {
-    return names.some((name) => this.keys[name].isDown);
+    if (this.controls.justPressed("INTERACT") || this.controls.justPressed("CONFIRM")) this.interact();
+    if (this.controls.justPressed("PHONE_CALL")) this.callDomitoriell();
   }
 
   private drawRoom(): void {
@@ -227,7 +208,7 @@ export class RoomScene extends Phaser.Scene {
       fontSize: "12px",
       color: "#c9c2ad",
     }).setOrigin(0, 0.5).setDepth(31);
-    this.add.text(938, 526, "WASD / 방향키 이동   E 조사 · 전화", {
+    this.add.text(938, 526, "WASD / 방향키 이동   Z / ENTER / E 조사 · C 전화", {
       fontFamily: "monospace",
       fontSize: "12px",
       color: "#9aa89e",
@@ -245,7 +226,7 @@ export class RoomScene extends Phaser.Scene {
       }
     }
     this.nearest = nearest;
-    this.prompt.setText(nearest ? "E  " + nearest.label + "  조사하기" : "");
+    this.prompt.setText(nearest ? "Z / ENTER / E  " + nearest.label + "  조사하기" : "");
   }
 
   private interact(): void {
@@ -350,7 +331,7 @@ export class RoomScene extends Phaser.Scene {
     const d = this.dialogue;
     if (!d) return;
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.esc)) {
+    if (this.controls.justPressed("CANCEL")) {
       if (d.speaker === "프로깃허브") {
         const hidden = GameSession.recordProggithubDialogueSkip(d.lines.length - d.page);
         if (hidden) {
@@ -363,20 +344,22 @@ export class RoomScene extends Phaser.Scene {
     }
 
     if (d.choices && d.page >= d.lines.length - 1) {
-      if (Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.w)) {
+      const upPressed = this.controls.justPressed("UP");
+      const downPressed = this.controls.justPressed("DOWN");
+      if (upPressed) {
         d.choiceIndex = (d.choiceIndex + d.choices.length - 1) % d.choices.length;
         this.renderDialogue();
-      } else if (Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.s)) {
+      } else if (downPressed) {
         d.choiceIndex = (d.choiceIndex + 1) % d.choices.length;
         this.renderDialogue();
-      } else if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+      } else if (this.controls.justPressed("CONFIRM")) {
         const selected = d.choiceIndex;
         const speaker = d.speaker;
         if (speaker === "첫 퍼즐") {
           this.resolvePuzzleChoice(selected);
         } else {
           this.clearDialogue();
-          if (speaker === "복도에서 이어지는 문") {
+          if (speaker === "복도로 이어지는 문") {
             if (selected === 0) this.scene.start("WelfareCorridorScene");
             else this.openDialogue("도미토리엘", ["천천히 둘러보렴. 궁금한 것이 있으면 언제든 물어봐도 좋단다."]);
           } else if (speaker === "도미토리엘") {
@@ -421,7 +404,7 @@ export class RoomScene extends Phaser.Scene {
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+    if (this.controls.justPressed("CONFIRM")) {
       d.page += 1;
       if (d.page >= d.lines.length) this.clearDialogue();
       else this.renderDialogue();
@@ -481,7 +464,7 @@ export class RoomScene extends Phaser.Scene {
     }).setDepth(51));
 
     if (d.page < d.lines.length - 1) {
-      this.dialogueObjects.push(this.add.text(890, 468, "ENTER ▶", {
+      this.dialogueObjects.push(this.add.text(890, 468, "Z / ENTER ▶", {
         fontFamily: "monospace",
         fontSize: "11px",
         color: "#a9b29f",
@@ -494,7 +477,7 @@ export class RoomScene extends Phaser.Scene {
           color: index === d.choiceIndex ? "#f0d58f" : "#b9c1b9",
         }).setDepth(51));
       });
-      this.dialogueObjects.push(this.add.text(890, 468, "↑↓ 선택 · ENTER", {
+      this.dialogueObjects.push(this.add.text(890, 468, "↑↓ 선택 · Z / ENTER", {
         fontFamily: "monospace",
         fontSize: "10px",
         color: "#a9b29f",

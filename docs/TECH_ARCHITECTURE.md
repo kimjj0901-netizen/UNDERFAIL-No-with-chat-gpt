@@ -89,20 +89,29 @@ BootScene
 - 사용자 정사 문장과 임시 문구를 혼합해 확정 대사처럼 취급하지 않는다.
 - 이후 JSON 또는 외부 편집기 도입은 현재 Milestone에서 필요하지 않으면 미룬다.
 
-## 5. 입력 규칙 초안
+## 5. 공통 입력 규칙
 
-| 입력 | 기능 |
-|---|---|
-| 방향키 / WASD | 방 이동 |
-| Enter / Space | 상호작용, 대화 진행, 메뉴 선택 |
-| 방향키 | 선택지/전투 메뉴 이동 |
-| Escape | 취소 또는 메뉴 닫기(가능한 상태에서만) |
+모든 플레이 가능 Scene은 `src/input/GameInput.ts`의 공통 액션을 사용한다. Scene은 물리 키 코드 대신 `CONFIRM`, `CANCEL`, `UP` 등의 액션을 조회한다.
 
-입력 중복, 대화 중 이동, 전투 중 탐험 입력이 동시에 작동하지 않도록 현재 상태에 따라 입력을 제한한다. 터치 전용 이동 UI는 별도 설계 전까지 범위에 넣지 않는다.
+| Game Action | 기본 입력 | 호환/보조 입력 | 의미 |
+|---|---|---|---|
+| UP / DOWN / LEFT / RIGHT | 방향키 | WASD | 탐험 이동 및 메뉴 선택 |
+| CONFIRM | Z | Enter, Space | 확정·대화 진행. 탐험 중에는 근접 조사 대체 입력으로도 사용 |
+| CANCEL | X | Shift, Escape | 허용된 하위 메뉴/대화에서 취소 |
+| INTERACT | E | 없음 | 별도 조사 액션 |
+| PHONE_CALL | C | 없음 | 기존 도미토리엘 전화 단축키 |
+| MENU | Ctrl (예약) | 없음 | 메뉴 UI 구현 전까지 연결하지 않음 |
+
+- 이름 입력 Scene의 DOM input은 글로벌 Confirm 입력으로 가로채지 않는다. Z는 이름 문자열로 입력 가능해야 하며 Enter는 제출에 사용한다.
+- C는 기존 전화 단축키로 유지한다. 일반 메뉴는 Ctrl을 예약 입력으로 두되 실제 메뉴 UI가 연결되기 전에는 사용 안내하지 않는다.
+- Confirm 별칭(Z/Enter/Space)을 같은 프레임에 여러 개 눌러도 한 번의 논리 액션으로 처리한다. INTERACT(E)와 CONFIRM은 서로 다른 액션이며, 탐험 Scene에서만 CONFIRM을 상호작용 대체 입력으로 해석한다. Phaser 4.2.1의 KeyboardPlugin 키 캡처가 전역임을 고려해, DOM 입력 Scene으로 이동할 때 브라우저 기본 키 캡처를 남기지 않는다.
+- 각 Scene은 대화/전투/전환 등 현재 상태에 맞지 않는 액션을 처리하지 않는다.
+- 브라우저 기본 단축키와 Ctrl 조합은 메뉴 기능 구현 시 별도 검증한다.
+- 포인터 입력은 접근성 및 보조 조작으로 유지할 수 있으나, 키보드만으로 주요 플레이 경로를 완료할 수 있어야 한다.
 
 ## 6. 프로토타입 시각 규칙
 
-- 아직 최종 캐릭터·배경 이미지가 제공되지 않았으므로 임시 도형과 간단한 UI를 사용한다.
+- 현재 저장소에는 오리지널 SVG 캐릭터·배경·오브젝트가 존재하지만, 이는 1차 프로토타입 자산이며 최종 스프라이트 시트·타일셋·UI 아트로 승인된 상태가 아니다.
 - 임시 도형은 최종 아트로 간주하지 않는다.
 - 화면 크기, 여백, 텍스트 가독성을 우선한다.
 - 색상·폰트·캐릭터 비율을 최종 디자인으로 고정하지 않는다.
@@ -162,3 +171,43 @@ BootScene
 - main.ts: 신규 Scene을 Phaser Scene registry에 등록.
 
 일반 조우와 너드스타블룩의 전투 시각 요소는 추상적인 비현실적 빛/종이 문양이다. 이 구조는 HP 0, 사망/제압, SAVE/RESET, 루트 카운터 및 세계관적 저장 의미를 다루지 않는다.
+
+
+## 12. 2026-11-26 공통 입력 리빌드
+
+- `src/input/GameInput.ts`가 키 코드를 공통 액션으로 변환한다.
+- 적용 대상: TitleScene, PrologueScene, FlowerFieldScene, RoomScene, WelfareCorridorScene, BattleScene, BullyBattleScene, SecondRankEncounterScene, RegularEncounterScene, NerdstablookEncounterScene.
+- NameEntryScene은 DOM input이므로 글로벌 입력 객체에 연결하지 않는다.
+- C는 전화 단축키를 위해 유지하며 Menu 액션은 현재 예약 상태다.
+- 이 변경은 입력 구조의 일관성을 높이는 첫 단계다. 전투/대화 상태머신 전체를 공통화한 것은 아니다.
+- [검증 한계] 브라우저에서 키 입력을 실제 플레이로 검증하기 전까지 완전한 조작 검수 완료로 처리하지 않는다.
+
+
+## 13. 공통 전투 UI 프레젠테이션
+
+- `src/ui/EncounterMenu.ts`가 공통 명령 행, 공통 ACT/ITEM 선택 목록, 공통 대화/명령 프레임을 제공한다.
+- 적용 Scene: BattleScene, BullyBattleScene, SecondRankEncounterScene, RegularEncounterScene, NerdstablookEncounterScene.
+- 각 Scene의 적별 대사·행동·해결 로직은 계속 Scene/콘텐츠 데이터가 소유한다.
+- 공통 helper는 표현 계층만 공유하고, 전투 규칙을 강제로 공통화하지 않는다.
+- TitleScene은 같은 짙은 청록/낡은 금색 시각 언어의 시작 선택 프레임을 사용한다.
+- [검증 한계] CI 빌드 성공은 실제 화면의 한국어 잘림·패널 겹침·선택 상태를 확인한 것이 아니다.
+
+
+## 14. 입력 액션 별칭 분리
+- `CONFIRM`: Z / Enter / Space.
+- `INTERACT`: E only.
+- 탐험 Scene은 대화가 활성화되지 않은 상태에서 Confirm 또는 E를 조사에 사용.
+- 대화 상태는 Scene 자체의 state branch에서 Confirm을 소비하므로 탐험 상호작용과 충돌하지 않는다.
+- `PHONE_CALL`: C.
+- `MENU`: Ctrl 예약. C는 기존 전화 호출 때문에 메뉴 키로 사용하지 않는다.
+
+
+## 15. 2026-11-27 Milestone 2A 전투 기준 조우 프로토타입
+
+- src/combat/EncounterFlowController.ts: 현재는 RegularEncounterScene만 사용하는 상태 전이 가드다. 모든 전투 Scene이 공통 상태 머신을 사용한다고 간주하지 않는다.
+- src/combat/FixedStepRunner.ts: 고정 60Hz 스텝과 프레임 지연 catch-up 상한을 제공한다. 현재 연결 범위는 RegularEncounterScene의 회피 루프뿐이다.
+- src/combat/FightTiming.ts: rhythmMote의 FIGHT 타이밍 판정 프로토타입과 RHYTHM_DODGE_INTERVALS_MS 발사 간격 데이터를 소유한다. ACT watch 관찰을 통해 FIGHT 판정 허용 범위가 넓어진다. 회피 발사 간격은 300/300/300/900ms이며 FIGHT 1,800ms 리듬과 합이 일치한다. 판정 수치는 밸런스 제안이며 전역 확정 규칙이 아니다.
+- RegularEncounterScene: ITEM 선택 목록, 적 행동 예고 단계, 반응 단계 및 위 보조 로직을 연결했다.
+- 다른 특수 전투 Scene의 상태 머신·회피 루프는 아직 통합하지 않았다. 각 Scene의 고유 대사/스토리 연출을 유지하면서 단계적으로 이관해야 한다.
+- Node 내장 테스트는 npm test로 실행하고, CI는 production build 뒤 해당 테스트를 수행한다.
+- [검증 한계] 현재 GitHub Actions에서 TypeScript/Vite build와 순수 전투 로직 7개 테스트가 통과했다. 브라우저 플레이/화면/키보드/타이밍 체감 QA는 아직 실행하지 않았다.

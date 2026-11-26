@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
+import { drawEncounterCommandRow, drawEncounterPanel } from "../ui/EncounterMenu";
 import { Atmosphere } from "../audio/Atmosphere";
 import { GameSession } from "../state/GameSession";
 
@@ -19,7 +21,7 @@ export class BullyBattleScene extends Phaser.Scene {
   private panel?: Phaser.GameObjects.Rectangle;
   private message?: Phaser.GameObjects.Text;
   private hint?: Phaser.GameObjects.Text;
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private controls!: GameInput;
   private dodgeTime = 0;
   private spawnTime = 0;
   private patternIndex = 0;
@@ -33,37 +35,32 @@ export class BullyBattleScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor("#090e11");
-    this.keys = this.makeKeys();
+    this.controls = new GameInput(this);
     this.lastHitAt = -1000;
     this.drawArena();
     this.showIntro();
   }
 
   update(_time: number, delta: number): void {
-    if (this.mode === "dodge") this.updateDodge(delta);
-    if (this.mode === "menu") this.updateMenu();
-    if (this.mode === "response" &&
-        (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space))) {
-      this.beginDodge();
+    if (this.mode === "dodge") {
+      this.updateDodge(delta);
+      return;
     }
-  }
-
-  private makeKeys(): Record<string, Phaser.Input.Keyboard.Key> {
-    const k = this.input.keyboard;
-    if (!k) throw new Error("Keyboard input unavailable.");
-    return {
-      up: k.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: k.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: k.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: k.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: k.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      s: k.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      a: k.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      d: k.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      enter: k.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: k.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-      esc: k.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
-    };
+    if (this.mode === "menu") {
+      this.updateMenu();
+      return;
+    }
+    if (this.mode === "intro" && this.controls.justPressed("CONFIRM")) {
+      this.openMenu();
+      return;
+    }
+    if (this.mode === "response" && this.controls.justPressed("CONFIRM")) {
+      this.beginDodge();
+      return;
+    }
+    if (this.mode === "rescue" && this.controls.justPressed("CONFIRM")) {
+      this.enterWelfare();
+    }
   }
 
   private drawArena(): void {
@@ -106,9 +103,7 @@ export class BullyBattleScene extends Phaser.Scene {
   private showIntro(): void {
     this.mode = "intro";
     Atmosphere.setMood("uneasy");
-    const panel = this.add.rectangle(480, 383, 864, 148, 0x0c1820, 0.94)
-      .setStrokeStyle(2, 0xb6a47d, 0.92)
-      .setDepth(25);
+    const panel = drawEncounterPanel(this, { centerX: 480, centerY: 383, width: 864, height: 148, depth: 25 });
     this.message = this.add.text(82, 334,
       "불리는 친근한 척 손을 내민다.\n" +
       "그 손끝에서 이상한 상징들이 번뜩인다.\n" +
@@ -120,15 +115,13 @@ export class BullyBattleScene extends Phaser.Scene {
         lineSpacing: 10,
       },
     ).setDepth(26);
-    this.hint = this.add.text(878, 438, "ENTER  —  계속", {
+    this.hint = this.add.text(878, 438, "Z / ENTER  —  계속", {
       fontFamily: "monospace",
       fontSize: "12px",
       color: "#d2be88",
     }).setOrigin(1, 0.5).setDepth(26);
     this.uiObjects.push(panel);
 
-    this.input.keyboard?.once("keydown-ENTER", () => this.openMenu());
-    this.input.keyboard?.once("keydown-SPACE", () => this.openMenu());
     this.input.once("pointerdown", () => this.openMenu());
   }
 
@@ -143,37 +136,23 @@ export class BullyBattleScene extends Phaser.Scene {
     this.message?.destroy();
     this.message = undefined;
     this.clearMenu();
-    const menuPanel = this.add.rectangle(480, 414, 874, 158, 0x0b171e, 0.96)
-      .setStrokeStyle(2, 0xb6a47d, 0.94)
-      .setDepth(28);
-    const options = ["FIGHT", "ACT", "ITEM", "MERCY"];
-    const descriptions = ["밀어내기", "상황 살피기", "소지품", "물러나기"];
-    options.forEach((label, index) => {
-      const x = 150 + index * 220;
-      const selected = index === this.menuIndex;
-      const card = this.add.rectangle(x, 460, 186, 58,
-        selected ? 0x3c5148 : 0x17262b, selected ? 0.98 : 0.88)
-        .setStrokeStyle(selected ? 2 : 1, selected ? 0xe1c68d : 0x64746a, selected ? 1 : 0.75)
-        .setDepth(29)
-        .setInteractive({ useHandCursor: true });
-      const title = this.add.text(x, 449, label, {
-        fontFamily: "Georgia, serif",
-        fontSize: "17px",
-        fontStyle: "bold",
-        color: selected ? "#f4e5bf" : "#c5c7ba",
-        letterSpacing: 1,
-      }).setOrigin(0.5).setDepth(30);
-      const subtitle = this.add.text(x, 472, descriptions[index] ?? "", {
-        fontFamily: "'Noto Sans KR', sans-serif",
-        fontSize: "10px",
-        color: selected ? "#e0d2b4" : "#96a398",
-      }).setOrigin(0.5).setDepth(30);
-      card.on("pointerdown", () => {
+    const menuPanel = drawEncounterPanel(this, { centerX: 480, centerY: 414, width: 874, height: 158, depth: 28 });
+    const items = [
+      { label: "FIGHT", subtitle: "밀어내기" },
+      { label: "ACT", subtitle: "상황 살피기" },
+      { label: "ITEM", subtitle: "소지품" },
+      { label: "MERCY", subtitle: "물러나기" },
+    ];
+    this.menuObjects.push(...drawEncounterCommandRow(
+      this,
+      items,
+      this.menuIndex,
+      (index) => {
         this.menuIndex = index;
         this.confirmMenu();
-      });
-      this.menuObjects.push(card, title, subtitle);
-    });
+      },
+      { centerX: 480, centerY: 460, cardWidth: 184, cardHeight: 58, gap: 36, depth: 29 },
+    ));
     this.menuObjects.push(menuPanel);
 
     this.message = this.add.text(84, 330, this.getMenuDescription(), {
@@ -193,13 +172,15 @@ export class BullyBattleScene extends Phaser.Scene {
   }
 
   private updateMenu(): void {
-    if (Phaser.Input.Keyboard.JustDown(this.keys.left) || Phaser.Input.Keyboard.JustDown(this.keys.a)) {
+    const leftPressed = this.controls.justPressed("LEFT");
+    const rightPressed = this.controls.justPressed("RIGHT");
+    if (leftPressed) {
       this.menuIndex = (this.menuIndex + 3) % 4;
       this.renderMenu();
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.right) || Phaser.Input.Keyboard.JustDown(this.keys.d)) {
+    } else if (rightPressed) {
       this.menuIndex = (this.menuIndex + 1) % 4;
       this.renderMenu();
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+    } else if (this.controls.justPressed("CONFIRM")) {
       this.confirmMenu();
     }
   }
@@ -250,7 +231,7 @@ export class BullyBattleScene extends Phaser.Scene {
       lineSpacing: 8,
     }).setOrigin(0.5).setDepth(32);
     this.hint?.destroy();
-    this.hint = this.add.text(878, 438, "ENTER  —  회피 구간으로", {
+    this.hint = this.add.text(878, 438, "Z / ENTER  —  회피 구간으로", {
       fontFamily: "monospace",
       fontSize: "11px",
       color: "#d7c493",
@@ -295,10 +276,10 @@ export class BullyBattleScene extends Phaser.Scene {
 
     let dx = 0;
     let dy = 0;
-    if (this.keys.left.isDown || this.keys.a.isDown) dx -= 1;
-    if (this.keys.right.isDown || this.keys.d.isDown) dx += 1;
-    if (this.keys.up.isDown || this.keys.w.isDown) dy -= 1;
-    if (this.keys.down.isDown || this.keys.s.isDown) dy += 1;
+    if (this.controls.isDown("LEFT")) dx -= 1;
+    if (this.controls.isDown("RIGHT")) dx += 1;
+    if (this.controls.isDown("UP")) dy -= 1;
+    if (this.controls.isDown("DOWN")) dy += 1;
 
     if (dx || dy) {
       const len = Math.hypot(dx, dy) || 1;
@@ -413,14 +394,12 @@ export class BullyBattleScene extends Phaser.Scene {
       },
     ).setDepth(42);
 
-    this.hint = this.add.text(878, 476, "ENTER  —  교육복지반으로", {
+    this.hint = this.add.text(878, 476, "Z / ENTER  —  교육복지반으로", {
       fontFamily: "monospace",
       fontSize: "11px",
       color: "#e0cb8f",
     }).setOrigin(1, 0.5).setDepth(42);
 
-    this.input.keyboard?.once("keydown-ENTER", this.enterWelfare);
-    this.input.keyboard?.once("keydown-SPACE", this.enterWelfare);
     this.input.once("pointerdown", this.enterWelfare);
   }
 
