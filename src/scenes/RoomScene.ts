@@ -108,7 +108,7 @@ export class RoomScene extends Phaser.Scene {
     }
 
     this.updateNearest();
-    if (this.controls.justPressed("INTERACT")) this.interact();
+    if (this.controls.justPressed("INTERACT") || this.controls.justPressed("CONFIRM")) this.interact();
     if (this.controls.justPressed("PHONE_CALL")) this.callDomitoriell();
   }
 

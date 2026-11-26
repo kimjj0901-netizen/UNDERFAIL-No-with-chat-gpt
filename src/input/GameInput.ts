@@ -7,8 +7,8 @@ export type GameInputAction =
 /**
  * Scene-scoped input map shared by playable scenes.
  * Confirm: Z / Enter / Space. Cancel: X / Shift / Escape.
- * Movement: arrows / WASD. Interact keeps E as a legacy alias.
- * MENU is reserved for a future menu; C remains the existing phone shortcut.
+ * Movement: arrows / WASD. INTERACT is E-only; the active Scene may also route CONFIRM to interaction.
+ * Ctrl is reserved for MENU; C remains the existing phone shortcut.
  */
 export class GameInput {
   private readonly bindings: Record<GameInputAction, Phaser.Input.Keyboard.Key[]>;
@@ -39,8 +39,8 @@ export class GameInput {
 
     this.bindings = {
       UP: [up, w], DOWN: [down, s], LEFT: [left, a], RIGHT: [right, d],
-      CONFIRM: confirm, CANCEL: [x, shift, escape], MENU: [c, ctrl],
-      INTERACT: [e, ...confirm], PHONE_CALL: [c],
+      CONFIRM: confirm, CANCEL: [x, shift, escape], MENU: [ctrl],
+      INTERACT: [e], PHONE_CALL: [c],
     };
   }
 

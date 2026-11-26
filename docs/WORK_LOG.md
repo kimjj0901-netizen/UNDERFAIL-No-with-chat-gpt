@@ -28,3 +28,11 @@
 - `docs/design/UI_DESIGN_SYSTEM.md`: 타이틀, 패널, 전투 명령, 하위 선택 목록의 규칙.
 - `docs/design/ASSET_PRODUCTION_SPEC.md`: 960×540 배경 및 캐릭터 에셋 시트 제작 규격 초안.
 - [검증 한계] 이 규격은 현재 코드/에셋을 토대로 한 1차 제안이다. 브라우저 화면 캡처로 최종 승인하지 않았다.
+
+
+## 2026-11-26 — Confirm/Interact 중복 소비 방지
+- `INTERACT`는 E 전용 액션으로 분리.
+- RoomScene/WelfareCorridorScene/FlowerFieldScene은 탐험 상태에서 E 또는 Confirm으로 상호작용.
+- 대화가 활성화되면 Scene이 탐험 업데이트를 중단하고 Confirm은 대화 처리기에서만 사용.
+- MENU는 Ctrl만 예약 입력으로 두고, C는 기존 전화 단축키로 유지.
+- 이 변경으로 Confirm 키 별칭이 두 개의 액션 배열에서 동시에 소비되는 문제를 제거.

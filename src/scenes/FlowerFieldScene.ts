@@ -93,7 +93,7 @@ export class FlowerFieldScene extends Phaser.Scene {
 
   update(): void {
     if (this.opened) return;
-    if (this.controls.justPressed("INTERACT")) this.startEncounter();
+    if (this.controls.justPressed("INTERACT") || this.controls.justPressed("CONFIRM")) this.startEncounter();
   }
 
   private startEncounter(): void {

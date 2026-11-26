@@ -12,9 +12,9 @@
 | RIGHT | → | D | 탐험/선택 오른쪽 |
 | CONFIRM | Z | Enter, Space | 확정·대화 진행·상호작용 |
 | CANCEL | X | Shift, Escape | 허용된 상태에서 한 단계 뒤로 |
-| INTERACT | E | Z, Enter, Space | 탐험 상호작용 |
+| INTERACT | E | 탐험의 보조 상호작용 입력 |
 | PHONE_CALL | C | 없음 | 기존 도미토리엘 전화 단축키 |
-| MENU | C | Ctrl | 예약된 액션. 메뉴 화면 구현 전에는 사용자에게 기능으로 안내하지 않는다. |
+| MENU | Ctrl | C는 기존 전화 기능 보존, Ctrl은 예약된 메뉴 입력 |
 
 PC Undertale FAQ는 Z/Enter, X/Shift, C/Ctrl을 각각 동작의 대체 입력으로 설명한다. UNDERFAIL에서는 기존 조작 호환을 위해 Space/E를 당분간 유지한다. 출처: https://undertale.com/help/
 
@@ -29,7 +29,7 @@ PC Undertale FAQ는 Z/Enter, X/Shift, C/Ctrl을 각각 동작의 대체 입력�
 - Name Entry: DOM input이 문자를 직접 받는다. Z를 글로벌 Confirm으로 가로채지 않는다. Enter는 이름 제출.
 - Prologue: Confirm으로 페이지 진행, pointer는 보조.
 - Flower Field: Interact로 첫 조우 진입.
-- Overworld: 방향 이동, Interact로 조사, C로 기존 전화 호출.
+- Overworld: 방향 이동, E 또는 Confirm으로 조사, C로 기존 전화 호출. 대화가 열린 동안에는 Confirm이 대화 시스템에서만 소비된다.
 - Dialogue: 이동 입력 잠금, Confirm으로 진행, Cancel은 허용된 대화에서만 닫기.
 - Battle Menu: 방향키로 선택, Confirm으로 실행, Cancel로 허용된 하위 메뉴에서 복귀.
 - Soul Dodge: 방향키/WASD로 SOUL 이동, 메뉴 Confirm은 무시.
