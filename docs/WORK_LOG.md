@@ -257,3 +257,46 @@
 - 최신 커밋: `a4ec9b21c5bfc20408bcfac48c24b8a03a93609c`.
 - GitHub Actions run `45832181281`: completed / success; Install dependencies PASS; TypeScript and production build PASS.
 - 브라우저 직접 입력/레이아웃 QA는 NOT RUN.
+
+## 2026-11-26 — 리빌드 기준선 기록 보존 및 스크린샷 분석 확장
+
+### 작업 대상과 기준
+- 저장소: `kimjj0901-netizen/UNDERFAIL-No-with-chat-gpt`
+- 작업 브랜치: `rebuild/input-and-visual-baseline`
+- Draft PR: #2
+- PR base: main `f0a8cd6a4e5280d75f8efb552710de3386610048`
+- PR head는 후속 커밋마다 갱신되므로 현재 GitHub ref를 다시 확인한다.
+- 보호 파일 `CREATIVE_DECISION_WORKBOOK.md`와 스토리 색인 0~1.7은 이번 변경 범위에 포함하지 않았다.
+
+### 기록 보존
+- PR 브랜치에서 `docs/WORK_LOG.md`가 49줄의 최신 기록만 남기고 main의 기존 제작 이력 213줄을 대체한 문제를 확인했다.
+- main의 기존 전체 작업 로그를 보존하고, PR 브랜치에 추가된 새 작업 기록을 뒤에 이어 붙였다.
+- 과거 실패/수정/통합 이력은 삭제하지 않았다.
+
+### 입력 명세 정정
+- `docs/TECH_ARCHITECTURE.md`의 입력 표에서 INTERACT를 E 전용으로 분리했다.
+- 탐험 상태에서 Confirm도 조사로 사용할 수 있지만, 이는 Scene이 상태에 따라 별도로 라우팅하며 GameInput의 별칭이 중복되는 구조가 아니다.
+- C는 기존 전화 호출, Ctrl은 아직 실제 메뉴 UI에 연결되지 않은 예약 액션으로 정리했다.
+- `docs/design/INPUT_AND_CONTROL_SPEC.md`에서도 같은 규칙을 적용하고 공식 Undertale FAQ 출처를 `https://undertale.jp/help/`로 수정했다.
+- 브라우저 기본 단축키와 Ctrl 조합은 실제 브라우저 테스트 전까지 미검증이다.
+
+### 이미지 기반 조사 확장
+- `docs/research/visual-reference/12_SCREENSHOT_ANALYSIS_CASES.md` 추가.
+- 타이틀, 전투 화면, ACT 하위 메뉴, Ruins 생활 공간, Ruins 퍼즐, Snowdin 이동 경로, 보호자형 인물의 등장, 팬 제작 방향별 스프라이트 시트를 사례별로 분석했다.
+- 이미지 카탈로그와 출처/라이선스 장부에 IMG-10~IMG-17 추가.
+- 640×480은 MobyGames 페이지가 해당 타이틀 스크린샷에 표시한 크기이며, 게임 내부 논리 해상도로 단정하지 않는다.
+- 팬 제작 스프라이트 이미지는 공식 자료가 아니며, 제작 체크리스트용 보조 예시로만 표시했다.
+- 모든 Undertale 이미지는 분석 링크 용도다. 게임 에셋으로 복사하거나 배포하지 않는다.
+
+### 출처 기반 결론
+- Toby Fox 개발자 기고는 전투 엔진을 다른 게임 요소보다 먼저 만들었다고 설명하고, 짧은 공격 패턴·적 조합·조우 빈도의 신선도를 중요 설계 요소로 언급한다.
+- 공식 FAQ는 PC 키보드에서 Enter/Shift/Ctrl을 Z/X/C 대체 입력으로 사용할 수 있다고 안내한다.
+- Phaser 공식 API 문서는 KeyboardPlugin이 Scene 소유 입력 시스템이며 Key 객체를 게임 루프에서 조회할 수 있다고 설명한다. 현재 확인한 API 페이지는 Phaser 4.1 문서이고 프로젝트는 4.2.1이므로, 세부 변경은 설치 버전/빌드에서 계속 검증한다.
+
+### 검증 상태
+- 입력/전투 UI 구현은 PR #2 선행 커밋에 포함되어 있다.
+- 이번 세션의 추가 변경은 기록 보존, 문서 정정, 스크린샷 분석 자료다.
+- GitHub Actions의 최신 브랜치 커밋 run은 실행/완료 상태를 조회해 아래에 갱신한다.
+- 브라우저 직접 플레이, 실제 키보드 조작, 레이아웃 캡처, 사운드 청취: NOT RUN.
+- TypeScript/Vite 빌드 성공은 브라우저 플레이·시각적 완성·게임 재미의 검증을 의미하지 않는다.
+
