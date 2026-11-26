@@ -24,3 +24,10 @@
 
 ## 테스트 기록
 브라우저 플레이 환경이 연결되면 실제 게임을 실행하고, 각 결과를 PASS/FAIL 및 재현 절차로 갱신한다. 빌드 통과는 이 표의 PASS와 다르다.
+
+
+## 자동 빌드 상태 — 2026-11-26
+- GitHub Actions run `45828492421`, head `fa5c1d835b4ba618f40d6b8348808cdd4f80d3c9`: completed / success.
+- Install dependencies: PASS.
+- TypeScript and Vite production build: PASS.
+- 위 결과는 자동화된 코드/빌드 검사만 의미한다. 아래 조작 시나리오는 브라우저에서 직접 수행하기 전까지 NOT RUN 상태다.

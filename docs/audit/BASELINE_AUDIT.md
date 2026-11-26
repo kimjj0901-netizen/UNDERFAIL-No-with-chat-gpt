@@ -34,14 +34,14 @@
 - 분기 지점: `RoomScene.handleDialogue()`는 `복도에서 이어지는 문`을 비교하고 있었다.
 - 결과: 선택 후 복도로 이동하는 분기가 실행되지 않을 가능성이 있다.
 - 처리: 이번 리빌드 브랜치에서 비교 문자열을 호출부와 일치시켰다.
-- 상태: [코드 수정 반영 예정 — CI 및 브라우저 테스트 필요]
+- 상태: [브랜치에 반영됨 — 최신 GitHub Actions TypeScript/Vite build PASS, 브라우저 테스트 NOT RUN]
 
 ### A-15 — 도미토리엘 전투 아트의 표현 불일치
 - 다른 Scene은 이미 등록된 `character-domitoriell` SVG를 사용한다.
 - `BattleScene.drawDomitoriellPortrait()`는 별도의 Graphics 도형으로 머리·몸·눈을 다시 그린다.
 - 결과: 동일 인물이 장면마다 다른 디자인 언어로 보인다.
 - 처리: 기존 SVG 에셋을 재사용하도록 수정했다. 새 외부 이미지나 원작 이미지를 사용하지 않았다.
-- 상태: [코드 변경 준비 — 시각 확인 필요]
+- 상태: [브랜치에 반영됨 — 최신 GitHub Actions TypeScript/Vite build PASS, 실제 화면 검수 REVIEW NEEDED]
 
 ## 우선순위 진단
 

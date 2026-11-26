@@ -236,9 +236,9 @@
 |---|---|---|
 | 최신 main과 보호 문서 확인 | PASS | GitHub main/tree/docs 조회 |
 | 주요 Scene/에셋 정적 감사 | PASS | GitHub 소스 및 에셋 확인 |
-| 공통 입력 및 Scene 이관 작성 | 구현 준비 | 변경 blob 생성, 브랜치 tree/commit 및 CI 검증 전 |
-| TypeScript | NOT RUN | 이 브랜치의 변경은 아직 CI 전 |
-| Vite production build | NOT RUN | 이 브랜치의 변경은 아직 CI 전 |
+| 공통 입력 및 Scene 이관 | PASS | PR #2 최신 커밋 `fa5c1d8`의 TypeScript 및 Vite production build 성공 |
+| TypeScript | PASS | GitHub Actions run 45828492421, head SHA `fa5c1d8` |
+| Vite production build | PASS | GitHub Actions run 45828492421, head SHA `fa5c1d8` |
 | 브라우저 조작 | NOT RUN | 사용할 수 있는 브라우저 조작 도구 미확인 |
 | 시각 QA | REVIEW NEEDED | 실제 캡처/플레이 확인 필요 |
 | 사운드 청취 | NOT RUN | 실제 게임 사운드 청취 미실시 |
@@ -248,3 +248,14 @@
 2. CI 실패가 있으면 로그를 확인해 수정한다.
 3. 브라우저 실행 환경이 확보되면 `docs/qa/CONTROL_INPUT_ACCEPTANCE_TESTS.md`를 실제 결과로 갱신한다.
 4. 입력 검증 후 UI 규격 통일, 화면비 A/B 목업, 방향별 스프라이트/표정 시트, 공통 전투 상태머신으로 확장한다.
+
+
+### CI 최종 확인 — 2026-11-26
+- 작업 브랜치: `rebuild/input-and-visual-baseline`
+- Draft PR: #2 — https://github.com/kimjj0901-netizen/UNDERFAIL-No-with-chat-gpt/pull/2
+- 최초 구현 커밋: `c03b893330dac7b4c39a9204567dfde95463315d`
+- 누락/중복 안내 수정 커밋: `fa5c1d835b4ba618f40d6b8348808cdd4f80d3c9`
+- 최종 GitHub Actions run: `45828492421` — completed / success.
+- Install dependencies: PASS.
+- TypeScript and production build: PASS.
+- PR은 Draft 상태로 유지. 자동 빌드 성공만으로 브라우저 플레이·시각 QA·상업 출시 검증이 완료된 것으로 간주하지 않는다.
