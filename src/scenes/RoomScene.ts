@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { GameSession } from "../state/GameSession";
 import { WELFARE_EVENTS } from "../data/storyEvents";
+import { WELFARE_PHONE_CALLS } from "../data/welfareEncounterContent";
 
 type Target = {
   id: string;
@@ -30,6 +31,7 @@ export class RoomScene extends Phaser.Scene {
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private puzzleStep = 0;
   private secondRankSprite?: Phaser.GameObjects.Image;
+  private proggithubSprite?: Phaser.GameObjects.Image;
   private puzzleLights: Phaser.GameObjects.Arc[] = [];
 
   constructor() {
@@ -42,7 +44,10 @@ export class RoomScene extends Phaser.Scene {
     const session = GameSession.get();
     this.targets = [
       { id: "domitoriell", label: "도미토리엘 선생님", x: 480, y: 164, radius: 76 },
-      { id: "proggithub", label: "프로깃허브", x: 728, y: 270, radius: 78 },
+      ...(!session.proggithubGuideHidden
+        ? [{ id: "proggithub", label: "프로깃허브", x: 728, y: 270, radius: 78 }]
+        : []),
+      { id: "phone", label: "도미토리엘의 전화", x: 842, y: 255, radius: 58 },
       ...(session.proggithubTutorialDone && !session.secondRankFled
         ? [{ id: "second", label: "전교 2등", x: 205, y: 246, radius: 76 }]
         : []),
@@ -70,6 +75,7 @@ export class RoomScene extends Phaser.Scene {
       enter: k.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
       space: k.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
       esc: k.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
+      c: k.addKey(Phaser.Input.Keyboard.KeyCodes.C),
     };
 
     this.prompt = this.add.text(480, 504, "", {
@@ -118,6 +124,7 @@ export class RoomScene extends Phaser.Scene {
 
     this.updateNearest();
     if (Phaser.Input.Keyboard.JustDown(this.keys.e)) this.interact();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.c)) this.callDomitoriell();
   }
 
   private isDown(...names: string[]): boolean {
@@ -148,17 +155,22 @@ export class RoomScene extends Phaser.Scene {
       padding: { x: 6, y: 3 },
     }).setOrigin(0.5).setDepth(15);
 
-    const proggithub = this.add.image(728, 264, "character-proggithub")
-      .setDisplaySize(62, 78)
-      .setDepth(14);
-    this.tweens.add({
-      targets: proggithub,
-      y: 260,
-      duration: 1600,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.InOut",
-    });
+    if (!GameSession.get().proggithubGuideHidden) {
+      this.proggithubSprite = this.add.image(728, 264, "character-proggithub")
+        .setDisplaySize(62, 78)
+        .setDepth(14);
+      this.tweens.add({
+        targets: this.proggithubSprite,
+        y: 260,
+        duration: 1600,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.InOut",
+      });
+    }
+    this.add.image(842, 255, "welfare-phone")
+      .setDisplaySize(34, 46)
+      .setDepth(13);
     if (!GameSession.get().secondRankFled) {
       this.secondRankSprite = this.add.image(205, 251, "character-second-rank")
         .setDisplaySize(58, 82)
@@ -194,6 +206,7 @@ export class RoomScene extends Phaser.Scene {
       { left: 166, top: 218, right: 244, bottom: 310 },
       { left: 88, top: 370, right: 204, bottom: 418 },
       { left: 447, top: 125, right: 513, bottom: 203 },
+      { left: 822, top: 225, right: 864, bottom: 285 },
     ];
     const radius = 12;
     return obstacles.some((obstacle) => {
@@ -214,7 +227,7 @@ export class RoomScene extends Phaser.Scene {
       fontSize: "12px",
       color: "#c9c2ad",
     }).setOrigin(0, 0.5).setDepth(31);
-    this.add.text(938, 526, "WASD / 방향키 이동   E 조사", {
+    this.add.text(938, 526, "WASD / 방향키 이동   E 조사 · 전화", {
       fontFamily: "monospace",
       fontSize: "12px",
       color: "#9aa89e",
@@ -262,12 +275,28 @@ export class RoomScene extends Phaser.Scene {
         ]);
         break;
       case "door":
-        this.openDialogue("출구", [
-          "아직은 안쪽으로 더 이어지는 길이 있다.",
-          "도미토리엘 선생님이 말한 '안전한 길'은 이 문 너머일지도 모른다.",
-        ]);
+        this.openDialogue("복도로 이어지는 문", [
+          "교실 밖으로 이어지는 복도다.",
+          "벽면의 표식과 작은 친구들의 목소리가 희미하게 들린다.",
+        ], ["복도로 나간다.", "조금 더 교실을 둘러본다."]);
+        break;
+      case "phone":
+        this.callDomitoriell();
         break;
     }
+  }
+
+  private callDomitoriell(): void {
+    const count = GameSession.recordWelfarePhoneCall();
+    const state = GameSession.get();
+    const lines = state.welfareHallPuzzleSolved
+      ? WELFARE_PHONE_CALLS.afterPuzzle
+      : Object.keys(state.welfareEncounterResults).length > 0
+        ? WELFARE_PHONE_CALLS.afterEncounters
+        : count === 1
+          ? WELFARE_PHONE_CALLS.first
+          : WELFARE_PHONE_CALLS.later;
+    this.openDialogue("도미토리엘 · 전화", [...lines]);
   }
 
   private runPuzzle(): void {
@@ -321,6 +350,18 @@ export class RoomScene extends Phaser.Scene {
     const d = this.dialogue;
     if (!d) return;
 
+    if (Phaser.Input.Keyboard.JustDown(this.keys.esc)) {
+      if (d.speaker === "프로깃허브") {
+        const hidden = GameSession.recordProggithubDialogueSkip(d.lines.length - d.page);
+        if (hidden) {
+          this.proggithubSprite?.destroy();
+          this.targets = this.targets.filter((target) => target.id !== "proggithub");
+        }
+      }
+      this.clearDialogue();
+      return;
+    }
+
     if (d.choices && d.page >= d.lines.length - 1) {
       if (Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.w)) {
         d.choiceIndex = (d.choiceIndex + d.choices.length - 1) % d.choices.length;
@@ -335,7 +376,10 @@ export class RoomScene extends Phaser.Scene {
           this.resolvePuzzleChoice(selected);
         } else {
           this.clearDialogue();
-          if (speaker === "도미토리엘") {
+          if (speaker === "복도에서 이어지는 문") {
+            if (selected === 0) this.scene.start("WelfareCorridorScene");
+            else this.openDialogue("도미토리엘", ["천천히 둘러보렴. 궁금한 것이 있으면 언제든 물어봐도 좋단다."]);
+          } else if (speaker === "도미토리엘") {
             if (selected === 0) {
               this.openDialogue("도미토리엘", [
                 "물론이지. 세 표식의 빛이 남기는 순서를 잘 살펴보렴.",

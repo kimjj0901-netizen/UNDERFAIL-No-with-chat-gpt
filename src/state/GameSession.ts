@@ -16,6 +16,16 @@ export interface GameSessionState {
   proggithubTutorialDone: boolean;
   secondRankFled: boolean;
   domitoriellFollowUpPending: boolean;
+  welfareEncounterResults: Record<string, "peaceful" | "withdrew">;
+  welfareHallPuzzleStep: number;
+  welfareHallPuzzleSolved: boolean;
+  welfareHallPuzzleMistakes: number;
+  welfarePhoneCallCount: number;
+  welfareIdleCallSeen: boolean;
+  proggithubSkippedLines: number;
+  proggithubGuideHidden: boolean;
+  nerdstablookResolved: boolean;
+  nerdstablookFriendly: boolean;
 }
 
 const initialState = (): GameSessionState => ({
@@ -36,6 +46,16 @@ const initialState = (): GameSessionState => ({
   proggithubTutorialDone: false,
   secondRankFled: false,
   domitoriellFollowUpPending: false,
+  welfareEncounterResults: {},
+  welfareHallPuzzleStep: 0,
+  welfareHallPuzzleSolved: false,
+  welfareHallPuzzleMistakes: 0,
+  welfarePhoneCallCount: 0,
+  welfareIdleCallSeen: false,
+  proggithubSkippedLines: 0,
+  proggithubGuideHidden: false,
+  nerdstablookResolved: false,
+  nerdstablookFriendly: false,
 });
 
 let state = initialState();
@@ -104,5 +124,42 @@ export const GameSession = {
     if (!state.domitoriellFollowUpPending) return false;
     state.domitoriellFollowUpPending = false;
     return true;
+  },
+
+  recordWelfareEncounter(id: string, outcome: "peaceful" | "withdrew"): void {
+    state.welfareEncounterResults[id] = outcome;
+  },
+
+  advanceWelfareHallPuzzle(): number {
+    if (state.welfareHallPuzzleSolved) return state.welfareHallPuzzleStep;
+    state.welfareHallPuzzleStep = Math.min(3, state.welfareHallPuzzleStep + 1);
+    if (state.welfareHallPuzzleStep >= 3) state.welfareHallPuzzleSolved = true;
+    return state.welfareHallPuzzleStep;
+  },
+
+  resetWelfareHallPuzzle(): void {
+    state.welfareHallPuzzleStep = 0;
+    state.welfareHallPuzzleMistakes += 1;
+  },
+
+  recordWelfarePhoneCall(): number {
+    state.welfarePhoneCallCount += 1;
+    return state.welfarePhoneCallCount;
+  },
+
+  markWelfareIdleCallSeen(): void {
+    state.welfareIdleCallSeen = true;
+  },
+
+  recordProggithubDialogueSkip(remainingLines: number): boolean {
+    // [제안/PROTOTYPE] The skip threshold is not a canon rule from the source index.
+    if (remainingLines > 0) state.proggithubSkippedLines += remainingLines;
+    if (state.proggithubSkippedLines >= 3) state.proggithubGuideHidden = true;
+    return state.proggithubGuideHidden;
+  },
+
+  resolveNerdstablook(friendly: boolean): void {
+    state.nerdstablookResolved = true;
+    state.nerdstablookFriendly = friendly;
   },
 };

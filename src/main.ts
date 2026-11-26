@@ -7,6 +7,9 @@ import { FlowerFieldScene } from "./scenes/FlowerFieldScene";
 import { BullyBattleScene } from "./scenes/BullyBattleScene";
 import { RoomScene } from "./scenes/RoomScene";
 import { SecondRankEncounterScene } from "./scenes/SecondRankEncounterScene";
+import { WelfareCorridorScene } from "./scenes/WelfareCorridorScene";
+import { RegularEncounterScene } from "./scenes/RegularEncounterScene";
+import { NerdstablookEncounterScene } from "./scenes/NerdstablookEncounterScene";
 import { BattleScene } from "./scenes/BattleScene";
 import { PrototypeEndScene } from "./scenes/PrototypeEndScene";
 import "./style.css";
@@ -27,6 +30,9 @@ const config: Phaser.Types.Core.GameConfig = {
     BullyBattleScene,
     RoomScene,
     SecondRankEncounterScene,
+    WelfareCorridorScene,
+    RegularEncounterScene,
+    NerdstablookEncounterScene,
     BattleScene,
     PrototypeEndScene,
   ],

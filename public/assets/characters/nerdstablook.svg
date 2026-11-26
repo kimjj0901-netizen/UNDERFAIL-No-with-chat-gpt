@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="230" viewBox="0 0 180 230">
+<defs>
+ <linearGradient id="hood" x2="1" y2="1"><stop stop-color="#9a91a6"/><stop offset=".55" stop-color="#595c70"/><stop offset="1" stop-color="#303b52"/></linearGradient>
+ <linearGradient id="hair" x2="1" y2="1"><stop stop-color="#d4c7b2"/><stop offset="1" stop-color="#837c83"/></linearGradient>
+</defs>
+<ellipse cx="90" cy="218" rx="52" ry="8" fill="#09151c" opacity=".45"/>
+<path d="M42 108Q90 78 138 108L148 207H31Z" fill="url(#hood)" stroke="#252f43" stroke-width="5"/>
+<path d="M51 125Q20 142 26 188L52 194L70 151M129 125Q160 142 154 188L128 194L110 151" fill="#74778a" stroke="#2a3448" stroke-width="5" stroke-linejoin="round"/>
+<path d="M57 194L54 218H78L87 194M100 194L105 218H128L122 194" fill="#29374a" stroke="#1b293c" stroke-width="4"/>
+<path d="M46 51Q47 12 92 12Q134 14 135 57L127 110Q113 135 82 122Q49 110 46 51Z" fill="#d3bca4" stroke="#635d62" stroke-width="4"/>
+<path d="M38 58Q21 15 67 3Q113 -10 139 26Q155 53 133 86L126 43Q106 27 90 39Q69 24 51 71Z" fill="url(#hair)" stroke="#625e69" stroke-width="4"/>
+<path d="M49 50Q21 85 42 131Q48 146 56 158M130 54Q160 103 133 163" fill="none" stroke="#9c93a0" stroke-width="13" stroke-linecap="round"/>
+<path d="M66 69Q74 64 81 69M101 69Q109 64 116 70" stroke="#574f56" stroke-width="3" stroke-linecap="round"/>
+<path d="M82 87Q91 91 100 86" fill="none" stroke="#876b66" stroke-width="3" stroke-linecap="round"/>
+<path d="M60 118Q90 108 120 119L130 169Q90 183 50 169Z" fill="#b1a6a4" stroke="#4a5061" stroke-width="3"/>
+<rect x="65" y="135" width="50" height="34" rx="3" fill="#d9caa9" stroke="#655d5e" stroke-width="3"/>
+<path d="M72 145H108M72 153H101M72 161H106" stroke="#8b7c6c" stroke-width="2"/>
+<path d="M52 143L37 181M128 143L143 181" stroke="#d7c2ab" stroke-width="8" stroke-linecap="round"/>
+</svg>

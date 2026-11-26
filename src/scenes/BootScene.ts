@@ -24,6 +24,14 @@ export class BootScene extends Phaser.Scene {
     this.load.svg("rescue-arc", "/assets/effects/rescue_arc.svg", { width: 960, height: 340 });
     this.load.svg("welfare-classroom", "/assets/rooms/welfare_classroom.svg", { width: 960, height: 540 });
     this.load.svg("warm-thermos", "/assets/items/warm_thermos.svg", { width: 90, height: 110 });
+    this.load.svg("welfare-corridor", "/assets/rooms/welfare_corridor.svg", { width: 960, height: 540 });
+    this.load.svg("welfare-phone", "/assets/items/welfare_phone.svg", { width: 90, height: 120 });
+    this.load.svg("character-nerdstablook", "/assets/characters/nerdstablook.svg", { width: 180, height: 230 });
+    this.load.svg("welfare-timid", "/assets/characters/welfare_timid.svg", { width: 100, height: 120 });
+    this.load.svg("welfare-rhythm", "/assets/characters/welfare_rhythm.svg", { width: 110, height: 110 });
+    this.load.svg("welfare-prism", "/assets/characters/welfare_prism.svg", { width: 110, height: 110 });
+    this.load.svg("welfare-sprout", "/assets/characters/welfare_sprout.svg", { width: 110, height: 110 });
+    this.load.svg("welfare-echo", "/assets/characters/welfare_echo.svg", { width: 140, height: 110 });
   }
 
   create(): void {

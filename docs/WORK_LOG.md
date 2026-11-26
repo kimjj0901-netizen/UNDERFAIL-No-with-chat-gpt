@@ -133,3 +133,50 @@
 
 ### 이어서 실행할 작업
 **스토리 색인 1.3부터 1.7까지의 NPC·일반 조우·아이템·전화·너드스타블룩·생활 공간·출구 대립을 한 구역씩 원문 대조하고 구현한다. 특히 현재 RoomScene은 첫 퍼즐·프로깃허브·전교 2등 특수 조우의 첫 통합 패스까지이며 1.3~1.7 전체 구현이 완료된 상태가 아니다.**
+
+
+## 2026-11-26 — 교육복지반 1.3~1.7 플레이 구간 구현
+
+### 구현 파일
+- src/data/welfareEncounterContent.ts: 일반 조우 데이터, 적별 ACT·반복 반응, 패턴 구성, 전화 대화, 프로깃허브별 설명, 복도 퍼즐, 너드스타블룩 반응 데이터.
+- src/scenes/WelfareCorridorScene.ts: 탐험 복도, 상호작용 타겟, 여러 프로깃허브의 분리 배치, 전화, 대기 알림, 퍼즐, 너드스타블룩 길막/통로 해제.
+- src/scenes/RegularEncounterScene.ts: 일반 조우 공통 엔진, 적별 ACT와 공격 패턴, FIGHT/ITEM/MERCY 흐름.
+- src/scenes/NerdstablookEncounterScene.ts: 취향별 ACT와 부정 반응, 추상 종이 문양 회피, FIGHT 시 아픈 척했던 이유를 설명하는 특수 결말.
+- src/scenes/RoomScene.ts: 전화와 복도 출입 연결, 안내 프로깃허브의 대사 건너뛰기 처리.
+- src/state/GameSession.ts: 일반 조우 결과·복도 퍼즐·전화·프로깃허브 숨김·너드스타블룩 통로 해제 플래그.
+- src/scenes/BootScene.ts, src/main.ts: SVG 자산 적재 및 신규 Scene 등록.
+- public/assets/rooms/welfare_corridor.svg: 복도 배경.
+- public/assets/items/welfare_phone.svg: 전화기.
+- public/assets/characters/nerdstablook.svg: 너드스타블룩.
+- public/assets/characters/welfare_timid.svg, welfare_rhythm.svg, welfare_prism.svg, welfare_sprout.svg, welfare_echo.svg: 일반 조우 캐릭터 5종.
+- docs/design/WELFARE_1_3_TO_1_7_EVENT_GRAPH.md: 이벤트 그래프·분기·플래그·수동 QA.
+
+### 스토리와 정사 경계
+- [기초자료 확인] 일반 조우의 성격별 ACT, 여러 프로깃허브 NPC, 환경 퍼즐 반복/성공 반응, 도미토리엘 전화, 너드스타블룩의 길막·취향 ACT 기능을 색인 1.3~1.7에서 다시 대조했다.
+- [제안] 새 적 표시 이름·캐릭터 외형·대사·패턴·복도 퍼즐 [2,0,1]·전화 60초 알림은 이번 독립 구현 제안이다.
+- [제안/PROTOTYPE] 프로깃허브 대사 건너뛰기 3줄 누적 시 초기 안내 개체가 숨겨지는 규칙은 원문에 정확한 숫자가 없어 설정값 성격으로 분리했다.
+- [제안/PROTOTYPE] 일반 조우는 서로 다른 ACT 2개 후 MERCY를 허용한다. FIGHT 반복은 일반 적이 물러나는 비살상 첫 패스다.
+- [기초자료 확인] 너드스타블룩은 긍정 ACT에 따라 긴장이 풀리고, 취향을 무시하거나 조롱하면 공격이 강해지며, FIGHT에 대해 아픈 척했다고 설명한다. FIGHT의 세 번 선택 임계값은 연출용 제안이다.
+- HP 0·사망·제압·SAVE/RESET·전 지역 처치 카운터를 새로 정의하지 않았다.
+- 창작 워크북과 사용자 스토리 색인 0~1.7 원문은 수정하지 않았다.
+
+### 코드 점검
+- 새 Scene 세 개를 main.ts에 등록했다.
+- 공유 SVG를 BootScene에 추가했다.
+- 일반 조우의 ACT/response/dodge/ending 전환, 너드스타블룩의 finishAfterResponse 흐름, 퍼즐 분기, 안내 프로깃허브 건너뛰기, 너드스타블룩 통로 충돌을 정적 코드 수준에서 대조했다.
+- 실제 브라우저 실행과 시각 검수는 수행하지 않았다.
+
+### 테스트 상태
+| 항목 | 상태 | 근거 |
+|---|---|---|
+| 정확한 repo/main/feature/PR 상태 확인 | PASS | GitHub ref/PR 조회 |
+| 원본 문서 보호 | PASS | 이번 커밋 범위에 워크북·스토리 원문을 포함하지 않음 |
+| 코드 정적 경로 점검 | PASS | Scene 등록·세션 메서드·데이터 연결 대조 |
+| TypeScript 검사 | PENDING CI | 커밋 후 GitHub Actions 확인 예정 |
+| Vite 프로덕션 빌드 | PENDING CI | 커밋 후 GitHub Actions 확인 예정 |
+| 브라우저 전체 플레이 | NOT RUN | 직접 브라우저 플레이 도구를 사용하지 못함 |
+| UI/충돌/키 입력 시각 검수 | REVIEW NEEDED | 실제 플레이 확인 필요 |
+| 사운드 청취 | NOT RUN | 해당 구간의 개별 BGM/SFX 최종 믹스 미완료 |
+
+### 이어서 할 작업
+**CI 결과를 보고 오류를 수정한 다음, main과 feature의 기존 이력을 모두 보존하여 이 변경을 main에 직접 통합한다. 다음 시간순 콘텐츠는 1.8 간식 바구니·거미 모양 과자 판매대이며, 1.9~1.14의 생활 공간과 출구 대립은 별도 구간으로 남긴다.**

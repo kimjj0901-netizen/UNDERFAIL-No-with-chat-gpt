@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="110" height="110" viewBox="0 0 110 110">
+<defs><linearGradient id="crystal" x2="1" y2="1"><stop stop-color="#d4d6c1"/><stop offset=".5" stop-color="#879e9b"/><stop offset="1" stop-color="#4e6875"/></linearGradient></defs>
+<path d="M55 6L91 35L82 83L55 104L24 83L14 35Z" fill="url(#crystal)" stroke="#344d58" stroke-width="4" stroke-linejoin="round"/>
+<path d="M55 6V104M14 35L82 83M91 35L24 83" stroke="#e3dec7" stroke-width="2" opacity=".7"/>
+<path d="M36 44Q43 34 50 43M61 43Q69 34 75 44" fill="none" stroke="#40575f" stroke-width="3" stroke-linecap="round"/>
+<path d="M42 65Q55 58 68 65" fill="none" stroke="#6a5962" stroke-width="3"/>
+<path d="M25 28L38 38M71 33L83 24" stroke="#f3e1ad" stroke-width="3" stroke-linecap="round"/>
+</svg>
