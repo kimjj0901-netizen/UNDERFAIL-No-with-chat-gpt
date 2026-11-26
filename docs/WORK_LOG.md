@@ -172,11 +172,21 @@
 | 정확한 repo/main/feature/PR 상태 확인 | PASS | GitHub ref/PR 조회 |
 | 원본 문서 보호 | PASS | 이번 커밋 범위에 워크북·스토리 원문을 포함하지 않음 |
 | 코드 정적 경로 점검 | PASS | Scene 등록·세션 메서드·데이터 연결 대조 |
-| TypeScript 검사 | PENDING CI | 커밋 후 GitHub Actions 확인 예정 |
-| Vite 프로덕션 빌드 | PENDING CI | 커밋 후 GitHub Actions 확인 예정 |
+| TypeScript 검사 | PASS | GitHub Actions run 45774025127, SHA 570c0d1 |
+| Vite 프로덕션 빌드 | PASS | GitHub Actions run 45774025127, SHA 570c0d1 |
 | 브라우저 전체 플레이 | NOT RUN | 직접 브라우저 플레이 도구를 사용하지 못함 |
 | UI/충돌/키 입력 시각 검수 | REVIEW NEEDED | 실제 플레이 확인 필요 |
 | 사운드 청취 | NOT RUN | 해당 구간의 개별 BGM/SFX 최종 믹스 미완료 |
 
 ### 이어서 할 작업
-**CI 결과를 보고 오류를 수정한 다음, main과 feature의 기존 이력을 모두 보존하여 이 변경을 main에 직접 통합한다. 다음 시간순 콘텐츠는 1.8 간식 바구니·거미 모양 과자 판매대이며, 1.9~1.14의 생활 공간과 출구 대립은 별도 구간으로 남긴다.**
+**GitHub Actions run 45774025127에서 TypeScript와 Vite production build가 통과했다. 브라우저 플레이는 NOT RUN이다. 다음은 main과 feature의 기존 이력을 모두 보존해 main에 직접 통합하는 것이다. 다음 시간순 콘텐츠는 1.8 간식 바구니·거미 모양 과자 판매대이며, 1.9~1.14의 생활 공간과 출구 대립은 별도 구간으로 남긴다.**
+
+
+## 2026-11-26 — 1.3~1.7 코드 CI 검증
+
+- Feature commit: `570c0d1f1b45793be0aeca33c359b643e92bd63d`
+- GitHub Actions PR run: `45774025127` — completed / success.
+- `TypeScript and production build` step: PASS.
+- 세션 상태 메서드 호출과 신규 Scene의 등록·분기 연결은 정적 조회로 확인했다.
+- 브라우저 직접 플레이, 실제 충돌 범위, 대화 UI 가독성, 오디오 청취는 수행하지 않았다: NOT RUN / REVIEW NEEDED.
+- 이 검증은 해당 feature SHA에서 수행됐다. main 통합 뒤 main push workflow가 실행되면 그 결과도 별도로 확인한다.

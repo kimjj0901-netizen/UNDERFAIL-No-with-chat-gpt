@@ -44,7 +44,7 @@
 
 ### Milestone 1 — 교육복지실 Vertical Slice
 
-**리빌드 진행 중.** 오프닝 몽타주·꽃밭·불리 회피 튜토리얼·구출·교육복지반 첫 방 자산을 통합하는 중이며, 수정 후 GitHub Actions 재검증과 브라우저 확인이 남아 있다.
+**리빌드 진행 중.** 오프닝·불리 튜토리얼·구출·교육복지반 1.3~1.7의 신규 Scene과 자산을 통합했다. Feature SHA 570c0d1의 GitHub Actions TypeScript/Vite 빌드는 PASS다. 브라우저 플레이 및 실제 화면 검수는 아직 NOT RUN/REVIEW NEEDED다.
 
 2026-11-26 사용자 검토에서 스토리 전개, 맵·캐릭터 디자인, UI, 원작 기능과의 비교 부족, 오프닝의 컨셉 이탈 문제가 지적되었다. 기존 프로토타입은 코드가 빌드되는 참고 구현일 뿐, 스토리 중심 Vertical Slice의 승인된 완성본으로 취급하지 않는다. 새 제작 기준은 스토리 색인과 스토리 중심 마스터 프롬프트를 따른다. GitHub Actions 빌드 통과와 실제 브라우저 플레이·시각 검토는 별개의 확인 항목이다.
 
@@ -129,3 +129,13 @@ Copilot은 먼저 현재 브랜치·파일·코드를 확인하고 명세와 충
 - GameSession: 적별 결과, 퍼즐, 전화, 프로깃허브 안내 상태, 너드스타블룩 후속 상태.
 
 자세한 이벤트 그래프와 수동 테스트는 docs/design/WELFARE_1_3_TO_1_7_EVENT_GRAPH.md를 기준으로 한다. 원문에 없는 적 이름·대사·해답·횟수는 제안이며, HP 0/사망/저장/리셋/전 지역 처치 카운터를 정의하지 않는다. 브라우저 검수는 아직 필요하다.
+
+
+## 2026-11-26 교육복지반 1.3~1.7 검증 상태
+
+- Feature commit 570c0d1: GitHub Actions run 45774025127 PASS.
+- TypeScript 검사: PASS.
+- Vite production build: PASS.
+- 브라우저 직접 플레이: NOT RUN.
+- 시각/충돌/키 입력 검수: REVIEW NEEDED.
+- main에 통합한 뒤 main push workflow가 실행되면 통합 SHA의 결과도 별도로 기록한다.
