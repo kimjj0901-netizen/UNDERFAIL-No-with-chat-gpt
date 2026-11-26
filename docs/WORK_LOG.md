@@ -355,3 +355,59 @@
 - 전투 패널 겹침, 긴 한국어 대사, 선택 커서 표시, 화면 비율 및 실제 전투 템포: 브라우저 직접 테스트 NOT RUN / REVIEW NEEDED.
 - PR #2는 Draft / open으로 유지. 브라우저 실기 QA 및 사용자 플레이 감각 확인 전 main에 병합하지 않는다.
 
+
+
+## 2026-11-27 — Milestone 2A 첫 전투 규칙 통합: 박자 먼지 기준 조우
+
+### 작업 목적과 판단
+- 이전 조사 결과의 권고에 따라 전투 UI 재작성 대신, 기존 명령 UI 아래에서 실제 작동하는 전투 규칙을 먼저 연결했다.
+- 첫 기준 조우는 rhythmMote(박자 먼지)로 선택했다. 기존 ACT watch가 “세 번의 짧은 빛과 한 번의 긴 빛” 단서를 제공하고, 현재 데이터가 리듬 회피 패턴을 보유해 관찰(ACT)과 FIGHT 타이밍을 같은 규칙으로 시험할 수 있기 때문이다.
+- timidPeer는 고유 ACT와 비폭력 해결을 검증하기 좋은 후보지만, 타이밍 FIGHT를 캐릭터의 기존 단서와 결합할 근거는 rhythmMote보다 약했다.
+- 작업은 PR #2의 기존 작업 브랜치 rebuild/input-and-visual-baseline에서만 진행했다. main에 병합하지 않았고 PR #2도 Draft 상태를 유지한다.
+
+### 실제 코드 변경
+- src/combat/EncounterFlowController.ts 추가
+  - intro → command → act/item/fightTiming → response → telegraph → dodge → reaction → command/resolved 경로를 명시적으로 제한한다.
+  - Scene 병합이나 캐릭터별 대사·행동의 범용화는 하지 않고, 상태 전이 검증 책임만 분리했다.
+- src/combat/FixedStepRunner.ts 추가
+  - 회피 시뮬레이션을 60Hz 고정 스텝으로 진행한다.
+  - 프레임 지연 시 프레임당 최대 100ms / 최대 6스텝으로 catch-up을 제한한다.
+  - 실제 충돌·이동·패턴 시간은 동일한 스텝을 사용하도록 RegularEncounterScene에서 연결했다.
+- src/combat/FightTiming.ts 추가
+  - 박자 먼지 FIGHT의 판정 계산을 순수 함수로 분리했다.
+  - 판정은 precise / steady / miss 3단계이며, 타깃은 3개의 짧은 박자 뒤 이어지는 긴 박자의 중앙으로 둔다.
+  - ACT watch를 먼저 수행하면 판정 허용 범위가 넓어진다. 타이밍 수치는 현재 밸런스용 프로토타입이며 정사/최종 수치가 아니다.
+- src/scenes/RegularEncounterScene.ts 수정
+  - 해당 Scene에 상태 전이 검증기를 연결했다.
+  - rhythmMote에서만 FIGHT 타이밍 시제품을 사용한다. 다른 일반 조우 및 전용 전투 Scene의 FIGHT는 아직 이 시스템으로 이관하지 않았다.
+  - 적의 다음 행동을 420ms 동안 표시하는 telegraph 단계를 추가했다.
+  - 회피는 고정 스텝으로 이동·패턴 시계·충돌을 함께 계산한다.
+  - 겹친 탄환은 무적 시간과 무관하게 제거하고, 피격 피드백만 650ms 무적 간격으로 제한한다.
+  - ACT watch 관찰 결과가 FIGHT 판정 창과 피드백에 영향을 준다.
+  - ITEM 하위 목록을 추가해 따뜻한 차와 돌아가기를 선택할 수 있게 했다.
+  - 전투 종료 Confirm을 GameInput 단일 입력 경로로 소비하고, 결과 기록 및 Scene 전환이 중복 실행되지 않도록 방어했다.
+  - 일반 조우의 비현실적인 패턴은 시각적 피드백만 제공하며, HP 0·사망·제압 규칙을 추가하지 않았다.
+- tests/combat.test.mjs 추가: Node 내장 테스트 러너로 7개 테스트를 작성했다.
+- package.json: npm test 스크립트를 추가했다.
+- .github/workflows/ci.yml: 프로덕션 빌드 뒤 npm test를 실행하도록 연결했다.
+- 새 외부 라이브러리/런타임 의존성은 추가하지 않았다.
+
+### 검증 결과
+- PR #2 head: 1a34b96269589f8b2833d378934c511ea82ae914 (이 작업 로그 커밋으로 이후 갱신됨).
+- GitHub Actions run 45854306185: completed / success.
+- Node.js: v22.23.5.
+- npm install: PASS, audit 0 vulnerabilities.
+- npm run build: PASS (TypeScript 및 Vite production build).
+- npm test: PASS, 7 tests / 7 pass / 0 fail.
+- Vite는 minified JS chunk가 500 kB 기준을 넘는 경고를 출력했다. 현재 산출물 JS는 1,497.05 kB, gzip 403.18 kB다. 기능 실패는 아니지만 후속 번들 분할/초기 로딩 성능 검토 항목으로 남긴다.
+- GitHub Actions는 actions/checkout@v4 및 setup-node@v4의 Node 20 런타임이 Node 24로 강제 전환되었다는 유지보수 경고를 표시했다. 이번 빌드 실패는 아니며 추후 공식 지원 버전 확인 후 업데이트할 항목이다.
+- 브라우저 직접 플레이, 화면 캡처, 실키 입력, 체감 난도/타이밍 테스트, 960×540 외 크기 레이아웃 테스트, 사운드 테스트: NOT RUN.
+
+### 범위와 미완료 사항
+- 이번 변경은 전체 전투 엔진 완성이 아니라 RegularEncounterScene 안의 첫 번째 통합 기준 조우다.
+- BattleScene, NerdstablookEncounterScene, BullyBattleScene, SecondRankEncounterScene은 아직 각자 전투/회피 흐름을 유지한다. 공통 상태 머신/회피 러너의 전체 이관은 미완료다.
+- FIGHT 타이밍은 rhythmMote에만 연결했다. 다른 캐릭터의 전용 타이밍 규칙/장비별 판정은 미구현이다.
+- ACT/ITEM/MERCY 전 데이터의 보편적 effect schema, 보유 아이템 전체 목록, 관계 상태의 장기 반영은 미구현이다.
+- 공격 예고·패턴 난이도·충돌 크기·타이밍 허용 창은 실제 브라우저에서 반복 조정해야 한다.
+- 픽셀/벡터 A/B 아트 비교, 스프라이트 시트, 음악/효과음, HP 0, SAVE/RESET 및 루트 규칙은 이번 작업 범위 밖이며 보류를 유지한다.
+- 따라서 Milestone 2는 완료 판정하지 않는다. 다음 단계는 브라우저 실기 QA와 발견된 수정사항 반영, 이후 다른 조우로 공통 규칙을 점진적으로 확대하는 것이다.
