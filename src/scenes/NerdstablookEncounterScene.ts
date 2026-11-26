@@ -176,7 +176,7 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
       color: "#e9dfcc",
       align: "center",
     }).setOrigin(0.5).setDepth(31);
-    this.hint?.setText("↑↓ 선택 · Z / Z / ENTER 확정 · ACT에서 X / SHIFT 취소");
+    this.hint?.setText("↑↓ 선택 · Z / ENTER 확정 · ACT에서 X / SHIFT 취소");
   }
 
   private drawActMenu(): void {

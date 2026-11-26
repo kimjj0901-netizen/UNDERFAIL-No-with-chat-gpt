@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { GameInput } from "../input/GameInput";
 import { PROTOTYPE_SETTINGS } from "../data/prototypeContent";
 import { GameSession } from "../state/GameSession";
 
@@ -21,7 +22,7 @@ export class BattleScene extends Phaser.Scene {
   private mode: BattleMode = "main";
   private mainIndex = 0;
   private subIndex = 0;
-  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
+  private controls!: GameInput;
   private menuTexts: Phaser.GameObjects.Text[] = [];
   private uiObjects: Phaser.GameObjects.GameObject[] = [];
   private bullets: Bullet[] = [];
@@ -44,22 +45,7 @@ export class BattleScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor("#151b20");
     this.drawBattleBackdrop();
 
-    const keyboard = this.input.keyboard;
-    if (!keyboard) throw new Error("Keyboard input is unavailable in BattleScene.");
-
-    this.keys = {
-      up: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
-      down: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
-      left: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
-      right: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-      w: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      enter: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER),
-      space: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
-      escape: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
-    };
+    this.controls = new GameInput(this);
 
     this.add.text(480, 34, "도미토리엘 선생님과의 대립", {
       fontFamily: "serif",
@@ -107,20 +93,22 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.escape) && this.mode !== "main") {
+    if (this.controls.justPressed("CANCEL") && this.mode !== "main") {
       this.mode = "main";
       this.subIndex = 0;
       this.drawMainMenu();
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.up) || Phaser.Input.Keyboard.JustDown(this.keys.left) ||
-        Phaser.Input.Keyboard.JustDown(this.keys.w) || Phaser.Input.Keyboard.JustDown(this.keys.a)) {
+    const upPressed = this.controls.justPressed("UP");
+    const downPressed = this.controls.justPressed("DOWN");
+    const leftPressed = this.controls.justPressed("LEFT");
+    const rightPressed = this.controls.justPressed("RIGHT");
+    if (upPressed || leftPressed) {
       this.moveSelection(-1);
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.down) || Phaser.Input.Keyboard.JustDown(this.keys.right) ||
-        Phaser.Input.Keyboard.JustDown(this.keys.s) || Phaser.Input.Keyboard.JustDown(this.keys.d)) {
+    } else if (downPressed || rightPressed) {
       this.moveSelection(1);
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.enter) || Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+    } else if (this.controls.justPressed("CONFIRM")) {
       this.confirmSelection();
     }
   }
@@ -243,7 +231,7 @@ export class BattleScene extends Phaser.Scene {
     });
 
     if (this.mode === "act") {
-      this.statusText.setText("↑↓ 선택 · ENTER 확정 · ESC 돌아가기");
+      this.statusText.setText("↑↓ 선택 · Z / ENTER 확정 · X / SHIFT 취소");
     } else {
       const hasTea = GameSession.get().hasWarmTea;
       this.statusText.setText(hasTea ? "가방에 따뜻한 차가 있다." : "사용할 수 있는 아이템이 없다.");
@@ -356,10 +344,10 @@ export class BattleScene extends Phaser.Scene {
 
     let dx = 0;
     let dy = 0;
-    if (this.keys.left.isDown || this.keys.a.isDown) dx -= 1;
-    if (this.keys.right.isDown || this.keys.d.isDown) dx += 1;
-    if (this.keys.up.isDown || this.keys.w.isDown) dy -= 1;
-    if (this.keys.down.isDown || this.keys.s.isDown) dy += 1;
+    if (this.controls.isDown("LEFT")) dx -= 1;
+    if (this.controls.isDown("RIGHT")) dx += 1;
+    if (this.controls.isDown("UP")) dy -= 1;
+    if (this.controls.isDown("DOWN")) dy += 1;
 
     if (dx !== 0 || dy !== 0) {
       const length = Math.hypot(dx, dy) || 1;
