@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
-import { drawEncounterCommandRow } from "../ui/EncounterMenu";
+import { drawEncounterCommandRow, drawEncounterChoiceList } from "../ui/EncounterMenu";
 import {
   WELFARE_REGULAR_ENCOUNTERS,
   type WelfareRegularEnemyId,
@@ -243,20 +243,16 @@ export class RegularEncounterScene extends Phaser.Scene {
       wordWrap: { width: 760 },
     }).setOrigin(0.5).setDepth(31);
 
-    this.currentActOptions().forEach((option, index) => {
-      const y = 383 + index * 28;
-      const selected = index === this.actIndex;
-      const text = this.add.text(92, y, (selected ? "▶ " : "  ") + option.label, {
-        fontFamily: "'Noto Sans KR', sans-serif",
-        fontSize: "14px",
-        color: selected ? "#f1d693" : "#c4c9bc",
-      }).setDepth(35).setInteractive({ useHandCursor: true });
-      text.on("pointerdown", () => {
+    this.menuObjects.push(...drawEncounterChoiceList(
+      this,
+      this.currentActOptions().map((option) => option.label),
+      this.actIndex,
+      (index) => {
         this.actIndex = index;
         this.confirmSelection();
-      });
-      this.menuObjects.push(text);
-    });
+      },
+      { left: 80, top: 375, width: 800, rowHeight: 28, fontSize: "14px", depth: 35 },
+    ));
     this.hint?.setText("↑↓ 선택 · Z / ENTER 확정 · ESC 돌아가기");
   }
 

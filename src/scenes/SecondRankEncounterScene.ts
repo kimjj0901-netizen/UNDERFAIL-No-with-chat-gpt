@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
-import { drawEncounterCommandRow } from "../ui/EncounterMenu";
+import { drawEncounterCommandRow, drawEncounterChoiceList } from "../ui/EncounterMenu";
 import { GameSession } from "../state/GameSession";
 import { WELFARE_EVENTS } from "../data/storyEvents";
 
@@ -155,20 +155,16 @@ export class SecondRankEncounterScene extends Phaser.Scene {
   private drawActMenu(): void {
     this.mode = "act";
     this.clearMenu();
-    WELFARE_EVENTS.secondRankEncounter.actOptions.forEach((label, index) => {
-      const y = 420 + index * 25;
-      const selected = index === this.actIndex;
-      const text = this.add.text(86, y, (selected ? "▶ " : "  ") + label, {
-        fontFamily: "'Noto Sans KR', sans-serif",
-        fontSize: "15px",
-        color: selected ? "#f1d58f" : "#c0c9be",
-      }).setDepth(35).setInteractive({ useHandCursor: true });
-      text.on("pointerdown", () => {
+    this.menuObjects.push(...drawEncounterChoiceList(
+      this,
+      WELFARE_EVENTS.secondRankEncounter.actOptions,
+      this.actIndex,
+      (index) => {
         this.actIndex = index;
         this.confirmSelection();
-      });
-      this.menuObjects.push(text);
-    });
+      },
+      { left: 72, top: 412, width: 816, rowHeight: 25, fontSize: "14px", depth: 35 },
+    ));
     this.hint?.setText("↑↓ 선택 · Z / ENTER 확정 · X / SHIFT 취소");
   }
 

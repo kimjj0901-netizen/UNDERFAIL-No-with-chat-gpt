@@ -25,3 +25,14 @@
 - GitHub Actions run `45829690229`: completed / success.
 - TypeScript and Vite production build: PASS.
 - BUI-01~BUI-12는 브라우저 실기 검수 전이므로 NOT RUN 유지.
+
+
+## 공통 하위 선택 목록 테스트 추가
+| ID | 테스트 | 기대 결과 | 상태 |
+|---|---|---|---|
+| BUI-13 | BattleScene ACT 하위 목록 | 3개 항목을 공통 강조 행으로 표시 | NOT RUN |
+| BUI-14 | BattleScene ITEM 하위 목록 | 기존 아이템 동작/돌아가기 동작 보존 | NOT RUN |
+| BUI-15 | SecondRank ACT 목록 | 3개 기존 행동 순서와 콜백 보존 | NOT RUN |
+| BUI-16 | Regular ACT 목록 | 5가지 일반 조우의 행동 데이터와 반복 반응 보존 | NOT RUN |
+| BUI-17 | Nerdstablook ACT 목록 | 긍정/부정 행동의 순서 및 해결 카운트 보존 | NOT RUN |
+| BUI-18 | 긴 한국어 ACT 문구 | 행 폭 내에서 줄바꿈되고 다른 행과 겹치지 않음 | NOT RUN |

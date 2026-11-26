@@ -77,3 +77,75 @@ export function drawEncounterCommandRow(
 
   return objects;
 }
+
+
+export interface EncounterChoiceListOptions {
+  left?: number;
+  top?: number;
+  width?: number;
+  rowHeight?: number;
+  fontSize?: string;
+  depth?: number;
+}
+
+/**
+ * Shared, keyboard-first choice rows for ACT and item submenus.
+ * The owning Scene keeps control of selection state and action resolution.
+ */
+export function drawEncounterChoiceList(
+  scene: Phaser.Scene,
+  labels: string[],
+  selectedIndex: number,
+  onSelect: (index: number) => void,
+  options: EncounterChoiceListOptions = {},
+): Phaser.GameObjects.GameObject[] {
+  const left = options.left ?? 90;
+  const top = options.top ?? 380;
+  const width = options.width ?? 780;
+  const rowHeight = options.rowHeight ?? 28;
+  const fontSize = options.fontSize ?? "14px";
+  const depth = options.depth ?? 35;
+  const objects: Phaser.GameObjects.GameObject[] = [];
+
+  labels.forEach((label, index) => {
+    const selected = index === selectedIndex;
+    const centerY = top + index * rowHeight + rowHeight / 2;
+    const row = scene.add.rectangle(
+      left + width / 2,
+      centerY,
+      width,
+      Math.max(20, rowHeight - 3),
+      selected ? 0x263f3a : 0x10212a,
+      selected ? 0.92 : 0.4,
+    )
+      .setStrokeStyle(
+        selected ? 1 : 0,
+        selected ? 0xdcc187 : 0x53665f,
+        selected ? 0.95 : 0,
+      )
+      .setDepth(depth)
+      .setInteractive({ useHandCursor: true });
+
+    const text = scene.add.text(
+      left + 16,
+      centerY,
+      `${selected ? "▶" : " "}  ${label}`,
+      {
+        fontFamily: "'Noto Sans KR', sans-serif",
+        fontSize,
+        color: selected ? "#f0d58f" : "#c5cbbf",
+        wordWrap: { width: width - 34 },
+      },
+    )
+      .setOrigin(0, 0.5)
+      .setDepth(depth + 1)
+      .setInteractive({ useHandCursor: true });
+
+    const choose = (): void => onSelect(index);
+    row.on("pointerdown", choose);
+    text.on("pointerdown", choose);
+    objects.push(row, text);
+  });
+
+  return objects;
+}

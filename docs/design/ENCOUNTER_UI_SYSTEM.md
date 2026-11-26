@@ -33,8 +33,21 @@
 - RegularEncounterScene.
 - NerdstablookEncounterScene.
 
+## 공통 선택 목록
+`drawEncounterChoiceList()`도 공통 UI 모듈에 추가했다.
+- 선택 행에는 배경과 선택 시 테두리를 표시한다.
+- 항목 텍스트는 왼쪽 정렬, 화살표 커서와 강조색을 함께 사용한다.
+- 포인터와 키보드 모두 소유 Scene의 기존 선택 콜백을 호출한다.
+- 기존 항목 순서와 ACT/ITEM 결과 로직은 바꾸지 않는다.
+
+적용 Scene:
+- BattleScene: ACT 및 ITEM 하위 목록.
+- SecondRankEncounterScene: ACT 목록.
+- RegularEncounterScene: 적별 ACT 목록.
+- NerdstablookEncounterScene: 캐릭터별 ACT 목록.
+
 ## 아직 공통화하지 않은 요소
-ACT/ITEM 선택 목록, 적 대사 패널, 상태 정보, SOUL 회피 보드의 형식은 Scene별로 남아 있다. 다음 시각 리빌드에서 공통 선택 리스트와 대화 패널 규칙을 별도 검토한다.
+적 대사 패널, 상태 정보, SOUL 회피 보드, FIGHT 타이밍, 개별 ACT 결과의 전체 규칙은 Scene별로 남아 있다. 다음 시각 리빌드에서 대화 패널과 전투 보드의 계층을 별도 검토한다.
 
 ## 디자인 원칙
 - 동일한 역할의 명령은 같은 시각 언어를 사용한다.
@@ -57,3 +70,10 @@ ACT/ITEM 선택 목록, 적 대사 패널, 상태 정보, SOUL 회피 보드의 
 - 적용 Scene: BattleScene, BullyBattleScene, SecondRankEncounterScene, RegularEncounterScene, NerdstablookEncounterScene.
 - TypeScript/Vite production build: GitHub Actions run 45829690229 PASS.
 - 브라우저 화면 검수: NOT RUN.
+
+
+## 공통 ACT 선택 목록 구현 — 2026-11-26
+- Shared helper: `src/ui/EncounterMenu.ts`의 `drawEncounterChoiceList()`.
+- 적용: BattleScene / SecondRankEncounterScene / RegularEncounterScene / NerdstablookEncounterScene.
+- 기존 ACT 라벨, 정렬, 콜백/해결 로직은 유지하고 시각적 배경·테두리·커서만 공유한다.
+- 실제 한국어 줄바꿈/겹침은 브라우저 스크린샷 검수 전까지 REVIEW NEEDED.

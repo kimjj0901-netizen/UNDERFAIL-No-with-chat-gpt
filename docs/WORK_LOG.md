@@ -281,3 +281,19 @@
 - ACT 하위 목록과 대화 패널 공통화.
 - 전투 보드/SOUL 영역과 적별 화면 변형 규칙.
 - 실제 브라우저 캡처 및 키보드/포인터 플레이테스트.
+
+
+## 2026-11-26 — 공통 ACT/아이템 선택 목록
+
+### 구현
+- `src/ui/EncounterMenu.ts`에 `drawEncounterChoiceList()` 추가.
+- BattleScene ACT/ITEM, SecondRank, RegularEncounter, Nerdstablook ACT 메뉴에 사용.
+- 선택된 항목에 배경·금색 테두리·화살표 커서를 함께 표시.
+- 각 Scene이 선택 상태와 결과 처리를 계속 소유하므로 전투 로직은 변경하지 않음.
+
+### 정적 확인
+- 모든 변경 Scene이 공통 helper를 import하고 호출한다.
+- 기존 ACT 배열 데이터와 선택 콜백은 유지했다.
+- 현재 일반 조우 데이터는 적별 ACT 3개, Nerdstablook 6개(개별 ACT 목록 전체)를 포함하며 실제 렌더링은 브라우저 확인이 남아 있다.
+- TypeScript/Vite build: 새 커밋 후 GitHub Actions 대기.
+- 브라우저 조작/레이아웃/한국어 문구 검수: NOT RUN.

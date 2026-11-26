@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
-import { drawEncounterCommandRow } from "../ui/EncounterMenu";
+import { drawEncounterCommandRow, drawEncounterChoiceList } from "../ui/EncounterMenu";
 import { NERDSTABLOOK_CONTENT } from "../data/welfareEncounterContent";
 import { GameSession } from "../state/GameSession";
 
@@ -174,20 +174,16 @@ export class NerdstablookEncounterScene extends Phaser.Scene {
     this.mode = "act";
     this.clearMenu();
     this.message?.destroy();
-    NERDSTABLOOK_CONTENT.actOptions.forEach((option, index) => {
-      const y = 356 + index * 26;
-      const selected = index === this.actIndex;
-      const text = this.add.text(90, y, (selected ? "▶ " : "  ") + option.label, {
-        fontFamily: "'Noto Sans KR', sans-serif",
-        fontSize: "13px",
-        color: selected ? "#f0d58f" : "#c5cbbf",
-      }).setDepth(35).setInteractive({ useHandCursor: true });
-      text.on("pointerdown", () => {
+    this.menuObjects.push(...drawEncounterChoiceList(
+      this,
+      NERDSTABLOOK_CONTENT.actOptions.map((option) => option.label),
+      this.actIndex,
+      (index) => {
         this.actIndex = index;
         this.confirmSelection();
-      });
-      this.menuObjects.push(text);
-    });
+      },
+      { left: 80, top: 352, width: 800, rowHeight: 26, fontSize: "13px", depth: 35 },
+    ));
     this.message = this.add.text(480, 322, "말을 고르기 전에 그의 표정을 살펴보자.", {
       fontFamily: "'Noto Sans KR', sans-serif",
       fontSize: "13px",

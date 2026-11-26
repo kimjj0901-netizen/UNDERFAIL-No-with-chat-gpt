@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { GameInput } from "../input/GameInput";
-import { drawEncounterCommandRow } from "../ui/EncounterMenu";
+import { drawEncounterCommandRow, drawEncounterChoiceList } from "../ui/EncounterMenu";
 import { PROTOTYPE_SETTINGS } from "../data/prototypeContent";
 import { GameSession } from "../state/GameSession";
 
@@ -215,26 +215,16 @@ export class BattleScene extends Phaser.Scene {
       ? ACT_OPTIONS
       : ["따뜻한 차 사용", "돌아가기"];
 
-    options.forEach((label, index) => {
-      const selected = index === this.subIndex;
-      const card = this.add.rectangle(480, 452 + index * 28, 760, 24,
-        selected ? 0x293f3b : 0x13232a, selected ? 0.94 : 0.58)
-        .setStrokeStyle(selected ? 1 : 0, selected ? 0xd8bd83 : 0x586960, 0.8)
-        .setDepth(40)
-        .setInteractive({ useHandCursor: true });
-      const text = this.add.text(480, 452 + index * 28, (selected ? "▶  " : "   ") + label, {
-        fontFamily: "sans-serif",
-        fontSize: "16px",
-        color: selected ? "#f1d38c" : "#c4cbbf",
-      }).setOrigin(0.5).setDepth(41).setInteractive({ useHandCursor: true });
-      const choose = () => {
+    this.menuTexts.push(...drawEncounterChoiceList(
+      this,
+      options,
+      this.subIndex,
+      (index) => {
         this.subIndex = index;
         this.confirmSelection();
-      };
-      card.on("pointerdown", choose);
-      text.on("pointerdown", choose);
-      this.menuTexts.push(card, text);
-    });
+      },
+      { left: 90, top: 440, width: 780, rowHeight: 28, fontSize: "15px", depth: 40 },
+    ));
 
     if (this.mode === "act") {
       this.statusText.setText("↑↓ 선택 · Z / ENTER 확정 · X / SHIFT 취소");
