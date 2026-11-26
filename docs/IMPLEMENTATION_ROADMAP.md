@@ -11,7 +11,7 @@
 | Milestone | 목표 | 상태 |
 |---|---|---|
 | 0 | Phaser 4.2.1 + TypeScript + Vite 기반 생성, 개발 서버 및 빌드 확인 | **완료 — 사용자 실행 확인** |
-| 1 | 스토리 중심 오프닝·교육복지반 첫 탐험 구간 | **진행 중 — feature CI PASS, 브라우저 검증 NOT RUN** |
+| 1 | 스토리 중심 오프닝·교육복지반 첫 탐험 구간 | **진행 중 — main CI PASS, 브라우저 검증 NOT RUN** |
 | 2 | 대화·이벤트·방·아이템 콘텐츠 구조 정리 | 대기 |
 | 3 | 파프리카 구역과 첫 주요 보스 | 대기 |
 | 4 | SANZ, 체임버쌤, 학생회와 중간 지역 | 대기 |
@@ -144,3 +144,12 @@
 - HP 0, 사망/제압, SAVE/RESET, 전 지역 처치 카운터의 의미는 보류했다.
 - 이 구간의 수동 플레이 시나리오는 docs/design/WELFARE_1_3_TO_1_7_EVENT_GRAPH.md에 기록했다.
 - 다음 시간순은 1.8 간식 바구니/거미 모양 과자 판매대다. 1.9~1.14와 출구 대립까지 완료했다고 표시하지 않는다.
+
+
+## 2026-11-26 main 통합 확인
+
+- main merge commit: `aa37f7b862db40c996b5a1c9c238a444859cf3d8`
+- PR #1 merged / closed.
+- main push Actions `45774399141`: TypeScript 및 Vite production build PASS.
+- 1.3~1.7은 첫 플레이 패스가 구현됐지만 브라우저 플레이·시각 검수는 NOT RUN/REVIEW NEEDED다.
+- 다음 시간순 구현 구간: 1.8 간식 바구니와 거미 모양 과자 판매대.

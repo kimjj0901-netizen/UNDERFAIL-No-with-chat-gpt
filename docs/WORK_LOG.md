@@ -179,7 +179,7 @@
 | 사운드 청취 | NOT RUN | 해당 구간의 개별 BGM/SFX 최종 믹스 미완료 |
 
 ### 이어서 할 작업
-**GitHub Actions run 45774025127에서 TypeScript와 Vite production build가 통과했다. 브라우저 플레이는 NOT RUN이다. 다음은 main과 feature의 기존 이력을 모두 보존해 main에 직접 통합하는 것이다. 다음 시간순 콘텐츠는 1.8 간식 바구니·거미 모양 과자 판매대이며, 1.9~1.14의 생활 공간과 출구 대립은 별도 구간으로 남긴다.**
+**GitHub Actions feature run 45774025127과 main run 45774399141에서 TypeScript와 Vite production build가 통과했다. main 통합은 2026-11-26에 완료했다. 브라우저 플레이는 NOT RUN이다. 다음 시간순 콘텐츠는 1.8 간식 바구니·거미 모양 과자 판매대이며, 1.9~1.14의 생활 공간과 출구 대립은 별도 구간으로 남긴다.**
 
 
 ## 2026-11-26 — 1.3~1.7 코드 CI 검증
@@ -190,3 +190,23 @@
 - 세션 상태 메서드 호출과 신규 Scene의 등록·분기 연결은 정적 조회로 확인했다.
 - 브라우저 직접 플레이, 실제 충돌 범위, 대화 UI 가독성, 오디오 청취는 수행하지 않았다: NOT RUN / REVIEW NEEDED.
 - 이 검증은 해당 feature SHA에서 수행됐다. main 통합 뒤 main push workflow가 실행되면 그 결과도 별도로 확인한다.
+
+
+## 2026-11-26 — main 직접 통합 및 최종 검증
+
+- main 병합 커밋: `aa37f7b862db40c996b5a1c9c238a444859cf3d8`
+- First parent: 기존 main `5f67e3ba474c97441fc798ef59cf5be234c43681`
+- Second parent: 작업 브랜치 `a384ef3ebc3e06610ee073d33e3a9016a53a2d0a`
+- main에만 존재하던 `package-lock.json` blob `0a5a0a1d312795dacda6bce35a7a4474ff6a8714`를 통합 tree에 포함했다.
+- Phaser lockfile 버전: 4.2.1 확인.
+- Draft PR #1: merged / closed, merge time 2026-11-26T07:19:00Z.
+- GitHub Actions main push run `45774399141`: completed / success.
+- main SHA `aa37f7b`의 TypeScript 검사: PASS.
+- main SHA `aa37f7b`의 Vite production build: PASS.
+- Feature SHA `a384ef3`의 push run `45774181390` 및 PR run `45774188958`: 모두 PASS.
+- 브라우저 전체 플레이, UI/충돌 가독성 검수, 오디오 청취: NOT RUN / REVIEW NEEDED.
+- main 통합 과정에서 force push 없이 expected SHA 검사를 사용했다.
+- CREATIVE_DECISION_WORKBOOK.md 및 스토리 색인 0~1.7 원문은 수정하지 않았다.
+
+### 다음 단계
+**교육복지반 1.8 간식 바구니와 거미 모양 과자 판매대부터 원문 순서대로 이어서 구현한다. 브라우저 직접 플레이 검수도 그 다음 코드 변경의 승인 기준으로 남겨둔다.**

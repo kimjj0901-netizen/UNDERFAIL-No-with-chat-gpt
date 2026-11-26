@@ -139,3 +139,15 @@ Copilot은 먼저 현재 브랜치·파일·코드를 확인하고 명세와 충
 - 브라우저 직접 플레이: NOT RUN.
 - 시각/충돌/키 입력 검수: REVIEW NEEDED.
 - main에 통합한 뒤 main push workflow가 실행되면 통합 SHA의 결과도 별도로 기록한다.
+
+
+## 2026-11-26 main 통합
+
+사용자 요청에 따라 작업 브랜치의 스토리 중심 오프닝 및 교육복지반 1.3~1.7 확장을 main에 직접 반영했다.
+
+- main merge commit: `aa37f7b862db40c996b5a1c9c238a444859cf3d8`
+- PR #1: merged / closed.
+- main push Actions run `45774399141`: TypeScript / Vite build PASS.
+- main 전용 package-lock.json 유지; Phaser 4.2.1 확인.
+- 브라우저 전체 플레이와 시각/사운드 검수는 NOT RUN 또는 REVIEW NEEDED다.
+- 다음 작업은 스토리 색인 1.8부터 계속한다.
