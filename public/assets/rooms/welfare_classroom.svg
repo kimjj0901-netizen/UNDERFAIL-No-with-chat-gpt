@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+<defs>
+ <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#52655e"/><stop offset=".68" stop-color="#344b48"/><stop offset="1" stop-color="#293e3d"/></linearGradient>
+ <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#56604f"/><stop offset="1" stop-color="#1d3434"/></linearGradient>
+ <linearGradient id="window" x2="1" y2="1"><stop stop-color="#829a92"/><stop offset=".5" stop-color="#526f6f"/><stop offset="1" stop-color="#263e48"/></linearGradient>
+ <linearGradient id="wood" x2="0" y2="1"><stop stop-color="#8b7051"/><stop offset="1" stop-color="#493e34"/></linearGradient>
+ <radialGradient id="lamp"><stop stop-color="#f0d6a0" stop-opacity=".28"/><stop offset="1" stop-color="#f0d6a0" stop-opacity="0"/></radialGradient>
+ <pattern id="wallmark" width="54" height="48" patternUnits="userSpaceOnUse"><path d="M27 9Q36 18 27 27Q18 18 27 9ZM27 27V39" fill="none" stroke="#d5c39b" opacity=".08" stroke-width="2"/></pattern>
+ <pattern id="plank" width="120" height="32" patternUnits="userSpaceOnUse"><path d="M0 2H120M18 18H85" stroke="#d3b88b" stroke-opacity=".1"/><path d="M60 0V32" stroke="#09191e" stroke-opacity=".13"/></pattern>
+</defs>
+<rect width="960" height="540" fill="#15262c"/>
+<rect x="48" y="44" width="864" height="337" fill="url(#wall)" stroke="#bba77f" stroke-width="6"/>
+<rect x="66" y="62" width="828" height="302" fill="url(#wallmark)"/>
+<path d="M48 381H912V492H48Z" fill="url(#floor)" stroke="#bba77f" stroke-width="5"/>
+<path d="M48 381H912V492H48Z" fill="url(#plank)"/>
+<path d="M48 372H912" stroke="#d6c49d" stroke-width="5" opacity=".7"/>
+<path d="M64 104H896M64 354H896" stroke="#d0bd92" stroke-width="2" opacity=".28"/>
+<!-- entrance arch and door -->
+<path d="M420 44V112Q480 55 540 112V44Z" fill="#1a2c33" stroke="#c7b48a" stroke-width="4"/>
+<path d="M432 54V100Q480 70 528 100V54Z" fill="#344b4b" stroke="#8e957f" stroke-width="2"/>
+<path d="M480 76V112" stroke="#c8b68e" stroke-width="3"/>
+<circle cx="516" cy="94" r="4" fill="#d9c28e"/>
+<path d="M408 44V120M552 44V120" stroke="#172a2e" stroke-width="9"/>
+<!-- high windows -->
+<g>
+ <rect x="95" y="122" width="170" height="90" fill="url(#window)" stroke="#d0bb91" stroke-width="5"/>
+ <path d="M180 122V212M95 166H265" stroke="#d6c79f" stroke-width="4" opacity=".7"/>
+ <path d="M84 116Q112 128 115 220L86 224ZM276 116Q249 128 246 220L276 224Z" fill="#786b56" opacity=".9"/>
+ <rect x="695" y="122" width="170" height="90" fill="url(#window)" stroke="#d0bb91" stroke-width="5"/>
+ <path d="M780 122V212M695 166H865" stroke="#d6c79f" stroke-width="4" opacity=".7"/>
+ <path d="M684 116Q712 128 715 220L686 224ZM876 116Q849 128 846 220L876 224Z" fill="#786b56" opacity=".9"/>
+</g>
+<!-- wall pinboard and notes -->
+<g>
+ <rect x="286" y="140" width="165" height="64" rx="4" fill="#806d50" stroke="#273c3c" stroke-width="4"/>
+ <rect x="296" y="150" width="145" height="44" fill="#c3b18b"/>
+ <path d="M308 160H428M308 171H405M308 182H418" stroke="#536158" stroke-width="3" opacity=".65"/>
+ <circle cx="434" cy="154" r="4" fill="#a8554c"/>
+ <rect x="511" y="144" width="146" height="55" fill="#3d5550" stroke="#b59d70" stroke-width="4"/>
+ <path d="M528 157H640M528 169H623M528 181H636" stroke="#d7c49a" stroke-width="3" opacity=".6"/>
+</g>
+<!-- puzzle station, player approaches from below -->
+<g>
+ <path d="M399 260Q480 227 571 260V321H399Z" fill="#2b4544" stroke="#152c32" stroke-width="6"/>
+ <rect x="414" y="236" width="142" height="86" rx="12" fill="#465c51" stroke="#d4bd8e" stroke-width="4"/>
+ <rect x="423" y="245" width="124" height="68" rx="8" fill="#263b3d" stroke="#8d9478" stroke-width="2"/>
+ <g stroke="#d8c69b" stroke-width="3" fill="none"><circle cx="447" cy="279" r="13"/><circle cx="485" cy="279" r="13"/><circle cx="523" cy="279" r="13"/></g>
+ <g fill="#baa47b"><circle cx="447" cy="279" r="5"/><circle cx="485" cy="279" r="5"/><circle cx="523" cy="279" r="5"/></g>
+ <path d="M437 305H535" stroke="#d4c39d" stroke-width="2" opacity=".55"/>
+</g>
+<!-- Proggithub dais -->
+<g>
+ <ellipse cx="728" cy="316" rx="82" ry="16" fill="#14282d" opacity=".65"/>
+ <path d="M672 297H784L772 323H684Z" fill="url(#wood)" stroke="#253939" stroke-width="4"/>
+ <path d="M680 303H776" stroke="#d5bc8b" stroke-width="3" opacity=".6"/>
+ <path d="M698 220H758V237H698Z" fill="#233a3e" stroke="#ac9c76" stroke-width="2"/>
+</g>
+<!-- Second rank desk -->
+<g>
+ <path d="M148 302H263L250 324H160Z" fill="url(#wood)" stroke="#27383a" stroke-width="4"/>
+ <path d="M164 321V352M247 321V352" stroke="#3b463c" stroke-width="8"/>
+ <rect x="161" y="283" width="89" height="12" fill="#c7b88f" opacity=".5"/>
+</g>
+<!-- student bookshelf -->
+<g>
+ <rect x="88" y="370" width="116" height="48" fill="url(#wood)" stroke="#1a2e32" stroke-width="4"/>
+ <path d="M88 398H204" stroke="#d5b98b" stroke-width="4"/>
+ <g>
+  <rect x="100" y="376" width="8" height="20" fill="#b09a72"/><rect x="111" y="374" width="8" height="22" fill="#6f897d"/>
+  <rect x="123" y="377" width="9" height="19" fill="#9a7768"/><rect x="136" y="372" width="9" height="24" fill="#bca77d"/>
+  <rect x="150" y="376" width="9" height="20" fill="#657a72"/><rect x="164" y="373" width="8" height="23" fill="#a68d6a"/>
+  <rect x="177" y="377" width="9" height="19" fill="#7c7561"/>
+ </g>
+</g>
+<!-- rug and seating -->
+<path d="M258 370Q480 341 702 370V463Q480 484 258 463Z" fill="#344f48" stroke="#bca87d" stroke-width="4" opacity=".92"/>
+<path d="M280 381Q480 358 680 381V449Q480 469 280 449Z" fill="none" stroke="#cbb487" stroke-width="2" opacity=".75"/>
+<path d="M330 416H630" stroke="#cbb487" stroke-width="2" opacity=".28"/>
+<g>
+ <path d="M330 366H390V391H330Z" fill="#6e6653" stroke="#233a3c" stroke-width="3"/>
+ <path d="M343 390V411M378 390V411" stroke="#283c3a" stroke-width="6"/>
+ <path d="M572 366H632V391H572Z" fill="#6e6653" stroke="#233a3c" stroke-width="3"/>
+ <path d="M585 390V411M620 390V411" stroke="#283c3a" stroke-width="6"/>
+</g>
+<!-- soft lamp pool and hanging lamp -->
+<path d="M480 44V93" stroke="#1b3032" stroke-width="4"/>
+<path d="M456 93Q480 74 504 93L496 109H464Z" fill="#c6ad7e" stroke="#273b3b" stroke-width="3"/>
+<path d="M455 113L300 365H660L505 113Z" fill="url(#lamp)"/>
+<!-- wall clock -->
+<circle cx="615" cy="103" r="23" fill="#d1c39d" stroke="#3c514b" stroke-width="4"/>
+<circle cx="615" cy="103" r="16" fill="#e9dfc3"/>
+<path d="M615 103V90M615 103L626 110" stroke="#4b5d54" stroke-width="3"/>
+<!-- light, shadows, vignette -->
+<g fill="#172b2d" opacity=".55"><path d="M48 44H912V59H48ZM48 364H912V381H48Z"/></g>
+<path d="M0 0H960V540H0Z" fill="#08141a" opacity=".12"/>
+<path d="M0 0H960V540H0Z" fill="none" stroke="#bda97e" stroke-opacity=".22" stroke-width="5"/>
+</svg>

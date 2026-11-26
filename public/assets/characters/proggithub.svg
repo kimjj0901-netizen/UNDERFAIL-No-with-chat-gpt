@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="150" viewBox="0 0 120 150">
+<defs><linearGradient id="shell" x2="1" y2="1"><stop stop-color="#9bb5a0"/><stop offset=".5" stop-color="#537b73"/><stop offset="1" stop-color="#294b4c"/></linearGradient></defs>
+<ellipse cx="60" cy="139" rx="37" ry="7" fill="#091a20" opacity=".5"/>
+<path d="M60 14V2M60 2Q49-2 47 8M60 2Q72-2 75 8" stroke="#cbb98e" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M22 53Q18 30 41 24L80 24Q104 30 99 57L94 115Q60 136 26 115Z" fill="url(#shell)" stroke="#203b40" stroke-width="5"/>
+<path d="M29 55Q60 42 92 55V88Q60 101 29 88Z" fill="#21383c" stroke="#a9c2a8" stroke-width="3"/>
+<circle cx="45" cy="68" r="6" fill="#e6d3a4"/><circle cx="75" cy="68" r="6" fill="#e6d3a4"/>
+<path d="M44 83H76" stroke="#a6c1ad" stroke-width="4" stroke-linecap="round"/>
+<path d="M41 104L34 127M78 104L86 127" stroke="#2c4747" stroke-width="8" stroke-linecap="round"/>
+<rect x="45" y="3" width="30" height="10" rx="4" fill="#c9ae7f" stroke="#314a49" stroke-width="2"/>
+<path d="M47 12L39 23M73 12L81 23" stroke="#d7c89d" stroke-width="3"/>
+</svg>

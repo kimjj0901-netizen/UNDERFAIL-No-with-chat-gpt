@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#9b7960"/><stop offset=".52" stop-color="#d2ad7c"/><stop offset="1" stop-color="#e0c69a"/></linearGradient>
+ <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#877d67"/><stop offset="1" stop-color="#3d5150"/></linearGradient>
+ <linearGradient id="ground" x2="0" y2="1"><stop stop-color="#586b5c"/><stop offset="1" stop-color="#263d3b"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#f1dca7" stop-opacity=".9"/><stop offset="1" stop-color="#f1dca7" stop-opacity="0"/></radialGradient>
+ <pattern id="paper" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="2" cy="3" r=".7" fill="#f5e6c5" opacity=".22"/><path d="M7 9l2-1" stroke="#614e3b" opacity=".12"/></pattern>
+</defs>
+<rect width="960" height="540" fill="url(#sky)"/><circle cx="748" cy="112" r="138" fill="url(#sun)"/>
+<path d="M0 272Q180 230 330 269T640 258T960 271V540H0Z" fill="#6e8068"/>
+<path d="M0 332Q170 288 345 324T675 312T960 337V540H0Z" fill="url(#ground)"/>
+<g>
+ <path d="M195 326V178L243 134H712L760 178V326Z" fill="url(#wall)" stroke="#e4ca9c" stroke-width="4"/>
+ <path d="M172 180L478 72L784 180Z" fill="#665e52" stroke="#e4ca9c" stroke-width="4"/>
+ <path d="M449 101H507V151H449Z" fill="#3c4c4a" stroke="#d7c39b" stroke-width="3"/>
+ <circle cx="478" cy="122" r="16" fill="#d8c69f"/><path d="M478 109V123L489 130" stroke="#536461" stroke-width="3" fill="none"/>
+ <g fill="#e5d2a5" stroke="#56615b" stroke-width="5">
+  <rect x="243" y="204" width="74" height="72"/><rect x="349" y="204" width="74" height="72"/>
+  <rect x="537" y="204" width="74" height="72"/><rect x="643" y="204" width="74" height="72"/>
+ </g>
+ <g stroke="#53605a" stroke-width="4"><path d="M280 204V276M243 240H317M386 204V276M349 240H423M574 204V276M537 240H611M680 204V276M643 240H717"/></g>
+ <path d="M433 326V244Q478 199 523 244V326Z" fill="#253b3c" stroke="#d8c59c" stroke-width="4"/>
+ <path d="M478 228V326" stroke="#d8c59c" stroke-width="3"/>
+ <path d="M205 326H750" stroke="#e4ca9c" stroke-width="5"/>
+ <rect x="388" y="155" width="181" height="27" rx="4" fill="#2c4546" opacity=".9"/>
+ <text x="478" y="174" text-anchor="middle" font-family="serif" font-size="17" letter-spacing="3" fill="#f0dfbb">합주곡 혼합고등학교</text>
+</g>
+<!-- Left: study and art -->
+<g transform="translate(78 355)">
+ <rect x="0" y="54" width="225" height="11" rx="4" fill="#b58d65"/><path d="M20 64V130M202 64V130" stroke="#3b4540" stroke-width="8"/>
+ <rect x="40" y="8" width="60" height="50" rx="3" fill="#d5c4a0" stroke="#705d49" stroke-width="3"/>
+ <path d="M48 48L63 23L78 40L91 19" fill="none" stroke="#82917d" stroke-width="5"/>
+ <circle cx="144" cy="9" r="17" fill="#533c34"/><path d="M130 28Q145 17 160 31L168 78H120Z" fill="#344d52"/>
+ <path d="M141 44L112 62M151 43L180 61" stroke="#d2b08a" stroke-width="7" stroke-linecap="round"/>
+ <path d="M137 77L127 112M153 77L166 112" stroke="#29383b" stroke-width="9" stroke-linecap="round"/>
+ <rect x="171" y="38" width="36" height="22" fill="#d8c79e"/><path d="M173 42L204 54" stroke="#758c7b" stroke-width="3"/>
+</g>
+<!-- Center: music and performance -->
+<g transform="translate(388 344)">
+ <path d="M0 90H195" stroke="#b38c62" stroke-width="10"/>
+ <circle cx="82" cy="5" r="17" fill="#493934"/><path d="M64 26Q82 17 100 28L111 79H52Z" fill="#765b4b"/>
+ <path d="M67 40L34 62M96 39L126 20" stroke="#e1c6a0" stroke-width="7" stroke-linecap="round"/>
+ <path d="M68 79L58 124M97 79L112 124" stroke="#283d43" stroke-width="10" stroke-linecap="round"/>
+ <path d="M125 20V-16M125 -16Q146 -27 160 -15V4Q145 -8 125 2" fill="none" stroke="#3f514d" stroke-width="4"/>
+ <path d="M150 -6q22-28 33-3M164 14q28-23 37 3" stroke="#f0d6a2" stroke-width="4" fill="none" stroke-linecap="round"/>
+</g>
+<!-- Right: sport -->
+<g transform="translate(705 355)">
+ <circle cx="82" cy="9" r="17" fill="#3e342e"/><path d="M65 28Q85 19 102 35L92 76H47Z" fill="#a46f54"/>
+ <path d="M57 42L22 25M96 43L127 66" stroke="#e2c49b" stroke-width="8" stroke-linecap="round"/>
+ <path d="M61 74L26 105M88 72L124 96" stroke="#2b3c3e" stroke-width="12" stroke-linecap="round"/>
+ <path d="M10 110Q-8 99 1 84Q14 69 27 86" fill="#c7ad7e" opacity=".8"/>
+ <path d="M140 8L180 8" stroke="#e8d2a7" stroke-width="3"/><path d="M151 0L160 16M170 0L179 16" stroke="#e8d2a7" stroke-width="3"/>
+</g>
+<g fill="#2a433b" opacity=".9"><path d="M0 470Q80 420 142 470V540H0Z"/><path d="M814 460Q876 407 960 468V540H814Z"/></g>
+<g fill="#e2c99a" opacity=".88"><circle cx="82" cy="468" r="7"/><circle cx="106" cy="489" r="4"/><circle cx="870" cy="467" r="6"/><circle cx="910" cy="493" r="4"/></g>
+<rect width="960" height="540" fill="url(#paper)" opacity=".52"/>
+<path d="M0 0H960V540H0Z" fill="none" stroke="#f2dfb8" stroke-opacity=".35" stroke-width="5"/>
+</svg>

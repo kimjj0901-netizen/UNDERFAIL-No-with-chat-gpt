@@ -124,3 +124,41 @@ BootScene
 - Scene 전환 중 중복 입력·중복 타이머·중복 이벤트가 생기지 않아야 한다.
 - Scene을 재시작하거나 전환해도 필요한 세션 상태가 유지되어야 한다.
 - 임시 대사·수치·도형은 찾아 바꾸기 쉬워야 한다.
+
+
+## 9. 2026-11-26 Scene 및 자산 로딩 업데이트
+
+현재 구현의 시작 구간 Scene 경계는 다음과 같다.
+
+- BootScene: SVG 및 공유 자산 적재
+- TitleScene
+- NameEntryScene
+- PrologueScene
+- FlowerFieldScene
+- BullyBattleScene
+- RoomScene
+
+논리 해상도 960×540 및 FIT/중앙 정렬은 유지한다. SVG 에셋은 BootScene의 Phaser SVG loader를 통해 공용 텍스처로 읽는다. 오프닝 페이지 메타데이터는 src/data/openingContent.ts로 분리하고, 분위기 오디오 프로토타입은 src/audio/Atmosphere.ts에 둔다. Web Audio는 브라우저 사용자 제스처 이후에만 활성화하며 실제 음악 파일이나 원작 선율을 포함하지 않는다.
+
+캐릭터 방향별 걷기 프레임, 감정별 얼굴 시트, 최종 픽셀 규격 및 배경 레이어 편집 체계는 아직 구현 과제다. STORY_CONTROL_PANEL.md는 현재 브랜치 트리에서 발견하지 못했다. 존재한다고 가정하지 않는다.
+
+
+## 10. 추가된 특수 조우 Scene
+
+- SecondRankEncounterScene은 교육복지반의 전교 2등 특수 조우 전용이다.
+- Scene 진입/종료 시 GameSession의 secondRankFled 및 domitoriellFollowUpPending 플래그를 사용한다.
+- RoomScene은 프로깃허브 튜토리얼 완료 전까지 전교 2등 상호작용 타겟을 노출하지 않는다.
+- 이 Scene은 HP를 변경하지 않고, HP 0·사망·SAVE/RESET의 세계관 의미도 정의하지 않는다.
+
+
+## 11. 교육복지반 1.3~1.7 Scene 및 데이터 경계
+
+- WelfareCorridorScene: RoomScene과 연결되는 탐험 복도, 조사·전화·여러 프로깃허브·퍼즐·길막 타겟.
+- RegularEncounterScene: 적 ID를 전달받아 공통 턴/메뉴 엔진을 사용하되, 적별 ACT와 공격 패턴은 데이터로 분리.
+- NerdstablookEncounterScene: 캐릭터 전용 ACT와 이야기 결과를 보유하며 일반 적 시스템의 HP/사망 규칙을 변경하지 않는다.
+- src/data/welfareEncounterContent.ts: 일반 적/전화/프로깃허브/복도 퍼즐/너드스타블룩의 이벤트 데이터를 소유.
+- GameSession: 해당 플레이 세션 안에서만 적별 결과, 퍼즐 진행, 전화 호출, 안내 대사 건너뛰기, 길막 해제 결과를 유지.
+- BootScene: 복도와 캐릭터·전화기 SVG 텍스처를 미리 적재.
+- main.ts: 신규 Scene을 Phaser Scene registry에 등록.
+
+일반 조우와 너드스타블룩의 전투 시각 요소는 추상적인 비현실적 빛/종이 문양이다. 이 구조는 HP 0, 사망/제압, SAVE/RESET, 루트 카운터 및 세계관적 저장 의미를 다루지 않는다.

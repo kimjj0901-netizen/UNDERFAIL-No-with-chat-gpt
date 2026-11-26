@@ -1,0 +1,26 @@
+name: UNDERFAIL build check
+
+on:
+  push:
+    branches:
+      - main
+      - feature/milestone-1-vertical-slice
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: TypeScript and production build
+        run: npm run build

@@ -1,16 +1,76 @@
-html,
-body,
-#game {
+:root {
+  color-scheme: dark;
+  font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+  background: #0b151d;
+  color: #f1e8d5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #game {
   margin: 0;
   width: 100%;
   height: 100%;
   min-height: 100%;
   overflow: hidden;
-  background: #000;
+  background: #0b151d;
 }
 
 body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overscroll-behavior: none;
+}
+
+#game {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  min-width: 0;
+  min-height: 0;
+}
+
+#game canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  image-rendering: auto;
+  touch-action: none;
+  outline: none;
+}
+
+.underfail-name-input {
+  box-sizing: border-box;
+  width: min(420px, 68vw);
+  padding: 13px 16px;
+  border: 0;
+  border-radius: 0;
+  outline: 2px solid transparent;
+  background: #15272c;
+  color: #f3e9d4;
+  font: 19px "Noto Sans KR", "Malgun Gothic", sans-serif;
+  text-align: center;
+  letter-spacing: 1.8px;
+  box-shadow: inset 0 -2px 0 rgb(204 181 133 / 46%);
+  transition: outline-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.underfail-name-input::placeholder { color: #93a197; }
+
+.underfail-name-input:focus {
+  outline-color: #e3c991;
+  background: #1b3035;
+  box-shadow: inset 0 -2px 0 #e3c991, 0 0 0 4px rgb(227 201 145 / 12%);
+}
+
+@media (max-width: 680px) {
+  .underfail-name-input {
+    width: min(390px, 74vw);
+    font-size: 16px;
+  }
 }
