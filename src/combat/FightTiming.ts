@@ -35,3 +35,5 @@ export function evaluateRhythmTiming(
 
   return { grade, progress, distanceFromTarget };
 }
+
+export const RHYTHM_DODGE_INTERVALS_MS = [300, 300, 300, 900] as const;
