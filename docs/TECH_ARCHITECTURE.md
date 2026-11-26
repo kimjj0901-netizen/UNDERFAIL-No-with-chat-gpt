@@ -200,3 +200,14 @@ BootScene
 - 대화 상태는 Scene 자체의 state branch에서 Confirm을 소비하므로 탐험 상호작용과 충돌하지 않는다.
 - `PHONE_CALL`: C.
 - `MENU`: Ctrl 예약. C는 기존 전화 호출 때문에 메뉴 키로 사용하지 않는다.
+
+
+## 15. 2026-11-27 Milestone 2A 전투 기준 조우 프로토타입
+
+- src/combat/EncounterFlowController.ts: 현재는 RegularEncounterScene만 사용하는 상태 전이 가드다. 모든 전투 Scene이 공통 상태 머신을 사용한다고 간주하지 않는다.
+- src/combat/FixedStepRunner.ts: 고정 60Hz 스텝과 프레임 지연 catch-up 상한을 제공한다. 현재 연결 범위는 RegularEncounterScene의 회피 루프뿐이다.
+- src/combat/FightTiming.ts: rhythmMote의 FIGHT 타이밍 판정 프로토타입이다. ACT watch 관찰을 통해 판정 허용 범위가 넓어진다. 판정 수치는 밸런스 제안이며 전역 확정 규칙이 아니다.
+- RegularEncounterScene: ITEM 선택 목록, 적 행동 예고 단계, 반응 단계 및 위 보조 로직을 연결했다.
+- 다른 특수 전투 Scene의 상태 머신·회피 루프는 아직 통합하지 않았다. 각 Scene의 고유 대사/스토리 연출을 유지하면서 단계적으로 이관해야 한다.
+- Node 내장 테스트는 npm test로 실행하고, CI는 production build 뒤 해당 테스트를 수행한다.
+- [검증 한계] 현재 GitHub Actions에서 TypeScript/Vite build와 순수 전투 로직 7개 테스트가 통과했다. 브라우저 플레이/화면/키보드/타이밍 체감 QA는 아직 실행하지 않았다.
