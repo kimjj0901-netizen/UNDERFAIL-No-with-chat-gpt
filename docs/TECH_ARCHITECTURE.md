@@ -141,3 +141,11 @@ BootScene
 논리 해상도 960×540 및 FIT/중앙 정렬은 유지한다. SVG 에셋은 BootScene의 Phaser SVG loader를 통해 공용 텍스처로 읽는다. 오프닝 페이지 메타데이터는 src/data/openingContent.ts로 분리하고, 분위기 오디오 프로토타입은 src/audio/Atmosphere.ts에 둔다. Web Audio는 브라우저 사용자 제스처 이후에만 활성화하며 실제 음악 파일이나 원작 선율을 포함하지 않는다.
 
 캐릭터 방향별 걷기 프레임, 감정별 얼굴 시트, 최종 픽셀 규격 및 배경 레이어 편집 체계는 아직 구현 과제다. STORY_CONTROL_PANEL.md는 현재 브랜치 트리에서 발견하지 못했다. 존재한다고 가정하지 않는다.
+
+
+## 10. 추가된 특수 조우 Scene
+
+- SecondRankEncounterScene은 교육복지반의 전교 2등 특수 조우 전용이다.
+- Scene 진입/종료 시 GameSession의 secondRankFled 및 domitoriellFollowUpPending 플래그를 사용한다.
+- RoomScene은 프로깃허브 튜토리얼 완료 전까지 전교 2등 상호작용 타겟을 노출하지 않는다.
+- 이 Scene은 HP를 변경하지 않고, HP 0·사망·SAVE/RESET의 세계관 의미도 정의하지 않는다.
