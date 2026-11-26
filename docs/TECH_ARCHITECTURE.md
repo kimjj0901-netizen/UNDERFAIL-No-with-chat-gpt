@@ -96,11 +96,11 @@ BootScene
 | Game Action | 기본 입력 | 호환/보조 입력 | 의미 |
 |---|---|---|---|
 | UP / DOWN / LEFT / RIGHT | 방향키 | WASD | 탐험 이동 및 메뉴 선택 |
-| CONFIRM | Z | Enter, Space | 확정·대화 진행 |
+| CONFIRM | Z | Enter, Space | 확정·대화 진행. 탐험 중에는 근접 조사 대체 입력으로도 사용 |
 | CANCEL | X | Shift, Escape | 허용된 하위 메뉴/대화에서 취소 |
-| INTERACT | E | Z, Enter, Space | 조사/상호작용 |
-| PHONE_CALL | C | — | 기존 도미토리엘 전화 단축키 |
-| MENU | C | Ctrl | 예약 액션. 실제 메뉴 UI를 구현하기 전에는 사용 안내하지 않음 |
+| INTERACT | E | 없음 | 별도 조사 액션 |
+| PHONE_CALL | C | 없음 | 기존 도미토리엘 전화 단축키 |
+| MENU | Ctrl (예약) | 없음 | 메뉴 UI 구현 전까지 연결하지 않음 |
 
 - 이름 입력 Scene의 DOM input은 글로벌 Confirm 입력으로 가로채지 않는다. Z는 이름 문자열로 입력 가능해야 하며 Enter는 제출에 사용한다.
 - C는 기존 전화 단축키로 유지한다. 일반 메뉴는 Ctrl을 예약 입력으로 두되 실제 메뉴 UI가 연결되기 전에는 사용 안내하지 않는다.
