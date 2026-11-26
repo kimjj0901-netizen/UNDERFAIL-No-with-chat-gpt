@@ -22,3 +22,13 @@
 | IMG-07 | Snowdin 이동 경로/지역 카운터 | https://rebelofalltrades.files.wordpress.com/2017/08/snowdinkillcounter.png?auto=webp&disable=upscale&quality=80&w=646&width=1280 | 공간에서 캐릭터와 HUD의 상대 크기 관찰 | 플레이 영상/스크린샷 한 장은 전체 맵을 증명하지 않음 |
 | IMG-08 | 전투 ACT 메뉴/그리드 | https://www.superjumpmagazine.com/content/images/2022/03/Screenshot-2022-03-12-at-15.52.39.png | 상단 적 영역·중앙 대사/ACT·하단 상태/명령의 계층 | SUPERJUMP 분석자의 캡처·설명 |
 | IMG-09 | Ruins 인물 대면 장면 | https://images.squarespace-cdn.com/content/v1/5017c2ace4b01a67d6bdc30c/1522705423533-ISJ55CLJUMS6RYDNGTID/Undertale_20180301230241.jpg | 두 인물의 거리·방의 프레이밍·대화 상황 | 2차 블로그 이미지
+
+| IMG-10 | 전투 | https://undertale.wiki/images/Enemy_Approaching_soundtrack.png | 적/보드/대사/상태/명령의 화면 계층 | 표시된 한 정지 화면으로 모든 전투 화면을 일반화하지 않음 |
+| IMG-11 | ACT 선택 | https://thephilosophersmeme.com/assets/2015-11-29-undertale-review/4.jpg | 적별 ACT 하위 선택 목록 | 2차 리뷰 사이트의 스크린샷 |
+| IMG-12 | Ruins 생활 공간 | https://images.steamusercontent.com/ugc/17920734020375943934/9F737933B9BFA9B887DEBDA2EEEF1B41DA026790/?ima=fit&imcolor=%23000000&impolicy=Letterbox&imw=1024&letterbox=false | 가구·이동 경로·인물의 크기와 방의 생활감 | Steam Community 업로드 이미지 |
+| IMG-13 | Ruins 퍼즐 | https://undertale.wiki/images/thumb/Ruins_location_Middle_Road_Puzzle.png/600px-Ruins_location_Middle_Road_Puzzle.png.webp | 표지·바닥 장치·출구의 관계 | 정지 화면만으로 퍼즐 동작은 확인 불가 |
+| IMG-14 | Snowdin 이동 | https://undertale.wiki/w/Snowdin_Forest | 갈림길·랜드마크·출구 가독성 | 지역 갤러리이며 특정 방의 전체 맵은 아님 |
+| IMG-15 | 보호자 첫 등장 | https://static.wikia.nocookie.net/undertale/images/1/1a/Fallen_Down_soundtrack.png/revision/latest?cb=20151104163626 | 캐릭터 초상·대사의 화면 중심 역할 | 위키 이미지 및 단일 장면 |
+| IMG-16 | 방향/이동 시트 예시 | https://pixelartmaker.com/art/fc31fc068f544f6 | 방향별 프레임이 필요한 제작 항목의 예 | 팬 제작 이미지; 원작 자산/공식 시트가 아님 |
+| IMG-17 | 타이틀 | https://www.mobygames.com/game/74938/undertale/screenshots/windows/809576/ | 게임 타이틀 화면 구성 | 업로더 제공 640×480 스크린샷; 게임 논리 해상도 증거 아님 |
+
