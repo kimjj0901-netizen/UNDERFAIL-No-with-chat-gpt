@@ -12,7 +12,6 @@ import { FixedStepRunner } from "../combat/FixedStepRunner";
 import {
   evaluateRhythmTiming,
   RHYTHM_TIMING_DURATION_MS,
-  RHYTHM_TIMING_TARGET,
 } from "../combat/FightTiming";
 type Bullet = {
   object: Phaser.GameObjects.Arc;
@@ -50,6 +49,8 @@ export class RegularEncounterScene extends Phaser.Scene {
   private bulletIndex = 0;
   private intensity = 1;
   private ending = false;
+  private returning = false;
+  private pendingOutcome?: WelfareEncounterOutcome;
 
   private readonly dodgeRunner = new FixedStepRunner();
   private invulnerabilityMs = 0;
@@ -80,6 +81,8 @@ export class RegularEncounterScene extends Phaser.Scene {
     this.hitCount = 0;
     this.intensity = this.withCompanion ? 1.25 : 1;
     this.ending = false;
+    this.returning = false;
+    this.pendingOutcome = undefined;
     this.pendingDodge = false;
     this.withdrawAfterResponse = false;
     this.rhythmObserved = false;
@@ -170,7 +173,7 @@ export class RegularEncounterScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     if (this.ending) {
-      if (this.justConfirm()) this.returnToCorridor();
+      if (this.justConfirm()) this.returnToCorridor(this.pendingOutcome);
       return;
     }
 
@@ -237,7 +240,10 @@ export class RegularEncounterScene extends Phaser.Scene {
   }
 
   private handlePointerAdvance(): void {
-    if (this.ending) return;
+    if (this.ending) {
+      this.returnToCorridor(this.pendingOutcome);
+      return;
+    }
     if (this.mode === "intro") {
       this.drawMainMenu();
     } else if (this.mode === "response") {
@@ -371,15 +377,6 @@ export class RegularEncounterScene extends Phaser.Scene {
       case "MERCY":
         this.resolveMercy();
         break;
-    }
-  }
-
-  private useItem(): void {
-    const session = GameSession.get();
-    if (session.hasWarmTea && GameSession.useWarmTea()) {
-      this.showResponse("따뜻한 차를 마셨다. 숨을 고르고 다시 주변을 살핀다.", true);
-    } else {
-      this.showResponse("지금 사용할 수 있는 물건은 없다.", false);
     }
   }
 
@@ -769,6 +766,7 @@ export class RegularEncounterScene extends Phaser.Scene {
   private finish(outcome: WelfareEncounterOutcome, lines: readonly string[]): void {
     if (this.ending) return;
     this.ending = true;
+    this.pendingOutcome = outcome;
     this.mode = "ending";
     this.clearMenu();
     this.message?.destroy();
@@ -781,14 +779,13 @@ export class RegularEncounterScene extends Phaser.Scene {
       lineSpacing: 8,
     }).setOrigin(0.5).setDepth(31);
     this.hint?.setText("Z / ENTER  —  복도로 돌아가기");
-    this.input.keyboard?.once("keydown-Z", () => this.returnToCorridor(outcome));
-    this.input.keyboard?.once("keydown-ENTER", () => this.returnToCorridor(outcome));
-    this.input.keyboard?.once("keydown-SPACE", () => this.returnToCorridor(outcome));
-    this.input.once("pointerdown", () => this.returnToCorridor(outcome));
   }
 
   private returnToCorridor(outcome?: WelfareEncounterOutcome): void {
-    if (outcome) GameSession.recordWelfareEncounter(this.enemyId, outcome);
+    if (this.returning) return;
+    this.returning = true;
+    const resolvedOutcome = outcome ?? this.pendingOutcome;
+    if (resolvedOutcome) GameSession.recordWelfareEncounter(this.enemyId, resolvedOutcome);
     else if (this.withdrawAfterResponse) GameSession.recordWelfareEncounter(this.enemyId, "withdrew");
     this.scene.start("WelfareCorridorScene");
   }
